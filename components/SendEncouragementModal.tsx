@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { getRandomEncouragement } from "../lib/getRandomEncouragement"; // ✅ import
 
 interface Props {
   groupId: string;
@@ -23,7 +24,7 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
     const fetchMembers = async () => {
       const { data, error } = await supabase
         .from("group_members")
-        .select("user_id, profiles(nickname)") // ✅ use nickname instead of username
+        .select("user_id, profiles(nickname)")
         .eq("group_id", groupId);
 
       if (error) {
@@ -46,18 +47,14 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
     let messageToSend = customMessage;
 
     if (useRandom) {
-      const { data: random, error } = await supabase
-        .from("encouragements")
-        .select("content")
-        .order("created_at", { ascending: false })
-        .limit(1);
+      const random = await getRandomEncouragement(supabase);
 
-      if (error || !random?.[0]) {
+      if (!random) {
         setStatus("Failed to fetch random message");
         return;
       }
 
-      messageToSend = random[0].content;
+      messageToSend = random;
     }
 
     if (!messageToSend.trim()) {

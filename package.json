@@ -18,9 +18,11 @@
     "classnames": "^2.5.1",
     "next": "^15.2.3",
     "react": "^19.0.0",
+    "react-calendar": "^5.1.0",
     "react-dom": "^19.0.0",
     "stripe": "^18.1.0",
-    "tailwindcss": "^4.0.15"
+    "tailwindcss": "^4.0.15",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.11",

@@ -1,8 +1,9 @@
-import { useSupabase } from "../lib/supabaseClient";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+
 import { useRouter } from "next/router";
 
 export default function LogoutButton() {
-  const supabase = useSupabase();
+  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const handleLogout = async () => {

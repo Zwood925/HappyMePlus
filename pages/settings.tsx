@@ -1,20 +1,7 @@
-import { useEffect } from "react";
-import { useUser } from "../lib/auth";
-import { useRouter } from "next/router";
 import Layout from "../components/Layout";
+import { withAuth } from "../lib/withAuth";
 
-export default function SettingsPage() {
-  const user = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user === null) {
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  if (!user) return null;
-
+function SettingsPage() {
   return (
     <Layout>
       <h2>Settings</h2>
@@ -22,3 +9,5 @@ export default function SettingsPage() {
     </Layout>
   );
 }
+
+export default withAuth(SettingsPage);

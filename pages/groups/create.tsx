@@ -1,11 +1,13 @@
 // pages/group-create.tsx
 import { useEffect, useState } from "react";
-import { useSupabase } from "../lib/supabaseClient";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
+import { withAuth } from "../lib/withAuth";
 
-export default function GroupCreate() {
-  const supabase = useSupabase();
+function GroupCreate() {
+  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,7 @@ export default function GroupCreate() {
       }
 
       setGroupCode(code);
+      setLoading(false);
 
       setTimeout(() => router.push("/journal"), 2000);
     };
@@ -69,3 +72,5 @@ export default function GroupCreate() {
     </Layout>
   );
 }
+
+export default withAuth(GroupCreate);

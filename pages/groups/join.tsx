@@ -1,11 +1,12 @@
 // pages/group-join.tsx
 import { useState } from "react";
-import { useSupabase } from "../lib/supabaseClient";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
+import { withAuth } from "../lib/withAuth";
 
-export default function GroupJoin() {
-  const supabase = useSupabase();
+function GroupJoin() {
+  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const [codeInput, setCodeInput] = useState("");
@@ -27,7 +28,6 @@ export default function GroupJoin() {
       return;
     }
 
-    // Optionally validate the code by checking if any user has that group_code
     const { data, error: groupError } = await supabase
       .from("profiles")
       .select("id")
@@ -77,3 +77,5 @@ export default function GroupJoin() {
     </Layout>
   );
 }
+
+export default withAuth(GroupJoin);

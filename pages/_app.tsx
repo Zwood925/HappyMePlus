@@ -1,25 +1,36 @@
-import { useState } from "react";
 import type { AppProps } from "next/app";
-import { createBrowserClient } from "@supabase/ssr";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { useEffect, useState } from "react";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
+import {
+  SessionContextProvider,
+  useSession,
+} from "@supabase/auth-helpers-react";
 import "../styles/globals.css";
+import Layout from "../components/Layout";
+import { useRouter } from "next/router";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+function InnerApp({ Component, pageProps }: AppProps) {
+  const session = useSession();
+  const router = useRouter();
 
-function MyApp({ Component, pageProps }: AppProps) {
-  const [supabase] = useState(() =>
-    createBrowserClient(supabaseUrl, supabaseKey)
-  );
+  const isLoginPage = router.pathname === "/login";
+  const showLayout = session && !isLoginPage;
 
-  return (
-    <SessionContextProvider
-      supabaseClient={supabase}
-      initialSession={pageProps.initialSession}
-    >
+  return showLayout ? (
+    <Layout>
       <Component {...pageProps} />
-    </SessionContextProvider>
+    </Layout>
+  ) : (
+    <Component {...pageProps} />
   );
 }
 
-export default MyApp;
+export default function MyApp({ Component, pageProps }: AppProps) {
+  const [supabaseClient] = useState(() => createPagesBrowserClient());
+
+  return (
+    <SessionContextProvider supabaseClient={supabaseClient}>
+      <InnerApp Component={Component} pageProps={pageProps} />
+    </SessionContextProvider>
+  );
+}

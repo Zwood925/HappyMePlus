@@ -1,18 +1,19 @@
 // pages/account-setup.tsx
 import { useState } from "react";
-import { useSupabase } from "../lib/supabaseClient";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
+import { withAuth } from "../lib/withAuth";
 
-export default function AccountSetup() {
-  const supabase = useSupabase();
+function AccountSetup() {
+  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const [step, setStep] = useState<"start" | "groupMode">("start");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // ✅ Handle "Just Me" logic
   const handleSolo = async () => {
     setLoading(true);
     setErrorMsg("");
@@ -87,3 +88,5 @@ export default function AccountSetup() {
     </Layout>
   );
 }
+
+export default withAuth(AccountSetup);

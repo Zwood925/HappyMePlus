@@ -2,41 +2,31 @@ import { useEffect, useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useEncouragements } from "../lib/useEncouragements";
 
-type HappyMoment = {
-  content: string;
-  user_id: string;
-  created_at?: string;
-};
-
 export default function Home() {
   const supabase = useSupabaseClient();
   const user = useUser();
 
   const [input, setInput] = useState("");
   const [myMoments, setMyMoments] = useState<string[]>([]);
-  const [groups, setGroups] = useState<any[]>([]);
-  const [activeGroup, setActiveGroup] = useState(null);
 
   const {
     encouragements,
     unreadCount,
     loading,
     markAllAsRead,
-    refetch,
   } = useEncouragements();
   const [inboxOpen, setInboxOpen] = useState(false);
 
-  const toggleInbox = async () => {
+  const [isPartyTime, setIsPartyTime] = useState(false);
+  const [emojis, setEmojis] = useState<string[]>([]);
+  const [partyPhrase, setPartyPhrase] = useState('');
+
+  const toggleInbox = () => {
     setInboxOpen((prev) => {
       const newOpenState = !prev;
-
       if (newOpenState && unreadCount > 0) {
-        // Wait a bit to ensure they render before marking read
-        setTimeout(() => {
-          markAllAsRead(); // ✅ mark as read after showing
-        }, 10000);
+        setTimeout(() => markAllAsRead(), 10000);
       }
-
       return newOpenState;
     });
   };
@@ -59,23 +49,76 @@ export default function Home() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const { error } = await supabase.from("happy_moments").insert([
-      {
-        content: input,
-        user_id: user?.id,
-        group_code: activeGroup?.id ?? null,
-      },
-    ]);
+    const { data: momentData, error: insertError } = await supabase
+      .from("happy_moments")
+      .insert([{ content: input, user_id: user?.id }])
+      .select("id")
+      .single();
 
-    if (!error) {
-      setInput("");
-      fetchMoments();
+    if (insertError || !momentData?.id) {
+      console.error("Error inserting moment:", insertError);
+      return;
     }
+
+    const momentId = momentData.id;
+
+    const { data: groupMemberships, error: groupError } = await supabase
+      .from("group_members")
+      .select("group_id")
+      .eq("user_id", user?.id);
+
+    if (groupError || !groupMemberships) {
+      console.error("Error getting group memberships:", groupError);
+      return;
+    }
+
+    const linkInserts = groupMemberships.map((group) => ({
+      group_id: group.group_id,
+      moment_id: momentId,
+    }));
+
+    const { error: linkError } = await supabase
+      .from("group_moments")
+      .insert(linkInserts);
+
+    if (linkError) {
+      console.error("Error inserting into group_moments:", linkError);
+    }
+
+    setInput("");
+    fetchMoments();
   };
 
   useEffect(() => {
-    fetchMoments();
+    if (user) {
+      fetchMoments();
+    }
   }, [user]);
+
+  const handleHappyParty = () => {
+    setIsPartyTime(true);
+    const phrases = [
+      "Party Time!",
+      "Feeling Groovy!",
+      "Happiness Activated!",
+      "Woohoo! It's a Good Day!",
+    ];
+    setPartyPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
+
+    const emojiInterval = setInterval(() => {
+      setEmojis((prev) => [
+        ...prev,
+        String.fromCodePoint(0x1f600 + Math.floor(Math.random() * 20)),
+      ]);
+    }, 500);
+
+    setTimeout(() => {
+      clearInterval(emojiInterval);
+      setIsPartyTime(false);
+      setEmojis([]);
+      setPartyPhrase('');
+    }, 3000);
+  };
 
   return (
     <div style={{ padding: "2rem" }}>
@@ -105,7 +148,46 @@ export default function Home() {
         )}
       </div>
 
-      {/* 🔔 Encouragement Notification Icon */}
+      <button
+        onClick={handleHappyParty}
+        style={{
+          backgroundColor: "#4CAF50",
+          color: "white",
+          padding: "15px 32px",
+          fontSize: "16px",
+          margin: "20px 0",
+          cursor: "pointer",
+          borderRadius: "5px",
+        }}
+      >
+        I Feel Good!
+      </button>
+
+      {isPartyTime && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 9999,
+            pointerEvents: "none",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: '1rem' }}>{partyPhrase}</p>
+          <div style={{ fontSize: "3rem", animation: 'fall 3s linear' }}>
+            {emojis.map((emoji, index) => (
+              <span key={index}>{emoji}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           position: "fixed",
@@ -134,61 +216,6 @@ export default function Home() {
           </span>
         )}
       </div>
-
-      {/* 📬 Inbox Modal */}
-      {inboxOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: "4rem",
-            right: "1rem",
-            backgroundColor: "white",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-            zIndex: 999,
-            width: "300px",
-            maxHeight: "50vh",
-            overflowY: "auto",
-            padding: "1rem",
-          }}
-        >
-          <h4 style={{ marginTop: 0 }}>Your Encouragements</h4>
-          {loading ? (
-            <p>Loading...</p>
-          ) : encouragements.length === 0 ? (
-            <p>No new encouragements.</p>
-          ) : (
-            encouragements.map((enc) => (
-              <div
-                key={enc.id}
-                style={{
-                  backgroundColor: "#f0f8ff",
-                  padding: "0.5rem",
-                  borderRadius: "5px",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                <strong>{(enc as any).profiles?.nickname || "Someone"}:</strong>
-                <br />
-                {enc.message}
-              </div>
-            ))
-          )}
-          <button
-            onClick={() => setInboxOpen(false)}
-            style={{
-              marginTop: "0.5rem",
-              background: "#ccc",
-              border: "none",
-              padding: "0.3rem 0.6rem",
-              borderRadius: "5px",
-            }}
-          >
-            Close
-          </button>
-        </div>
-      )}
     </div>
   );
 }

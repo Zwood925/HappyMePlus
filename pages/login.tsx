@@ -1,14 +1,10 @@
-// pages/login.tsx
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/Layout";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-
 import { useSessionContext } from "@supabase/auth-helpers-react";
 
 export default function LoginPage() {
   const supabase = useSupabaseClient();
-
   const router = useRouter();
   const { session, isLoading } = useSessionContext();
 
@@ -18,7 +14,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && session?.user) {
-      router.push("/journal");
+      router.push("/");
     }
   }, [isLoading, session]);
 
@@ -34,51 +30,51 @@ export default function LoginPage() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      router.push("/journal");
+      router.push("/");
     }
   };
 
   if (isLoading) {
     return (
-      <Layout>
-        <div style={{ padding: "2rem" }}>
-          <p>Checking your session...</p>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">
+        <p className="text-lg font-semibold text-gray-700">Checking your session...</p>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div style={{ padding: "2rem" }}>
-        <h2>Log In</h2>
-        <form onSubmit={handleLogin}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100 p-4">
+      <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border-4 border-pink-300">
+        <h2 className="text-3xl font-bold text-center mb-6 text-purple-700">
+          🎉 Welcome Back!
+        </h2>
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
             type="email"
-            id="email"
-            name="email"
-            autoComplete="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ display: "block", marginBottom: "1rem" }}
+            className="input input-bordered w-full"
           />
           <input
             type="password"
-            id="password"
-            name="password"
-            autoComplete="current-password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ display: "block", marginBottom: "1rem" }}
+            className="input input-bordered w-full"
           />
-          <button type="submit">Log In</button>
+          <button type="submit" className="btn btn-primary w-full">
+            🚀 Log In
+          </button>
         </form>
-        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        {errorMsg && (
+          <p className="mt-4 text-center text-red-500 font-semibold">
+            {errorMsg}
+          </p>
+        )}
       </div>
-    </Layout>
+    </div>
   );
 }

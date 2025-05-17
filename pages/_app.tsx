@@ -5,7 +5,7 @@ import {
   SessionContextProvider,
   useSession,
 } from "@supabase/auth-helpers-react";
-import "../styles/globals.css";
+import "../styles/globals.css"; // Tailwind + DaisyUI styles
 import Layout from "../components/Layout";
 import { useRouter } from "next/router";
 

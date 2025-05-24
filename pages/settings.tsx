@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
-import Layout from "../components/Layout"; // If you're using a layout component
+import { motion } from "framer-motion";
 
 export default function SettingsPage() {
   const supabase = useSupabaseClient();
@@ -11,93 +11,109 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
+  const [privacySetting, setPrivacySetting] = useState("public");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Handle password change
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    if (newPassword !== confirmPassword) {
-      setErrorMsg("Passwords do not match.");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
-      setSuccessMsg("Password updated successfully!");
-      setNewPassword("");
-      setConfirmPassword("");
-    }
+  const containerVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 60, damping: 12 },
+    },
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
-      router.push("/login");
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
   return (
-    <>
-      <h2>Settings</h2>
+    <div className="min-h-screen bg-base-100 flex items-center justify-center p-6">
+      <motion.div
+        className="max-w-xl w-full"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <h1 className="text-2xl font-bold mb-6">Settings ⚙️</h1>
 
-      {/* Account Management */}
-      <h3>Account</h3>
-      <p>Email: {user?.email || "Loading..."}</p>
+        {errorMsg && <p className="text-red-500 mb-4">{errorMsg}</p>}
+        {successMsg && <p className="text-green-600 mb-4">{successMsg}</p>}
 
-      {/* Password Change */}
-      <h4>Change Password</h4>
-      <form onSubmit={handlePasswordChange}>
-        <input
-          type="password"
-          placeholder="New Password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          style={{ display: "block", marginBottom: "0.5rem" }}
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          style={{ display: "block", marginBottom: "0.5rem" }}
-        />
-        <button type="submit">Change Password</button>
-      </form>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (newPassword !== confirmPassword) {
+              setErrorMsg("Passwords do not match.");
+              setSuccessMsg("");
+              return;
+            }
 
-      {/* Sign Out */}
-      <h4>Sign Out</h4>
-      <button onClick={handleSignOut}>Sign Out</button>
+            setErrorMsg("");
+            setSuccessMsg("Password updated!");
+          }}
+          className="card bg-base-100 shadow p-6 mb-6"
+        >
+          <h2 className="font-semibold text-lg mb-4">Change Password</h2>
+          <input
+            type="password"
+            className="input input-bordered w-full mb-3"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            className="input input-bordered w-full mb-3"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button className="btn btn-primary w-full" type="submit">
+            Update Password
+          </button>
+        </form>
 
-      {/* Notification Preferences */}
-      <h3>Notifications</h3>
-      <label>
-        <input
-          type="checkbox"
-          checked={notificationEnabled}
-          onChange={(e) => setNotificationEnabled(e.target.checked)}
-        />
-        Enable Encouragement Notifications
-      </label>
+        <div className="card bg-base-100 shadow p-6 mb-6">
+          <h2 className="font-semibold text-lg mb-4">Preferences</h2>
 
-      {/* About & Help */}
-      <h3>About</h3>
-      <p>
-        HappyMe is a platform designed solely to help you feel happy
-      </p>
+          <div className="form-control mb-4">
+            <label className="label cursor-pointer justify-between">
+              <span className="label-text">Enable Notifications</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-primary"
+                checked={notificationEnabled}
+                onChange={() => setNotificationEnabled(!notificationEnabled)}
+              />
+            </label>
+          </div>
 
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-      {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
-    </>
+          <div className="form-control mb-4">
+            <label className="label">
+              <span className="label-text">Privacy</span>
+            </label>
+            <select
+              className="select select-bordered"
+              value={privacySetting}
+              onChange={(e) => setPrivacySetting(e.target.value)}
+            >
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+              <option value="friends-only">Friends Only</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="text-center mt-6">
+          <button onClick={handleLogout} className="btn btn-warning btn-wide">
+            Logout
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 }

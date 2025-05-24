@@ -1,31 +1,42 @@
+// HomePage with full visuals and original logic from index.tsx
 import { useEffect, useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useEncouragements } from "../lib/useEncouragements";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function Home() {
+const bubbleColors = [
+  "bg-cyan-200",
+  "bg-pink-200",
+  "bg-green-200",
+  "bg-yellow-200",
+  "bg-purple-200",
+];
+
+export default function HomePage() {
   const supabase = useSupabaseClient();
   const user = useUser();
 
   const [input, setInput] = useState("");
   const [myMoments, setMyMoments] = useState<string[]>([]);
+  const [encouragement, setEncouragement] = useState<string | null>(null);
+  const [nickname, setNickname] = useState<string>("");
 
   const {
     encouragements,
     unreadCount,
-    loading,
+    loading: encouragementsLoading,
     markAllAsRead,
   } = useEncouragements();
   const [inboxOpen, setInboxOpen] = useState(false);
-
   const [isPartyTime, setIsPartyTime] = useState(false);
   const [emojis, setEmojis] = useState<string[]>([]);
-  const [partyPhrase, setPartyPhrase] = useState('');
+  const [partyPhrase, setPartyPhrase] = useState("");
 
   const toggleInbox = () => {
     setInboxOpen((prev) => {
       const newOpenState = !prev;
       if (newOpenState && unreadCount > 0) {
-        setTimeout(() => markAllAsRead(), 10000);
+        // setTimeout(() => markAllAsRead(), 10000);
       }
       return newOpenState;
     });
@@ -45,13 +56,71 @@ export default function Home() {
     }
   };
 
+  const fetchNickname = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("id", user?.id)
+      .single();
+    if (data?.nickname) setNickname(data.nickname);
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchMoments();
+      fetchNickname();
+    } else {
+      setMyMoments([]);
+    }
+  }, [user]);
+
+  const handleFeelingDown = async () => {
+    const { data: encouragements, error: encouragementError } = await supabase
+      .from("encouragements")
+      .select("content");
+
+    if (encouragementError || !encouragements?.length) return;
+
+    const randomEncouragement =
+      encouragements[Math.floor(Math.random() * encouragements.length)]?.content;
+
+    setEncouragement(randomEncouragement);
+
+    const { data: userGroups } = await supabase
+      .from("group_members")
+      .select("group_id")
+      .eq("user_id", user?.id);
+
+    const groupIds = userGroups?.map((g) => g.group_id) || [];
+
+    const { data: allMembers } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .in("group_id", groupIds);
+
+    const allUserIds = Array.from(new Set(allMembers?.map((m) => m.user_id))).filter(
+      (id) => id !== user?.id
+    );
+
+    const inserts = allUserIds.map((recipient_id) => ({
+      sender_id: user?.id!,
+      recipient_id,
+      message: `${nickname} is having a tough day and might need some encouragement.`,
+      created_at: new Date().toISOString(),
+    }));
+
+    if (inserts.length > 0) {
+      await supabase.from("direct_encouragements").insert(inserts);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !user) return;
 
     const { data: momentData, error: insertError } = await supabase
       .from("happy_moments")
-      .insert([{ content: input, user_id: user?.id }])
+      .insert([{ content: input, user_id: user.id }])
       .select("id")
       .single();
 
@@ -65,35 +134,26 @@ export default function Home() {
     const { data: groupMemberships, error: groupError } = await supabase
       .from("group_members")
       .select("group_id")
-      .eq("user_id", user?.id);
+      .eq("user_id", user.id);
 
-    if (groupError || !groupMemberships) {
-      console.error("Error getting group memberships:", groupError);
-      return;
-    }
+    if (groupMemberships && groupMemberships.length > 0) {
+      const linkInserts = groupMemberships.map((group) => ({
+        group_id: group.group_id,
+        moment_id: momentId,
+      }));
 
-    const linkInserts = groupMemberships.map((group) => ({
-      group_id: group.group_id,
-      moment_id: momentId,
-    }));
+      const { error: linkError } = await supabase
+        .from("group_moments")
+        .insert(linkInserts);
 
-    const { error: linkError } = await supabase
-      .from("group_moments")
-      .insert(linkInserts);
-
-    if (linkError) {
-      console.error("Error inserting into group_moments:", linkError);
+      if (linkError) {
+        console.error("Error inserting into group_moments:", linkError);
+      }
     }
 
     setInput("");
     fetchMoments();
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchMoments();
-    }
-  }, [user]);
 
   const handleHappyParty = () => {
     setIsPartyTime(true);
@@ -102,120 +162,268 @@ export default function Home() {
       "Feeling Groovy!",
       "Happiness Activated!",
       "Woohoo! It's a Good Day!",
+      "Joy Explosion!",
     ];
     setPartyPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
 
-    const emojiInterval = setInterval(() => {
-      setEmojis((prev) => [
-        ...prev,
-        String.fromCodePoint(0x1f600 + Math.floor(Math.random() * 20)),
-      ]);
-    }, 500);
+    const randomEmojis = Array.from({ length: 15 }, () =>
+      String.fromCodePoint(0x1f600 + Math.floor(Math.random() * 40))
+    );
+    setEmojis(randomEmojis);
 
     setTimeout(() => {
-      clearInterval(emojiInterval);
       setIsPartyTime(false);
       setEmojis([]);
-      setPartyPhrase('');
-    }, 3000);
+      setPartyPhrase("");
+    }, 3500);
   };
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
+  };
+
+  const emojiVariants = {
+    hidden: { y: -20, opacity: 0 },
+    visible: (i: number) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: i * 0.05 + 0.3,
+        type: "spring",
+        stiffness: 100,
+      },
+    }),
+  };
+
+  const floatingBubbles = Array.from({ length: 60 }, (_, i) => {
+    const size = 20 + Math.random() * 80;
+    const top = Math.random() * 100;
+    const left = Math.random() * 100;
+    const duration = 30 + Math.random() * 40;
+    const xDistance = 50 + Math.random() * 100;
+    const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+
+    return (
+      <motion.div
+        key={i}
+        className={`absolute rounded-full ${color} opacity-30`}
+        style={{ width: `${size}px`, height: `${size}px`, top: `${top}%`, left: `${left}%` }}
+        animate={{ x: [0, xDistance], y: [-50, -200] }}
+        transition={{ duration, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+      />
+    );
+  });
+
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>What's making you happy today?</h2>
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          rows={3}
-          style={{ width: "100%", marginBottom: "1rem" }}
-        />
-        <button type="submit">Add Moment</button>
-      </form>
+    <div className="relative min-h-screen overflow-hidden bg-cyan-50 text-purple-700 px-4 py-8">
+      {/* Bubbles */}
+      <div className="absolute inset-0 z-0 overflow-hidden">{floatingBubbles}</div>
 
-      <div style={{ marginTop: "2rem" }}>
-        <h3>Your Happy Moments</h3>
-        {myMoments.length === 0 ? (
-          <p>No moments yet. Start writing!</p>
-        ) : (
-          <ul>
-            {myMoments.map((moment, index) => (
-              <li key={index} style={{ marginBottom: "0.5rem" }}>
-                {moment}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <button
-        onClick={handleHappyParty}
-        style={{
-          backgroundColor: "#4CAF50",
-          color: "white",
-          padding: "15px 32px",
-          fontSize: "16px",
-          margin: "20px 0",
-          cursor: "pointer",
-          borderRadius: "5px",
-        }}
-      >
-        I Feel Good!
-      </button>
-
-      {isPartyTime && (
+      {/* Encouragements Bell */}
+      {user && (
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 9999,
-            pointerEvents: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          className="fixed top-20 right-4 md:right-6 cursor-pointer z-[1000] indicator"
+          onClick={toggleInbox}
         >
-          <p style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: '1rem' }}>{partyPhrase}</p>
-          <div style={{ fontSize: "3rem", animation: 'fall 3s linear' }}>
-            {emojis.map((emoji, index) => (
-              <span key={index}>{emoji}</span>
-            ))}
+          {unreadCount > 0 && (
+            <span className="indicator-item badge badge-secondary badge-sm animate-pulse">
+              {unreadCount}
+            </span>
+          )}
+          <div className="p-2 bg-base-200 rounded-full shadow-md hover:bg-base-300 transition-colors">
+            <span className="text-3xl">🔔</span>
           </div>
         </div>
       )}
 
-      <div
-        style={{
-          position: "fixed",
-          top: "1rem",
-          right: "1.5rem",
-          cursor: "pointer",
-          zIndex: 1000,
-        }}
-        onClick={toggleInbox}
-      >
-        <span style={{ fontSize: "1.5rem" }}>🔔</span>
-        {unreadCount > 0 && (
-          <span
-            style={{
-              position: "absolute",
-              top: -5,
-              right: -5,
-              backgroundColor: "red",
-              color: "white",
-              borderRadius: "50%",
-              fontSize: "0.75rem",
-              padding: "0.2rem 0.5rem",
-            }}
+      <div className="relative z-10">
+        <h1 className="text-5xl font-extrabold text-center mb-8 drop-shadow">
+          What’s making you happy today?
+        </h1>
+
+        {user && (
+          <div className="mb-6 text-center">
+            <button
+              onClick={handleFeelingDown}
+              className="btn btn-warning btn-lg shadow-md text-lg"
+            >
+              🫠 Feelin’ kinda down?
+            </button>
+
+            {encouragement && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-4 rounded-lg bg-blue-100 text-blue-900 shadow-md max-w-xl mx-auto"
+              >
+                ✨ {encouragement} ✨
+              </motion.div>
+            )}
+          </div>
+        )}
+
+        {user ? (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
           >
-            {unreadCount}
-          </span>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={4}
+              className="textarea textarea-bordered w-full text-lg"
+              placeholder="Share a small joy, a big win, or anything that made you smile…"
+            />
+            <div className="mt-4 text-center">
+              <button
+                type="submit"
+                className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-lg px-8 rounded-full"
+                disabled={!input.trim()}
+              >
+                Add Happy Moment
+              </button>
+            </div>
+          </form>
+        ) : (
+          <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
+            Please <a href="/login" className="link link-primary">log in</a> to share your happy moments!
+          </p>
+        )}
+
+        {user && (
+          <div className="mb-8 text-center">
+            <button
+              onClick={handleHappyParty}
+              className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
+              disabled={isPartyTime}
+            >
+              <span className="mr-2 text-xl">🎉</span>
+              I Feel Good!
+              <span className="ml-2 text-xl">🥳</span>
+            </button>
+          </div>
+        )}
+
+        {user && myMoments.length > 0 && (
+          <div className="card bg-base-200 shadow-xl p-6">
+            <h3 className="text-2xl font-semibold mb-4 text-secondary">Your Recent Happy Moments</h3>
+            <ul className="space-y-3">
+              {myMoments.map((moment, index) => (
+                <li key={index} className="p-4 bg-base-100 rounded-lg shadow hover:shadow-md transition-shadow">
+                  <p className="text-base-content">{moment}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {user && myMoments.length === 0 && !input && (
+          <div className="text-center p-6 bg-base-200 rounded-lg shadow">
+            <p className="text-lg text-neutral-content">
+              No happy moments recorded yet. Why not add one now?
+            </p>
+          </div>
         )}
       </div>
+
+      {/* Party Time Overlay */}
+      <AnimatePresence>
+        {isPartyTime && (
+          <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 z-[9999] pointer-events-none flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <motion.p
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
+              className="text-4xl md:text-5xl font-bold mb-6 text-white drop-shadow-lg px-4 text-center"
+            >
+              {partyPhrase}
+            </motion.p>
+            <div className="text-4xl md:text-5xl flex flex-wrap justify-center max-w-sm">
+              {emojis.map((emoji, index) => (
+                <motion.span
+                  key={index}
+                  custom={index}
+                  variants={emojiVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="inline-block m-1"
+                >
+                  {emoji}
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Inbox Modal */}
+      <AnimatePresence>
+        {inboxOpen && user && (
+          <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1001] flex items-center justify-center p-4"
+            onClick={toggleInbox}
+          >
+            <motion.div
+              className="card w-full max-w-lg bg-base-100 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+              variants={modalVariants}
+            >
+              <div className="card-body">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="card-title text-xl text-primary">Your Encouragements</h3>
+                  <button className="btn btn-sm btn-circle btn-ghost" onClick={toggleInbox}>✕</button>
+                </div>
+
+                {encouragementsLoading && (
+                  <div className="flex justify-center my-8">
+                    <span className="loading loading-lg loading-spinner text-primary"></span>
+                  </div>
+                )}
+
+                {!encouragementsLoading && encouragements.length === 0 && (
+                  <p className="text-center text-neutral-content py-4">You have no new encouragements right now. Keep shining!</p>
+                )}
+
+                {!encouragementsLoading && encouragements.length > 0 && (
+                  <ul className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                    {encouragements.map((enc) => (
+                      <li key={enc.id} className={`p-3 rounded-lg shadow ${enc.read_at ? 'bg-base-200' : 'bg-primary/10 border border-primary'}`}>
+                        <p className="font-semibold text-base-content">
+                          {enc.sender_name || "An anonymous friend"} sent you a boost:
+                        </p>
+                        <p className="mt-1 text-base-content/80">{enc.content}</p>
+                        <p className="text-xs text-right text-base-content/60 mt-2">
+                          {new Date(enc.created_at).toLocaleString()}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {unreadCount > 0 && !encouragementsLoading && (
+                  <div className="card-actions justify-end mt-6">
+                    <button className="btn btn-primary btn-sm" onClick={() => markAllAsRead()}>
+                      Mark all as read
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

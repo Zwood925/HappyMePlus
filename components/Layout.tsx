@@ -1,46 +1,45 @@
-import Link from 'next/link'
-import { ReactNode } from 'react'
-import { useRouter } from 'next/router'
-import LogoutButton from './LogoutButton'
+// Layout wrapper with animated bubble-style sidebar
+import Link from 'next/link';
+import { ReactNode } from 'react';
+import { useRouter } from 'next/router';
+import LogoutButton from './LogoutButton';
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const router = useRouter()
-
-  const linkStyle = (path: string) => ({
-    display: 'block',
-    padding: '0.75rem 1rem',
-    fontWeight: router.pathname === path ? 'bold' : 'normal',
-    backgroundColor: router.pathname === path ? '#f3f4f6' : 'transparent',
-    borderRadius: '0.5rem',
-    textDecoration: 'none',
-    color: '#333'
-  })
+  const router = useRouter();
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      {/* Sidebar */}
-      <aside style={{ width: '220px', padding: '1.5rem', backgroundColor: '#f9f9f9' }}>
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', cursor: 'pointer' }}>
-            HappyMe Plus
-          </h2>
-        </Link>
-
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <Link href="/journal" style={linkStyle('/journal')}>Journal</Link>
-          
-          <Link href="/groups" style={linkStyle('/groups')}>Groups</Link>
-          <Link href="/settings" style={linkStyle('/settings')}>Settings</Link>
-          <div style={{ marginTop: '1rem' }}>
-            <LogoutButton />
+    <div className="flex min-h-screen overflow-hidden">
+      {/* Bubble Sidebar */}
+      <aside className="w-[90px] flex flex-col gap-6 items-center py-6 px-2 bg-gradient-to-b from-purple-200 via-pink-200 to-yellow-100 shadow-xl z-20">
+        <Link href="/">
+          <div className="w-[60px] h-[60px] bg-purple-500 hover:scale-105 transition rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+            🏠
           </div>
-        </nav>
+        </Link>
+        <Link href="/journal">
+          <div className="w-[60px] h-[60px] bg-blue-400 hover:scale-105 transition rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+            📓
+          </div>
+        </Link>
+        <Link href="/groups">
+          <div className="w-[60px] h-[60px] bg-green-400 hover:scale-105 transition rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+            👥
+          </div>
+        </Link>
+        <Link href="/settings">
+          <div className="w-[60px] h-[60px] bg-yellow-400 hover:scale-105 transition rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+            ⚙️
+          </div>
+        </Link>
+        <div className="mt-auto">
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Main content */}
-      <main style={{ flexGrow: 1, padding: '2rem' }}>
+      <main className="flex-1 relative min-h-screen bg-cyan-50 text-purple-700 px-4 py-8 overflow-hidden">
         {children}
       </main>
     </div>
-  )
+  );
 }

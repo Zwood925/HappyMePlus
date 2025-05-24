@@ -40,14 +40,35 @@ function GroupJoin() {
       return;
     }
 
+    const groupId = data[0].id;
+    console.log("🧠 Attempting to join group");
+    console.log("User ID:", user.id);
+    console.log("Group ID:", groupId);
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ group_code: codeInput.toUpperCase() })
       .eq("id", user.id);
 
     if (updateError) {
-      setErrorMsg("Failed to join group.");
+      setErrorMsg("Failed to join group (profile update).");
+      setLoading(false);
+      return;
+    }
+
+    // Attempt to insert into group_members table
+    const { error: memberError } = await supabase
+      .from("group_members")
+      .upsert(
+        [{ user_id: user.id, group_id: groupId }],
+        { onConflict: ['user_id', 'group_id'] }
+      );
+
+    if (memberError) {
+      console.error("🚫 group_members insert error:", memberError.message);
+      setErrorMsg("Error joining group. Please try again.");
     } else {
+      console.log("✅ User successfully added to group_members.");
       router.push("/journal");
     }
 
@@ -65,6 +86,8 @@ function GroupJoin() {
           placeholder="Enter group code"
           value={codeInput}
           onChange={(e) => setCodeInput(e.target.value)}
+          id="group-code-input"
+          name="group-code-input"
           style={{ display: "block", marginBottom: "1rem", width: "100%" }}
         />
 

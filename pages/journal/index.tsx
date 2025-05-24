@@ -1,163 +1,205 @@
-import { useState } from "react"
-import { withAuth } from "../../lib/withAuth"
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react"
-import Link from "next/link"
-import { getRandomEncouragement } from "../../lib/getRandomEncouragement"
+import { useState } from 'react';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getRandomEncouragement } from '../../lib/getRandomEncouragement';
 
-function JournalPage() {
-  const supabase = useSupabaseClient()
-  const user = useUser()
+const prompts = [
+  'What made you smile today?',
+  'What challenged you today?',
+  'What are you grateful for?',
+  'What would you like to let go of?'
+];
 
-  const prompts = [
-    "What challenged you today?",
-    "Where did you find peace?",
-    "What are you grateful for?",
-    "What would you tell your younger self?",
-    "How did you show kindness today?"
-  ]
+const moods = [
+  { value: 'happy', emoji: '😊', color: 'bg-green-300' },
+  { value: 'sad', emoji: '😢', color: 'bg-blue-300' },
+  { value: 'angry', emoji: '😠', color: 'bg-red-300' },
+  { value: 'neutral', emoji: '😐', color: 'bg-gray-300' },
+  { value: 'love', emoji: '😍', color: 'bg-pink-300' }
+];
 
-  const [selectedPrompt, setSelectedPrompt] = useState<string>("")
-  const [mood, setMood] = useState("happy")
-  const [entry, setEntry] = useState("")
-  const [saving, setSaving] = useState(false)
-  const [successMsg, setSuccessMsg] = useState("")
-  const [encouragementMsg, setEncouragementMsg] = useState("")
+export default function JournalPage() {
+  const user = useUser();
+  const supabase = useSupabaseClient();
 
-  const handleSave = async () => {
-    if (!entry.trim() || !user) return
-    setSaving(true)
+  const [selectedPrompt, setSelectedPrompt] = useState('');
+  const [selectedMood, setSelectedMood] = useState('');
+  const [entry, setEntry] = useState('');
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [encouragement, setEncouragement] = useState('');
+  const [notifyGroups, setNotifyGroups] = useState(true);
 
-    const { error } = await supabase.from("journal_entries").insert({
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !entry.trim()) return;
+
+    const { error } = await supabase.from('journal_entries').insert({
       user_id: user.id,
-      content: entry.trim(),
-      prompt: selectedPrompt,
-      mood
-    })
-
-    setSaving(false)
+      content: entry,
+      mood: selectedMood,
+      prompt: selectedPrompt
+    });
 
     if (error) {
-      console.error("Error saving journal entry:", error.message)
-    } else {
-      setEntry("")
-      setSelectedPrompt("")
-      setMood("happy")
-      setSuccessMsg("Entry saved successfully!")
+      setMessage('Something went wrong. Please try again.');
+      return;
+    }
 
-      // 🎯 Show encouragement if sad or angry
-      if (["sad", "angry"].includes(mood)) {
-        const encouragement = await getRandomEncouragement(supabase)
-        if (encouragement) {
-          setEncouragementMsg(encouragement)
-          setTimeout(() => setEncouragementMsg(""), 6000)
-        }
+    setMessage('Entry saved! ✅');
+    setEntry('');
+    setSelectedMood('');
+    setSelectedPrompt('');
+
+    if ((selectedMood === 'sad' || selectedMood === 'angry')) {
+      const random = await getRandomEncouragement(supabase);
+      if (random) {
+        setEncouragement(random);
+        setShowModal(true);
       }
 
-      setTimeout(() => setSuccessMsg(""), 3000)
+      if (notifyGroups) {
+        const { data: groupMemberships } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', user.id);
+
+        if (groupMemberships) {
+          for (const group of groupMemberships) {
+            const { data: groupMembers } = await supabase
+              .from('group_members')
+              .select('user_id')
+              .eq('group_id', group.group_id);
+
+            if (groupMembers) {
+              for (const member of groupMembers) {
+                if (member.user_id !== user.id) {
+                  await supabase.from('direct_encouragements').insert({
+                    sender_id: user.id,
+                    recipient_id: member.user_id,
+                    message: `${user.user_metadata?.name || 'A friend'} had a rough day. Send them some encouragement!`,
+                    read: false
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  }
+  };
 
   return (
-    <>
-      <h2>Let it out. This space is all yours.</h2>
-      <p style={{ marginBottom: "1rem" }}>This is your private journal space.</p>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-6 text-center">Dear Me 💌</h1>
 
-      <label>
-        <strong>Prompt (optional):</strong>
-        <select
-          value={selectedPrompt}
-          onChange={(e) => setSelectedPrompt(e.target.value)}
-          style={{ display: "block", margin: "0.5rem 0", padding: "0.5rem", width: "100%" }}
-        >
-          <option value="">-- Choose a prompt --</option>
-          {prompts.map((prompt, index) => (
-            <option key={index} value={prompt}>
-              {prompt}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        <strong>Mood:</strong>
-        <select
-          value={mood}
-          onChange={(e) => setMood(e.target.value)}
-          style={{ display: "block", marginBottom: "1rem", padding: "0.5rem", width: "100%" }}
-        >
-          <option value="happy">😊 Happy</option>
-          <option value="neutral">😐 Neutral</option>
-          <option value="sad">😢 Sad</option>
-          <option value="angry">😠 Angry</option>
-        </select>
-      </label>
-
-      <textarea
-        placeholder="Write your thoughts here..."
-        value={entry}
-        onChange={(e) => setEntry(e.target.value)}
-        rows={8}
-        style={{
-          width: "100%",
-          padding: "1rem",
-          marginTop: "1rem",
-          borderRadius: "0.5rem",
-          border: "1px solid #ccc"
-        }}
-      />
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          marginTop: "1rem",
-          padding: "0.75rem 1.5rem",
-          backgroundColor: "#3b82f6",
-          color: "white",
-          border: "none",
-          borderRadius: "0.5rem"
-        }}
-      >
-        {saving ? "Saving..." : "Save Entry"}
-      </button>
-
-      {successMsg && (
-        <p style={{ color: "green", marginTop: "1rem" }}>{successMsg}</p>
-      )}
-
-      {encouragementMsg && (
-        <div style={{
-          marginTop: "2rem",
-          padding: "1rem",
-          backgroundColor: "#fef3c7",
-          border: "1px solid #fcd34d",
-          borderRadius: "0.5rem",
-          color: "#92400e",
-          fontWeight: "bold",
-          fontSize: "1.1rem",
-          textAlign: "center"
-        }}>
-          {encouragementMsg}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Pick a prompt:</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {prompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => setSelectedPrompt(prompt)}
+                className={`p-4 rounded-xl text-left shadow-md transition-all border-2 ${
+                  selectedPrompt === prompt ? 'border-pink-500 bg-pink-100' : 'border-transparent bg-white'
+                }`}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      <Link href="/journal/calendar">
-        <button
-          style={{
-            marginTop: "1.5rem",
-            padding: "0.5rem 1.25rem",
-            backgroundColor: "#10b981",
-            color: "white",
-            border: "none",
-            borderRadius: "0.5rem",
-            cursor: "pointer"
-          }}
-        >
-          📅 View Past Entries
-        </button>
-      </Link>
-    </>
-  )
+        <div>
+          <h2 className="text-xl font-semibold mb-2">How are you feeling?</h2>
+          <div className="flex gap-4 flex-wrap">
+            {moods.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setSelectedMood(m.value)}
+                className={`w-[60px] h-[60px] rounded-full flex items-center justify-center text-2xl shadow-md hover:scale-110 transition-all ${
+                  selectedMood === m.value ? m.color : 'bg-white border border-gray-300'
+                }`}
+              >
+                {m.emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Write it out:</h2>
+          <textarea
+            className="textarea textarea-bordered w-full text-lg"
+            rows={5}
+            placeholder="Start writing here..."
+            value={entry}
+            onChange={(e) => setEntry(e.target.value)}
+          />
+        </div>
+
+        <div className="form-control">
+          <label className="label cursor-pointer">
+            <span className="label-text">Notify my group if this entry is sad or angry</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-primary"
+              checked={notifyGroups}
+              onChange={() => setNotifyGroups(!notifyGroups)}
+            />
+          </label>
+        </div>
+
+        <div className="text-center">
+          <button
+            type="submit"
+            disabled={!entry.trim() || !selectedMood}
+            className="btn btn-primary btn-wide text-lg"
+          >
+            Save Entry
+          </button>
+        </div>
+
+        <div className="text-center mt-4">
+          <a href="/journal/calendar" className="link link-primary text-sm underline">
+            📅 View past entries
+          </a>
+        </div>
+
+        {message && (
+          <div className="text-center text-green-600 font-semibold text-lg">
+            {message}
+          </div>
+        )}
+      </form>
+
+      {/* Encouragement Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+            onClick={() => setShowModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="bg-white rounded-xl p-6 max-w-md w-full text-center shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4 text-purple-700">💛 Encouragement</h2>
+              <p className="text-lg text-gray-700">{encouragement}</p>
+              <button className="btn btn-sm mt-6" onClick={() => setShowModal(false)}>Close</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
-
-export default withAuth(JournalPage)

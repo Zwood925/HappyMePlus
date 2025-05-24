@@ -1,7 +1,5 @@
-// pages/account-setup.tsx
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
 import { withAuth } from "../lib/withAuth";
@@ -47,43 +45,25 @@ function AccountSetup() {
 
   return (
     <Layout>
-      <div style={{ padding: "2rem", maxWidth: 600, margin: "0 auto" }}>
-        <h2>Almost done! 🎉</h2>
-        <p style={{ marginBottom: "1rem" }}>
+      <div className="p-6 max-w-xl mx-auto">
+        <h2 className="text-2xl font-bold mb-2">Almost done! 🎉</h2>
+        <p className="mb-4">
           Will you be using HappyMe+ solo, or with a group?
         </p>
 
-        {step === "start" && (
-          <>
-            <button
-              onClick={handleSolo}
-              disabled={loading}
-              style={{ display: "block", marginBottom: "1rem" }}
-            >
-              Just Me
-            </button>
-            <button onClick={() => setStep("groupMode")}>
-              Use With a Group
-            </button>
-          </>
-        )}
+        {errorMsg && <p className="text-red-500 mb-2">{errorMsg}</p>}
 
-        {step === "groupMode" && (
-          <>
-            <p>Would you like to create a group or join an existing one?</p>
-            <button
-              onClick={() => router.push("/group-create")}
-              style={{ display: "block", marginBottom: "1rem" }}
-            >
-              Create Group
-            </button>
-            <button onClick={() => router.push("/group-join")}>
-              Join Group
-            </button>
-          </>
-        )}
-
-        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        <div className="flex flex-col gap-3">
+          <button
+            className="btn btn-primary"
+            onClick={() => setStep("groupMode")}
+          >
+            Use with a Group
+          </button>
+          <button className="btn btn-outline" onClick={handleSolo} disabled={loading}>
+            Use Solo
+          </button>
+        </div>
       </div>
     </Layout>
   );

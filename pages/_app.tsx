@@ -1,11 +1,11 @@
 import type { AppProps } from "next/app";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import {
   SessionContextProvider,
   useSession,
 } from "@supabase/auth-helpers-react";
-import "../styles/globals.css"; // Tailwind + DaisyUI styles
+import "../styles/globals.css";
 import Layout from "../components/Layout";
 import { useRouter } from "next/router";
 
@@ -13,8 +13,8 @@ function InnerApp({ Component, pageProps }: AppProps) {
   const session = useSession();
   const router = useRouter();
 
-  const isLoginPage = router.pathname === "/login";
-  const showLayout = session && !isLoginPage;
+  const excludedRoutes = ["/login", "/signup", "/success", "/cancel"];
+  const showLayout = session && !excludedRoutes.includes(router.pathname);
 
   return showLayout ? (
     <Layout>

@@ -16,18 +16,16 @@ export default async function handler(
 
   try {
     const { promoCode } = req.body;
+    let discounts = [];
 
-    let discounts;
-
-    if (promoCode) {
-      // Search Stripe for a promotion code that matches the user's input
+    // ✅ Only apply a discount if it's a real promo code
+    if (promoCode && promoCode.toLowerCase() !== "no_promo") {
       const promoSearch = await stripe.promotionCodes.list({
         code: promoCode,
         active: true,
       });
 
       if (promoSearch.data.length === 0) {
-        console.error("❌ No such promotion code found:", promoCode);
         return res.status(400).json({ error: "Invalid promo code" });
       }
 
@@ -39,7 +37,7 @@ export default async function handler(
       payment_method_types: ["card"],
       line_items: [
         {
-          price: "price_1RNdETGdMiSRa4ERFhdqRguA", // ✅ Your recurring price ID
+          price: "price_1RNdETGdMiSRa4ERFhdqRguA", // Replace with your Stripe Price ID
           quantity: 1,
         },
       ],
@@ -48,9 +46,7 @@ export default async function handler(
       cancel_url: `${req.headers.origin}/cancel`,
     });
 
-    console.log("✅ Stripe Checkout Session Created:", session.url);
-    res.status(200).json({ url: session.url });
-
+    return res.status(200).json({ url: session.url });
   } catch (err: any) {
     console.error("❌ Stripe error:", err.message);
     res.status(500).json({ error: "Something went wrong." });

@@ -3,11 +3,10 @@ import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 
 interface Encouragement {
   id: string;
-  sender_id: string;
   message: string;
   created_at: string;
-  read: boolean;
-  profiles?: { nickname?: string };
+  read_at?: boolean;
+  sender_name?: string;
 }
 
 export function useEncouragements() {
@@ -26,9 +25,15 @@ export function useEncouragements() {
 
     const { data, error } = await supabase
       .from("direct_encouragements")
-      .select(
-        `id, sender_id, message, created_at, read, profiles:profiles!sender_id(nickname)`
-      )
+      .select(`
+        id,
+        message,
+        created_at,
+        read,
+        sender:sender_id (
+          nickname
+        )
+      `)
       .eq("recipient_id", user.id)
       .eq("read", false)
       .order("created_at", { ascending: false });
@@ -38,7 +43,15 @@ export function useEncouragements() {
       setError(error.message);
       setLoading(false);
     } else {
-      setEncouragements(data || []);
+      const formatted = (data || []).map((item: any) => ({
+        id: item.id,
+        message: item.message,
+        created_at: item.created_at,
+        read_at: item.read,
+        sender_name: item.sender?.nickname || "A friend",
+      }));
+
+      setEncouragements(formatted);
       setLoading(false);
     }
   };
@@ -61,7 +74,6 @@ export function useEncouragements() {
       }
     }
 
-    // Refetch updated state
     await fetchEncouragements();
   };
 

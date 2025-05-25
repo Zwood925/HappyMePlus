@@ -69,11 +69,19 @@ export default function LoginPage() {
             🚀 Log In
           </button>
         </form>
+
         {errorMsg && (
           <p className="mt-4 text-center text-red-500 font-semibold">
             {errorMsg}
           </p>
         )}
+
+        <p className="text-sm text-center mt-6">
+          New user?{" "}
+          <a href="/signup" className="text-purple-600 underline hover:text-purple-800">
+            Sign up here
+          </a>
+        </p>
       </div>
     </div>
   );

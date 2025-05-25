@@ -1,169 +1,224 @@
-  import { useEffect, useState } from "react";
-  import { withAuth } from "../../lib/withAuth";
-  import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-  import { v4 as uuidv4 } from "uuid";
-  import Link from "next/link";
+import { useEffect, useState } from "react";
+import { withAuth } from "../../lib/withAuth";
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { v4 as uuidv4 } from "uuid";
+import Link from "next/link";
 
-  function GroupsDashboard() {
-    const supabase = useSupabaseClient();
-    const user = useUser();
+function GroupsDashboard() {
+  const supabase = useSupabaseClient();
+  const user = useUser();
 
-    const [myGroups, setMyGroups] = useState<any[]>([]);
-    const [joinCode, setJoinCode] = useState("");
-    const [groupName, setGroupName] = useState("");
-    const [message, setMessage] = useState("");
+  const [myGroups, setMyGroups] = useState<any[]>([]);
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+  const [joinCode, setJoinCode] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [message, setMessage] = useState("");
 
-    useEffect(() => {
-      if (user) fetchMyGroups();
-    }, [user]);
+  useEffect(() => {
+    if (user) fetchMyGroups();
+  }, [user]);
 
-    const fetchMyGroups = async () => {
-      const { data: memberships, error: memberError } = await supabase
-        .from("group_members")
-        .select("group_id")
-        .eq("user_id", user?.id);
+  const fetchMyGroups = async () => {
+    const { data: memberships, error: memberError } = await supabase
+      .from("group_members")
+      .select("group_id")
+      .eq("user_id", user?.id);
 
-      console.log("🧪 fetched group_members for user", user?.id, memberships);
-      if (memberError) console.error("❌ fetch group_members error:", memberError);
+    if (memberError || !memberships || memberships.length === 0) {
+      setMyGroups([]);
+      return;
+    }
 
-      if (memberError || !memberships || memberships.length === 0) {
-        setMyGroups([]);
-        return;
-      }
+    const groupIds = memberships.map((m) => m.group_id);
 
-      const groupIds = memberships.map((m) => m.group_id);
+    const { data: groups, error: groupError } = await supabase
+      .from("groups")
+      .select("id, name, invite_code, created_by")
+      .in("id", groupIds)
+      .eq("archived", false);
 
-      const { data: groups, error: groupError } = await supabase
-        .from("groups")
-        .select("id, name, invite_code")
-        .in("id", groupIds);
+    if (groupError || !groups) {
+      setMyGroups([]);
+      return;
+    }
 
-      console.log("📦 fetched groups:", groups);
-      if (groupError) console.error("❌ fetch groups error:", groupError);
+    setMyGroups(groups);
 
-      if (groupError || !groups) {
-        setMyGroups([]);
-        return;
-      }
+    const { data: allMembers } = await supabase
+      .from("group_members")
+      .select("group_id");
 
-      setMyGroups(groups);
-    };
+    if (allMembers) {
+      const counts = allMembers.reduce((acc, cur) => {
+        acc[cur.group_id] = (acc[cur.group_id] || 0) + 1;
+        return acc;
+      }, {});
+      setMemberCounts(counts);
+    }
+  };
 
-    const handleJoin = async () => {
-      if (!joinCode.trim()) return;
+  const handleJoin = async () => {
+    if (!joinCode.trim()) return;
 
-      const { data: group, error: groupErr } = await supabase
-        .from("groups")
-        .select("id")
-        .eq("invite_code", joinCode.trim())
-        .single();
+    const { data: group, error: groupErr } = await supabase
+      .from("groups")
+      .select("id")
+      .eq("invite_code", joinCode.trim())
+      .single();
 
-      if (groupErr || !group) {
-        setMessage("Group not found.");
-        return;
-      }
+    if (groupErr || !group) {
+      setMessage("Group not found.");
+      return;
+    }
 
-      const { error: joinErr } = await supabase.from("group_members").insert({
-        user_id: user?.id,
-        group_id: group.id
-      });
+    const { error: joinErr } = await supabase.from("group_members").insert({
+      user_id: user?.id,
+      group_id: group.id,
+    });
 
-      if (joinErr) {
-        setMessage("You're already in this group.");
-      } else {
-        setMessage("Successfully joined the group!");
-        setJoinCode("");
-        fetchMyGroups();
-      }
-    };
-
-    const handleCreate = async () => {
-      if (!groupName.trim()) return;
-
-      const inviteCode = uuidv4().slice(0, 6).toUpperCase();
-
-      const { data: newGroup, error } = await supabase
-        .from("groups")
-        .insert({
-          name: groupName.trim(),
-          invite_code: inviteCode,
-          created_by: user?.id
-        })
-        .select()
-        .single();
-
-      if (error || !newGroup) {
-        setMessage("Failed to create group.");
-        return;
-      }
-
-      await supabase.from("group_members").insert({
-        user_id: user?.id,
-        group_id: newGroup.id
-      });
-
-      setGroupName("");
-      setMessage(`Group created! Share your invite code: ${inviteCode}`);
+    if (joinErr) {
+      setMessage("You're already in this group.");
+    } else {
+      setMessage("Successfully joined the group!");
+      setJoinCode("");
       fetchMyGroups();
-    };
+    }
+  };
 
-    return (
-      <div style={{ padding: "2rem" }}>
-        <h2>Your Groups</h2>
+  const handleCreate = async () => {
+    if (!groupName.trim()) return;
 
-        {myGroups.length === 0 ? (
-          <p>You’re not in any groups yet.</p>
-        ) : (
-          <ul style={{ marginBottom: "2rem" }}>
-            {myGroups.map((group) => (
-              <li key={group.id} style={{ marginTop: "0.75rem" }}>
-                <strong>{group.name}</strong> (Invite Code: {group.invite_code}) &nbsp;
-                <Link href={`/groups/${group.id}`}>
-                  <button style={{
-                    padding: "0.25rem 0.75rem",
-                    backgroundColor: "#3b82f6",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0.4rem",
-                    cursor: "pointer"
-                  }}>
-                    View Group Feed
-                  </button>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+    const inviteCode = uuidv4().slice(0, 6).toUpperCase();
 
-        <div style={{ marginBottom: "2rem" }}>
-          <h3>Join a Group</h3>
-          <input
-            type="text"
-            placeholder="Enter invite code"
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value)}
-            style={{ padding: "0.5rem", marginRight: "0.5rem" }}
-          />
-          <button onClick={handleJoin}>Join</button>
+    const { data: newGroup, error } = await supabase
+      .from("groups")
+      .insert({
+        name: groupName.trim(),
+        invite_code: inviteCode,
+        created_by: user?.id,
+        archived: false,
+      })
+      .select()
+      .single();
+
+    if (error || !newGroup) {
+      setMessage("Failed to create group.");
+      return;
+    }
+
+    await supabase.from("group_members").insert({
+      user_id: user?.id,
+      group_id: newGroup.id,
+    });
+
+    setGroupName("");
+    setMessage(`Group created! Share your invite code: ${inviteCode}`);
+    fetchMyGroups();
+  };
+
+  const handleDelete = async (groupId: string) => {
+    const confirmed = confirm("Are you sure you want to delete this group?");
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("groups")
+      .update({ archived: true })
+      .eq("id", groupId)
+      .eq("created_by", user?.id);
+
+    if (error) {
+      setMessage("Failed to delete group.");
+    } else {
+      setMessage("Group deleted.");
+      fetchMyGroups();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-green-50 p-6 text-base-content">
+      <h2 className="text-4xl font-extrabold mb-8 text-center text-green-800 drop-shadow">
+        Your Groups
+      </h2>
+
+      {myGroups.length === 0 ? (
+        <p className="text-center text-neutral-content mb-6">
+          You’re not in any groups yet.
+        </p>
+      ) : (
+        <div className="grid gap-6 mb-10 sm:grid-cols-2 md:grid-cols-3">
+          {myGroups.map((group) => (
+            <div
+              key={group.id}
+              className="card bg-white shadow-lg border border-green-200 transition-transform hover:scale-[1.02] hover:shadow-xl relative"
+            >
+              <div className="card-body">
+                <h3 className="card-title text-lg text-green-800">{group.name}</h3>
+                <p className="text-sm text-neutral-content">
+                  Invite Code: <span className="font-mono text-green-700">{group.invite_code}</span>
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  Members: {memberCounts[group.id] || 1}
+                </p>
+                <div className="card-actions justify-between items-center mt-4">
+                  <Link href={`/groups/${group.id}`}>
+                    <button className="btn btn-primary btn-sm">View Group Feed</button>
+                  </Link>
+                  {user?.id === group.created_by && (
+                    <button
+                      onClick={() => handleDelete(group.id)}
+                      className="btn btn-sm btn-outline btn-error"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="card bg-green-100 shadow-md border border-green-300">
+          <div className="card-body">
+            <h3 className="text-xl font-semibold mb-2 text-green-800">Join a Group</h3>
+            <input
+              type="text"
+              placeholder="Enter invite code"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              className="input input-bordered w-full mb-3"
+            />
+            <button className="btn btn-success w-full" onClick={handleJoin}>
+              Join
+            </button>
+          </div>
         </div>
 
-        <div>
-          <h3>Create a Group</h3>
-          <input
-            type="text"
-            placeholder="Group name"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            style={{ padding: "0.5rem", marginRight: "0.5rem" }}
-          />
-          <button onClick={handleCreate}>Create</button>
+        <div className="card bg-green-100 shadow-md border border-green-300">
+          <div className="card-body">
+            <h3 className="text-xl font-semibold mb-2 text-green-800">Create a Group</h3>
+            <input
+              type="text"
+              placeholder="Group name"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="input input-bordered w-full mb-3"
+            />
+            <button className="btn btn-secondary w-full" onClick={handleCreate}>
+              Create
+            </button>
+          </div>
         </div>
-
-        {message && (
-          <p style={{ marginTop: "1rem", color: "green" }}>{message}</p>
-        )}
       </div>
-    );
-  }
 
-  export default withAuth(GroupsDashboard);
+      {message && (
+        <div className="alert alert-info shadow-lg mt-6">
+          <span>{message}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default withAuth(GroupsDashboard);

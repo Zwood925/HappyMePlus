@@ -16,7 +16,6 @@ export default function SignupPage() {
     e.preventDefault();
     setErrorMsg("");
 
-    // 1. Sign up
     const { error: signUpError } = await supabase.auth.signUp({ email, password });
     if (signUpError) {
       console.error("Sign up failed:", signUpError);
@@ -24,7 +23,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 2. Log in after signup
     const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     if (loginError) {
       console.error("Login after signup failed:", loginError);
@@ -32,7 +30,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 3. Get session
     const {
       data: { session },
       error: sessionError,
@@ -44,7 +41,6 @@ export default function SignupPage() {
       return;
     }
 
-    // 4. Insert or update profile with fallback values
     const finalNickname = nickname.trim() || email.split("@")[0];
     const finalPromo = promoCode.trim() || "no_promo";
 
@@ -54,9 +50,9 @@ export default function SignupPage() {
         {
           id: session.user.id,
           nickname: finalNickname,
-          promo_code: finalPromo
-        }
-      ], { onConflict: 'id' });
+          promo_code: finalPromo,
+        },
+      ], { onConflict: "id" });
 
     if (upsertError) {
       console.error("Profile upsert failed:", upsertError);
@@ -64,18 +60,16 @@ export default function SignupPage() {
       return;
     }
 
-    // 5. Handle promo code logic
     if (finalPromo.toUpperCase() === "FREE4EVER") {
       router.push("/account-setup");
       return;
     }
 
-    // 6. Call API route to create Stripe session
     try {
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ promoCode: finalPromo })
+        body: JSON.stringify({ promoCode: finalPromo }),
       });
 
       const result = await response.json();
@@ -155,6 +149,13 @@ export default function SignupPage() {
 
           {errorMsg && <p className="text-red-600 mt-2 text-center">{errorMsg}</p>}
         </form>
+
+        <p className="text-sm text-center mt-6">
+          Already have an account?{" "}
+          <a href="/login" className="text-purple-600 underline hover:text-purple-800">
+            Log in here
+          </a>
+        </p>
       </div>
     </div>
   );

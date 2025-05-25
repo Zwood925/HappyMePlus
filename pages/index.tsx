@@ -17,7 +17,7 @@ export default function HomePage() {
   const user = useUser();
 
   const [input, setInput] = useState("");
-  const [myMoments, setMyMoments] = useState<string[]>([]);
+  const [myMoments, setMyMoments] = useState<{ id: number; content: string; created_at: string }[]>([]);
   const [encouragement, setEncouragement] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>("");
 
@@ -47,12 +47,12 @@ export default function HomePage() {
 
     const { data, error } = await supabase
       .from("happy_moments")
-      .select("content")
+      .select("id, content")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setMyMoments(data.map((row) => row.content));
+      setMyMoments(data);
     }
   };
 
@@ -322,7 +322,7 @@ export default function HomePage() {
                     <div className="mt-4 text-center">
                       <button
                         type="submit"
-                        className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-lg px-8 rounded-full"
+                        className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
                         disabled={!input.trim()}
                       >
                         Add Happy Moment
@@ -335,9 +335,6 @@ export default function HomePage() {
                   </p>
                 )}
 
-                {/* The original third section containing the "I Feel Good!" button is NOW GONE from here */}
-                {/* The button was moved into the first {user && (...)} block */}
-
         {user && myMoments.length === 0 && !input && (
           <div className="text-center p-6 bg-base-200 rounded-lg shadow">
             <p className="text-lg text-neutral-content">
@@ -346,6 +343,30 @@ export default function HomePage() {
           </div>
         )}
       </div>
+      {user && myMoments.length > 0 && (
+        <div className="card bg-base-200 shadow-xl p-6 mt-6">
+          <h3 className="text-2xl font-semibold mb-4 text-secondary">Your Recent Happy Moments</h3>
+          <ul className="space-y-4">
+            {myMoments.map((moment, index) => {
+              return (
+                <li
+                  key={`${moment.id}-${index}`}
+                  className="bg-pink-100 border-l-4 border-pink-500 shadow-md rounded-xl p-4 flex items-start gap-3 hover:shadow-lg transition"
+                >
+                  <span className="text-2xl">🌟</span>
+
+                  <p className="text-lg font-bold text-pink-800 leading-snug">
+                    {moment.content || "No Happy Moment Found!"}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+
+      </div>
+      )}
+
+
 
       {/* Party Time Overlay */}
       <AnimatePresence>

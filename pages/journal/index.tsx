@@ -142,15 +142,17 @@ export default function JournalPage() {
         </div>
 
         <div className="form-control">
-          <label className="label cursor-pointer">
-            <span className="label-text">Notify my group if this entry is sad or angry</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <span className="text-sm sm:text-base text-left break-words leading-snug">
+              Notify my group if this entry is sad or angry
+            </span>
             <input
               type="checkbox"
               className="toggle toggle-primary"
               checked={notifyGroups}
               onChange={() => setNotifyGroups(!notifyGroups)}
             />
-          </label>
+          </div>
         </div>
 
         <div className="text-center">

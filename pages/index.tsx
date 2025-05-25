@@ -243,15 +243,56 @@ export default function HomePage() {
           What’s making you happy today?
         </h1>
 
-        {user && (
+        {user && ( // This block starts exactly like the one you provided
+          // We will wrap the buttons and potentially the encouragement message here
+          // Reusing a div structure, adjusting content inside
+          // Kept mb-6 for spacing after this section, text-center from original div
           <div className="mb-6 text-center">
-            <button
-              onClick={handleFeelingDown}
-              className="btn btn-warning btn-lg shadow-md text-lg"
-            >
-              🫠 Feelin’ kinda down?
-            </button>
 
+            {/* Container for side-by-side buttons using Flexbox */}
+            {/* Added margin-bottom below the buttons before the encouragement message */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}> {/* Added flexWrap for smaller screens */}
+
+              {/* The "I Feel Good!" button (moved from its original separate block) */}
+              {/* Keeps its original className and onClick */}
+              <button
+                 onClick={handleHappyParty}
+                 className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
+                 disabled={isPartyTime}
+              >
+                <span className="mr-2 text-xl">🎉</span>
+                I Feel Good!
+                <span className="ml-2 text-xl">🥳</span>
+              </button>
+
+              {/* The "Feelin’ kinda down?" button (modified) */}
+              {/* Keeps its original onClick */}
+              <button
+                onClick={handleFeelingDown}
+                // Original className="btn btn-warning btn-lg shadow-md text-lg" is REMOVED
+                // to apply specific inline styles below for blue color and look
+                style={{
+                  backgroundColor: 'blue',      // Blue background
+                  color: 'white',             // White text
+                  border: 'none',               // No border
+                  padding: '10px 15px',         // Padding inside button
+                  borderRadius: '5px',          // Rounded corners
+                  cursor: 'pointer',            // Indicates it's clickable
+                  fontSize: '1.125rem',         // Approximate text-lg size
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', // Approximate shadow-md
+                  minHeight: '3rem',            // Approximate btn-lg height
+                  display: 'inline-flex',       // Use flex to center content (text + emoji)
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',                   // Space between text and emoji
+                  whiteSpace: 'nowrap',         // Prevent text wrapping
+                }}
+              >
+                feelin' kinda down 🌧️
+              </button>
+            </div> {/* End of the container holding buttons */}
+
+            {/* The encouragement message (kept here within the same user check block) */}
             {encouragement && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -262,62 +303,40 @@ export default function HomePage() {
               </motion.div>
             )}
           </div>
-        )}
+        )} {/* This block ends exactly like the first part of the one you provided */}
 
-        {user ? (
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
-          >
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              rows={4}
-              className="textarea textarea-bordered w-full text-lg"
-              placeholder="Share a small joy, a big win, or anything that made you smile…"
-            />
-            <div className="mt-4 text-center">
-              <button
-                type="submit"
-                className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-lg px-8 rounded-full"
-                disabled={!input.trim()}
-              >
-                Add Happy Moment
-              </button>
-            </div>
-          </form>
-        ) : (
-          <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-            Please <a href="/login" className="link link-primary">log in</a> to share your happy moments!
-          </p>
-        )}
 
-        {user && (
-          <div className="mb-8 text-center">
-            <button
-              onClick={handleHappyParty}
-              className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
-              disabled={isPartyTime}
-            >
-              <span className="mr-2 text-xl">🎉</span>
-              I Feel Good!
-              <span className="ml-2 text-xl">🥳</span>
-            </button>
-          </div>
-        )}
+                {/* This section containing the form or login message remains completely unchanged */}
+                {user ? (
+                  <form
+                    onSubmit={handleSubmit}
+                    className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
+                  >
+                    <textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      rows={4}
+                      className="textarea textarea-bordered w-full text-lg"
+                      placeholder="Share a small joy, a big win, or anything that made you smile…"
+                    />
+                    <div className="mt-4 text-center">
+                      <button
+                        type="submit"
+                        className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-lg px-8 rounded-full"
+                        disabled={!input.trim()}
+                      >
+                        Add Happy Moment
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
+                    Please <a href="/login" className="link link-primary">log in</a> to share your happy moments!
+                  </p>
+                )}
 
-        {user && myMoments.length > 0 && (
-          <div className="card bg-base-200 shadow-xl p-6">
-            <h3 className="text-2xl font-semibold mb-4 text-secondary">Your Recent Happy Moments</h3>
-            <ul className="space-y-3">
-              {myMoments.map((moment, index) => (
-                <li key={index} className="p-4 bg-base-100 rounded-lg shadow hover:shadow-md transition-shadow">
-                  <p className="text-base-content">{moment}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                {/* The original third section containing the "I Feel Good!" button is NOW GONE from here */}
+                {/* The button was moved into the first {user && (...)} block */}
 
         {user && myMoments.length === 0 && !input && (
           <div className="text-center p-6 bg-base-200 rounded-lg shadow">
@@ -401,8 +420,11 @@ export default function HomePage() {
                     {encouragements.map((enc) => (
                       <li key={enc.id} className={`p-3 rounded-lg shadow ${enc.read_at ? 'bg-base-200' : 'bg-primary/10 border border-primary'}`}>
                         <p className="font-semibold text-base-content">
-                          {enc.sender_name || "An anonymous friend"} sent you a boost:
+                          {enc.message
+                            ? enc.message
+                            : `${enc.sender_name || "An anonymous friend"} sent you a boost:`}
                         </p>
+
                         <p className="mt-1 text-base-content/80">{enc.content}</p>
                         <p className="text-xs text-right text-base-content/60 mt-2">
                           {new Date(enc.created_at).toLocaleString()}

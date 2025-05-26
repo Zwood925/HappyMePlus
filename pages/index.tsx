@@ -332,8 +332,12 @@ export default function HomePage() {
                   </form>
                 ) : (
                   <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-                    Please <Link href="/login" className="link link-primary">log in</Link> to share your happy moments!
-                  </p>
+  Please{" "}
+  <Link href="/login">
+    <span className="link link-primary">log in</span>
+  </Link>{" "}
+  to share your happy moments!
+</p>
                 )}
 
         {user && myMoments.length === 0 && !input && (

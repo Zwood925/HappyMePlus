@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useUser } from "../lib/auth";
 import { useRouter } from "next/router";
-import Layout from "../components/Layout";
+import Layout from "../components/layout";
 
 export default function EncouragementsPage() {
   const user = useUser();

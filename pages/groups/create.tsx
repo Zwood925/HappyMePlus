@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 import { useRouter } from "next/router";
-import Layout from "../components/Layout";
+import Layout from "../components/layout";
 import { withAuth } from "../lib/withAuth";
 
 function GroupCreate() {

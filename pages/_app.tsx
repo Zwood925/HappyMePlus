@@ -7,7 +7,7 @@ import {
   useSession,
 } from "@supabase/auth-helpers-react";
 import "../styles/globals.css";
-import Layout from "../components/Layout";
+import Layout from "../components/layout";
 import type { Router } from "next/router";
 
 type InnerAppProps = AppProps & { router: Router };

@@ -77,7 +77,7 @@ function GroupsDashboard() {
     });
 
     if (joinErr) {
-      setMessage("You're already in this group.");
+      setMessage("You&apos;re already in this group.");
     } else {
       setMessage("Successfully joined the group!");
       setJoinCode("");

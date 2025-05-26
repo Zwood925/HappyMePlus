@@ -58,7 +58,7 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
     }
 
     if (!messageToSend.trim()) {
-      setStatus("Message can't be empty.");
+      setStatus("Message can&apos;t be empty.");
       return;
     }
 

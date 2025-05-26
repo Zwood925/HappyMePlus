@@ -161,7 +161,7 @@ export default function HomePage() {
       "Party Time!",
       "Feeling Groovy!",
       "Happiness Activated!",
-      "Woohoo! It's a Good Day!",
+      "Woohoo! It&apos;s a Good Day!",
       "Joy Explosion!",
     ];
     setPartyPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
@@ -288,7 +288,7 @@ export default function HomePage() {
                   whiteSpace: 'nowrap',         // Prevent text wrapping
                 }}
               >
-                feelin' kinda down 🌧️
+                feelin kinda down 🌧️
               </button>
             </div> {/* End of the container holding buttons */}
 

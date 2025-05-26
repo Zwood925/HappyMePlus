@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRandomEncouragement } from '../../lib/getRandomEncouragement';
+import Link from "next/link";
+
 
 const prompts = [
   'What made you smile today?',
@@ -166,9 +168,9 @@ export default function JournalPage() {
         </div>
 
         <div className="text-center mt-4">
-          <a href="/journal/calendar" className="link link-primary text-sm underline">
+          <Link href="/journal/calendar" className="link link-primary text-sm underline">
             📅 View past entries
-          </a>
+          </Link>
         </div>
 
         {message && (

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
+import Link from "next/link";
+
 
 export default function SignupPage() {
   const supabase = useSupabaseClient();
@@ -152,9 +154,9 @@ export default function SignupPage() {
 
         <p className="text-sm text-center mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-purple-600 underline hover:text-purple-800">
+          <Link href="/login" className="text-purple-600 underline hover:text-purple-800">
             Log in here
-          </a>
+          </Link>
         </p>
       </div>
     </div>

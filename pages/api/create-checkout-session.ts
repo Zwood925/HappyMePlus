@@ -18,7 +18,6 @@ export default async function handler(
     const { promoCode } = req.body;
     let discounts = [];
 
-    // ✅ Only apply a discount if it's a real promo code
     if (promoCode && promoCode.toLowerCase() !== "no_promo") {
       const promoSearch = await stripe.promotionCodes.list({
         code: promoCode,

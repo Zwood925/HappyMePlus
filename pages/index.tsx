@@ -331,13 +331,22 @@ export default function HomePage() {
                     </div>
                   </form>
                 ) : (
-                  <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-  Please{" "}
-  <Link href="/login">
-    <span className="link link-primary">log in</span>
-  </Link>{" "}
-  to share your happy moments!
-</p>
+
+                  <><p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
+                          Please{" "}
+                          <Link href="/login">
+                              <span className="link link-primary">log in</span>
+                          </Link>{" "}
+                          to share your happy moments!
+                      </p><p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
+                              Please{" "}
+                              <Link href="/login">
+                                  <span className="link link-primary">log in</span>
+                              </Link>{" "}
+                              to share your happy moments!
+                          </p></>
+                      )}
+>>>>>>> b014173 (DOwnloaded Micro, should help with deployment issues.....)
                 )}
 
         {user && myMoments.length === 0 && !input && (

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useSessionContext } from "@supabase/auth-helpers-react";
+import Link from "next/link"; // ✅ NEW
 
 export default function LoginPage() {
   const supabase = useSupabaseClient();
@@ -78,9 +79,9 @@ export default function LoginPage() {
 
         <p className="text-sm text-center mt-6">
           New user?{" "}
-          <a href="/signup" className="text-purple-600 underline hover:text-purple-800">
+          <Link href="/signup" className="text-purple-600 underline hover:text-purple-800">
             Sign up here
-          </a>
+          </Link>
         </p>
       </div>
     </div>

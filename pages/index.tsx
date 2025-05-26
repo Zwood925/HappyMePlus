@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useEncouragements } from "../lib/useEncouragements";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const bubbleColors = [
   "bg-cyan-200",
@@ -331,7 +332,7 @@ export default function HomePage() {
                   </form>
                 ) : (
                   <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-                    Please <a href="/login" className="link link-primary">log in</a> to share your happy moments!
+                    Please <Link href="/login" className="link link-primary">log in</Link> to share your happy moments!
                   </p>
                 )}
 

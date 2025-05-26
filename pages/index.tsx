@@ -216,271 +216,245 @@ export default function HomePage() {
       />
     );
   });
+  
+      return (
+        <>
+          <div className="relative min-h-screen overflow-hidden bg-cyan-50 text-purple-700 px-4 py-8">
+            {/* Bubbles */}
+            <div className="absolute inset-0 z-0 overflow-hidden">{floatingBubbles}</div>
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-cyan-50 text-purple-700 px-4 py-8">
-      {/* Bubbles */}
-      <div className="absolute inset-0 z-0 overflow-hidden">{floatingBubbles}</div>
-
-      {/* Encouragements Bell */}
-      {user && (
-        <div
-          className="fixed top-20 right-4 md:right-6 cursor-pointer z-[1000] indicator"
-          onClick={toggleInbox}
-        >
-          {unreadCount > 0 && (
-            <span className="indicator-item badge badge-secondary badge-sm animate-pulse">
-              {unreadCount}
-            </span>
-          )}
-          <div className="p-2 bg-base-200 rounded-full shadow-md hover:bg-base-300 transition-colors">
-            <span className="text-3xl">🔔</span>
-          </div>
-        </div>
-      )}
-
-      <div className="relative z-10">
-        <h1 className="text-5xl font-extrabold text-center mb-8 drop-shadow">
-          What’s making you happy today?
-        </h1>
-
-        {user && ( // This block starts exactly like the one you provided
-          // We will wrap the buttons and potentially the encouragement message here
-          // Reusing a div structure, adjusting content inside
-          // Kept mb-6 for spacing after this section, text-center from original div
-          <div className="mb-6 text-center">
-
-            {/* Container for side-by-side buttons using Flexbox */}
-            {/* Added margin-bottom below the buttons before the encouragement message */}
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}> {/* Added flexWrap for smaller screens */}
-
-              {/* The "I Feel Good!" button (moved from its original separate block) */}
-              {/* Keeps its original className and onClick */}
-              <button
-                 onClick={handleHappyParty}
-                 className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
-                 disabled={isPartyTime}
+            {/* Encouragements Bell */}
+            {user && (
+              <div
+                className="fixed top-20 right-4 md:right-6 cursor-pointer z-[1000] indicator"
+                onClick={toggleInbox}
               >
-                <span className="mr-2 text-xl">🎉</span>
-                I Feel Good!
-                <span className="ml-2 text-xl">🥳</span>
-              </button>
-
-              {/* The "Feelin’ kinda down?" button (modified) */}
-              {/* Keeps its original onClick */}
-              <button
-                onClick={handleFeelingDown}
-                // Original className="btn btn-warning btn-lg shadow-md text-lg" is REMOVED
-                // to apply specific inline styles below for blue color and look
-                style={{
-                  backgroundColor: 'blue',      // Blue background
-                  color: 'white',             // White text
-                  border: 'none',               // No border
-                  padding: '10px 15px',         // Padding inside button
-                  borderRadius: '5px',          // Rounded corners
-                  cursor: 'pointer',            // Indicates it's clickable
-                  fontSize: '1.125rem',         // Approximate text-lg size
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', // Approximate shadow-md
-                  minHeight: '3rem',            // Approximate btn-lg height
-                  display: 'inline-flex',       // Use flex to center content (text + emoji)
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '8px',                   // Space between text and emoji
-                  whiteSpace: 'nowrap',         // Prevent text wrapping
-                }}
-              >
-                feelin kinda down 🌧️
-              </button>
-            </div> {/* End of the container holding buttons */}
-
-            {/* The encouragement message (kept here within the same user check block) */}
-            {encouragement && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-4 rounded-lg bg-blue-100 text-blue-900 shadow-md max-w-xl mx-auto"
-              >
-                ✨ {encouragement} ✨
-              </motion.div>
-            )}
-          </div>
-        )} {/* This block ends exactly like the first part of the one you provided */}
-
-
-                {/* This section containing the form or login message remains completely unchanged */}
-                {user ? (
-                  <form
-                    onSubmit={handleSubmit}
-                    className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
-                  >
-                    <textarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      rows={4}
-                      className="textarea textarea-bordered w-full text-lg"
-                      placeholder="Share a small joy, a big win, or anything that made you smile…"
-                    />
-                    <div className="mt-4 text-center">
-                      <button
-                        type="submit"
-                        className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
-                        disabled={!input.trim()}
-                      >
-                        Add Happy Moment
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-
-                  <><p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-                          Please{" "}
-                          <Link href="/login">
-                              <span className="link link-primary">log in</span>
-                          </Link>{" "}
-                          to share your happy moments!
-                      </p><p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
-                              Please{" "}
-                              <Link href="/login">
-                                  <span className="link link-primary">log in</span>
-                              </Link>{" "}
-                              to share your happy moments!
-                          </p></>
-                      )}
->>>>>>> b014173 (DOwnloaded Micro, should help with deployment issues.....)
+                {unreadCount > 0 && (
+                  <span className="indicator-item badge badge-secondary badge-sm animate-pulse">
+                    {unreadCount}
+                  </span>
                 )}
-
-        {user && myMoments.length === 0 && !input && (
-          <div className="text-center p-6 bg-base-200 rounded-lg shadow">
-            <p className="text-lg text-neutral-content">
-              No happy moments recorded yet. Why not add one now?
-            </p>
-          </div>
-        )}
-      </div>
-      {user && myMoments.length > 0 && (
-        <div className="card bg-base-200 shadow-xl p-6 mt-6">
-          <h3 className="text-2xl font-semibold mb-4 text-secondary">Your Recent Happy Moments</h3>
-          <ul className="space-y-4">
-            {myMoments.map((moment, index) => {
-              return (
-                <li
-                  key={`${moment.id}-${index}`}
-                  className="bg-pink-100 border-l-4 border-pink-500 shadow-md rounded-xl p-4 flex items-start gap-3 hover:shadow-lg transition"
-                >
-                  <span className="text-2xl">🌟</span>
-
-                  <p className="text-lg font-bold text-pink-800 leading-snug">
-                    {moment.content || "No Happy Moment Found!"}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
-
-      </div>
-      )}
-
-
-
-      {/* Party Time Overlay */}
-      <AnimatePresence>
-        {isPartyTime && (
-          <motion.div
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-0 z-[9999] pointer-events-none flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm"
-          >
-            <motion.p
-              initial={{ y: -50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
-              className="text-4xl md:text-5xl font-bold mb-6 text-white drop-shadow-lg px-4 text-center"
-            >
-              {partyPhrase}
-            </motion.p>
-            <div className="text-4xl md:text-5xl flex flex-wrap justify-center max-w-sm">
-              {emojis.map((emoji, index) => (
-                <motion.span
-                  key={index}
-                  custom={index}
-                  variants={emojiVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="inline-block m-1"
-                >
-                  {emoji}
-                </motion.span>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Inbox Modal */}
-      <AnimatePresence>
-        {inboxOpen && user && (
-          <motion.div
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1001] flex items-center justify-center p-4"
-            onClick={toggleInbox}
-          >
-            <motion.div
-              className="card w-full max-w-lg bg-base-100 shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-              variants={modalVariants}
-            >
-              <div className="card-body">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="card-title text-xl text-primary">Your Encouragements</h3>
-                  <button className="btn btn-sm btn-circle btn-ghost" onClick={toggleInbox}>✕</button>
+                <div className="p-2 bg-base-200 rounded-full shadow-md hover:bg-base-300 transition-colors">
+                  <span className="text-3xl">🔔</span>
                 </div>
+              </div>
+            )}
 
-                {encouragementsLoading && (
-                  <div className="flex justify-center my-8">
-                    <span className="loading loading-lg loading-spinner text-primary"></span>
+            <div className="relative z-10">
+              <h1 className="text-5xl font-extrabold text-center mb-8 drop-shadow">
+                What’s making you happy today?
+              </h1>
+
+              {user && (
+                <div className="mb-6 text-center">
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleHappyParty}
+                      className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
+                      disabled={isPartyTime}
+                    >
+                      <span className="mr-2 text-xl">🎉</span>
+                      I Feel Good!
+                      <span className="ml-2 text-xl">🥳</span>
+                    </button>
+
+                    <button
+                      onClick={handleFeelingDown}
+                      style={{
+                        backgroundColor: 'blue',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 15px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '1.125rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        minHeight: '3rem',
+                        display: 'inline-flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '8px',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      feelin kinda down 🌧️
+                    </button>
                   </div>
-                )}
 
-                {!encouragementsLoading && encouragements.length === 0 && (
-                  <p className="text-center text-neutral-content py-4">You have no new encouragements right now. Keep shining!</p>
-                )}
+                  {encouragement && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-4 rounded-lg bg-blue-100 text-blue-900 shadow-md max-w-xl mx-auto"
+                    >
+                      ✨ {encouragement} ✨
+                    </motion.div>
+                  )}
+                </div>
+              )}
 
-                {!encouragementsLoading && encouragements.length > 0 && (
-                  <ul className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                    {encouragements.map((enc) => (
-                      <li key={enc.id} className={`p-3 rounded-lg shadow ${enc.read_at ? 'bg-base-200' : 'bg-primary/10 border border-primary'}`}>
-                        <p className="font-semibold text-base-content">
-                          {enc.message
-                            ? enc.message
-                            : `${enc.sender_name || "An anonymous friend"} sent you a boost:`}
-                        </p>
+              {user ? (
+                <form
+                  onSubmit={handleSubmit}
+                  className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
+                >
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    rows={4}
+                    className="textarea textarea-bordered w-full text-lg"
+                    placeholder="Share a small joy, a big win, or anything that made you smile…"
+                  />
+                  <div className="mt-4 text-center">
+                    <button
+                      type="submit"
+                      className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
+                      disabled={!input.trim()}
+                    >
+                      Add Happy Moment
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
+                  Please{" "}
+                  <Link href="/login">
+                    <span className="link link-primary">log in</span>
+                  </Link>{" "}
+                  to share your happy moments!
+                </p>
+              )}
 
-                        <p className="mt-1 text-base-content/80">{enc.content}</p>
-                        <p className="text-xs text-right text-base-content/60 mt-2">
-                          {new Date(enc.created_at).toLocaleString()}
+              {user && myMoments.length === 0 && !input && (
+                <div className="text-center p-6 bg-base-200 rounded-lg shadow">
+                  <p className="text-lg text-neutral-content">
+                    No happy moments recorded yet. Why not add one now?
+                  </p>
+                </div>
+              )}
+
+              {user && myMoments.length > 0 && (
+                <div className="card bg-base-200 shadow-xl p-6 mt-6">
+                  <h3 className="text-2xl font-semibold mb-4 text-secondary">
+                    Your Recent Happy Moments
+                  </h3>
+                  <ul className="space-y-4">
+                    {myMoments.map((moment, index) => (
+                      <li
+                        key={`${moment.id}-${index}`}
+                        className="bg-pink-100 border-l-4 border-pink-500 shadow-md rounded-xl p-4 flex items-start gap-3 hover:shadow-lg transition"
+                      >
+                        <span className="text-2xl">🌟</span>
+                        <p className="text-lg font-bold text-pink-800 leading-snug">
+                          {moment.content || "No Happy Moment Found!"}
                         </p>
                       </li>
                     ))}
                   </ul>
-                )}
+                </div>
+              )}
 
-                {unreadCount > 0 && !encouragementsLoading && (
-                  <div className="card-actions justify-end mt-6">
-                    <button className="btn btn-primary btn-sm" onClick={() => markAllAsRead()}>
-                      Mark all as read
-                    </button>
-                  </div>
+              {/* Party Time Overlay */}
+              <AnimatePresence>
+                {isPartyTime && (
+                  <motion.div
+                    variants={modalVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="fixed inset-0 z-[9999] pointer-events-none flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm"
+                  >
+                    <motion.p
+                      initial={{ y: -50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
+                      className="text-4xl md:text-5xl font-bold mb-6 text-white drop-shadow-lg px-4 text-center"
+                    >
+                      {partyPhrase}
+                    </motion.p>
+                    <div className="text-4xl md:text-5xl flex flex-wrap justify-center max-w-sm">
+                      {emojis.map((emoji, index) => (
+                        <motion.span
+                          key={index}
+                          custom={index}
+                          variants={emojiVariants}
+                          initial="hidden"
+                          animate="visible"
+                          className="inline-block m-1"
+                        >
+                          {emoji}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+              </AnimatePresence>
+
+              {/* Inbox Modal */}
+              <AnimatePresence>
+                {inboxOpen && user && (
+                  <motion.div
+                    variants={modalVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1001] flex items-center justify-center p-4"
+                    onClick={toggleInbox}
+                  >
+                    <motion.div
+                      className="card w-full max-w-lg bg-base-100 shadow-xl"
+                      onClick={(e) => e.stopPropagation()}
+                      variants={modalVariants}
+                    >
+                      <div className="card-body">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="card-title text-xl text-primary">Your Encouragements</h3>
+                          <button className="btn btn-sm btn-circle btn-ghost" onClick={toggleInbox}>✕</button>
+                        </div>
+
+                        {encouragementsLoading && (
+                          <div className="flex justify-center my-8">
+                            <span className="loading loading-lg loading-spinner text-primary"></span>
+                          </div>
+                        )}
+
+                        {!encouragementsLoading && encouragements.length === 0 && (
+                          <p className="text-center text-neutral-content py-4">You have no new encouragements right now. Keep shining!</p>
+                        )}
+
+                        {!encouragementsLoading && encouragements.length > 0 && (
+                          <ul className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                            {encouragements.map((enc) => (
+                              <li key={enc.id} className={`p-3 rounded-lg shadow ${enc.read_at ? 'bg-base-200' : 'bg-primary/10 border border-primary'}`}>
+                                <p className="font-semibold text-base-content">
+                                  {enc.message
+                                    ? enc.message
+                                    : `${enc.sender_name || "An anonymous friend"} sent you a boost:`}
+                                </p>
+
+                                <p className="mt-1 text-base-content/80">{enc.content}</p>
+                                <p className="text-xs text-right text-base-content/60 mt-2">
+                                  {new Date(enc.created_at).toLocaleString()}
+                                </p>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {unreadCount > 0 && !encouragementsLoading && (
+                          <div className="card-actions justify-end mt-6">
+                            <button className="btn btn-primary btn-sm" onClick={() => markAllAsRead()}>
+                              Mark all as read
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </>
+      );
 }

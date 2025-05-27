@@ -1,8 +1,29 @@
 import type { NextConfig } from "next";
 import { env } from "process";
 
-const nextConfig: NextConfig = {
-  allowedDevOrigins: [(env.REPLIT_DOMAINS || "").split(",")[0]],
-};
+const withTM = require("next-transpile-modules")([
+  "framer-motion",
+]); // pass the modules you would like to see transpiled
 
-export default nextConfig;
+/** @type {import('next').NextConfig} */
+const nextConfig: NextConfig = withTM({
+  reactStrictMode: true,
+  allowedDevOrigins: [(env.REPLIT_DOMAINS || "").split(",")[0]],
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        fs: false,
+        module: false,
+      };
+    }
+    config.module.rules.push({
+      test: /\.mjs$/,
+      include: /node_modules/,
+      type: "javascript/auto",
+    });
+
+    return config;
+  },
+});
+
+module.exports = nextConfig;

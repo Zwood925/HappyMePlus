@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
-import Layout from "../components/layout";
-import { withAuth } from "../lib/withAuth";
+import Layout from "@/components/layout";
+import { withAuth } from "@/lib/withAuth";
 
 function GroupJoin() {
   const supabase = useSupabaseClient();

@@ -63,7 +63,7 @@ export default function SignupPage() {
     }
 
     if (finalPromo.toUpperCase() === "FREE4EVER") {
-      router.push("/account-setup");
+      router.push("/");
       return;
     }
 

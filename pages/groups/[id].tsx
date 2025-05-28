@@ -3,12 +3,8 @@ import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useEffect, useState } from "react";
 import { withAuth } from "../../lib/withAuth";
 import SendEncouragementModal from "../../components/SendEncouragementModal";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 import React from "react";
-
-const MotionDiv = motion.div;
-const MotionUL: React.FC<HTMLMotionProps<"ul">> = motion.ul;
-const MotionLI: React.FC<HTMLMotionProps<"li">> = motion.li;
 
 function GroupFeedPage() {
   const router = useRouter();
@@ -86,7 +82,7 @@ function GroupFeedPage() {
 
   return (
     <div className="min-h-screen bg-green-50 p-6 text-base-content">
-      <MotionDiv
+      <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -96,7 +92,7 @@ function GroupFeedPage() {
           Group Feed
         </h2>
         <p className="text-lg font-semibold text-green-600">{group?.name}</p>
-      </MotionDiv>
+      </motion.div>
 
       {loading ? (
         <div className="flex justify-center items-center text-lg text-neutral-content">
@@ -107,14 +103,14 @@ function GroupFeedPage() {
           No happy moments yet in this group.
         </div>
       ) : (
-        <MotionUL
+        <motion.ul
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
           {moments.map((moment) => (
-            <MotionLI
+            <motion.li
               key={moment.id}
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
@@ -134,9 +130,9 @@ function GroupFeedPage() {
                   {new Date(moment.created_at).toLocaleString()}
                 </p>
               </div>
-            </MotionLI>
+            </motion.li>
           ))}
-        </MotionUL>
+        </motion.ul>
       )}
 
       <div className="mt-10 flex justify-center">

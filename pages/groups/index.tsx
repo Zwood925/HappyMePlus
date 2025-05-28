@@ -14,8 +14,14 @@ function GroupsDashboard() {
   const [groupName, setGroupName] = useState("");
   const [message, setMessage] = useState("");
 
+  console.log("Rendering GroupsDashboard...");
+  console.log("User:", user);
+
   useEffect(() => {
-    if (user) fetchMyGroups();
+    if (user?.id) {
+      console.log("Fetching groups for user:", user.id);
+      fetchMyGroups();
+    }
   }, [user]);
 
   const fetchMyGroups = async () => {
@@ -24,8 +30,12 @@ function GroupsDashboard() {
       .select("group_id")
       .eq("user_id", user?.id);
 
-    if (memberError || !memberships || memberships.length === 0) {
+    console.log("Memberships:", memberships);
+    if (memberError) console.error("Membership fetch error:", memberError);
+
+    if (!memberships || memberships.length === 0) {
       setMyGroups([]);
+      console.log("No memberships found.");
       return;
     }
 
@@ -37,22 +47,23 @@ function GroupsDashboard() {
       .in("id", groupIds)
       .eq("archived", false);
 
-    if (groupError || !groups) {
-      setMyGroups([]);
-      return;
-    }
+    if (groupError) console.error("Group fetch error:", groupError);
 
-    setMyGroups(groups);
+    console.log("Fetched groups:", groups);
+    setMyGroups(groups || []);
 
     const { data: allMembers } = await supabase
       .from("group_members")
       .select("group_id");
 
     if (allMembers) {
-      const counts = allMembers.reduce((acc, cur) => {
-        acc[cur.group_id] = (acc[cur.group_id] || 0) + 1;
-        return acc;
-      }, {});
+      const counts = allMembers.reduce(
+        (acc: Record<string, number>, cur: { group_id: string }) => {
+          acc[cur.group_id] = (acc[cur.group_id] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
       setMemberCounts(counts);
     }
   };
@@ -77,7 +88,7 @@ function GroupsDashboard() {
     });
 
     if (joinErr) {
-      setMessage("You&apos;re already in this group.");
+      setMessage("You’re already in this group.");
     } else {
       setMessage("Successfully joined the group!");
       setJoinCode("");
@@ -140,44 +151,50 @@ function GroupsDashboard() {
         Your Groups
       </h2>
 
+
       {myGroups.length === 0 ? (
         <p className="text-center text-neutral-content mb-6">
           You’re not in any groups yet.
         </p>
       ) : (
         <div className="grid gap-6 mb-10 sm:grid-cols-2 md:grid-cols-3">
-          {myGroups.map((group) => (
-            <div
-              key={group.id}
-              className="card bg-white shadow-lg border border-green-200 transition-transform hover:scale-[1.02] hover:shadow-xl relative"
-            >
-              <div className="card-body">
-                <h3 className="card-title text-lg text-green-800">{group.name}</h3>
-                <p className="text-sm text-neutral-content">
-                  Invite Code: <span className="font-mono text-green-700">{group.invite_code}</span>
-                </p>
-                <p className="text-sm text-green-600 mt-1">
-                  Members: {memberCounts[group.id] || 1}
-                </p>
-                <div className="card-actions justify-between items-center mt-4">
-                  <Link href={`/groups/${group.id}`}>
-                    <button className="btn btn-primary btn-sm">View Group Feed</button>
-                  </Link>
-                  {user?.id === group.created_by && (
-                    <button
-                      onClick={() => handleDelete(group.id)}
-                      className="btn btn-sm btn-outline btn-error"
-                    >
-                      🗑️
-                    </button>
-                  )}
+          {myGroups.map((group) => {
+            console.log("Rendering group card:", group);
+            return (
+              <div
+                key={group.id}
+                className="card bg-white shadow-lg border border-green-200 transition-transform hover:scale-[1.02] hover:shadow-xl relative"
+              >
+                <div className="card-body">
+                  <h3 className="card-title text-lg text-green-800">{group.name}</h3>
+                  <p className="text-sm text-neutral-content">
+                    Invite Code:{" "}
+                    <span className="font-mono text-green-700">{group.invite_code}</span>
+                  </p>
+                  <p className="text-sm text-green-600 mt-1">
+                    Members: {memberCounts[group.id] || 1}
+                  </p>
+                  <div className="card-actions justify-between items-center mt-4">
+                    <Link href={`/groups/${group.id}`}>
+                      <button className="btn btn-primary btn-sm">View Group Feed</button>
+                    </Link>
+                    {user?.id === group.created_by && (
+                      <button
+                        onClick={() => handleDelete(group.id)}
+                        className="btn btn-sm btn-outline btn-error"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
+      {/* Join/Create group UI */}
       <div className="grid gap-8 md:grid-cols-2">
         <div className="card bg-green-100 shadow-md border border-green-300">
           <div className="card-body">

@@ -1,26 +1,23 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "es2020",                     // ✅ bump to ES2020 (modern default)
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "noEmit": true,
+    "incremental": true,
+    "skipLibCheck": true,                   // ✅ this is your lifesaver
+    "strict": true,                         // ✅ turn back on for better inference
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false,
-    "noEmit": true,
-    "incremental": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "target": "ES2017"
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "next-env.d.ts",
@@ -28,7 +25,5 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

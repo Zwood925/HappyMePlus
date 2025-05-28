@@ -9,7 +9,7 @@ const withTM = require("next-transpile-modules")([
 const nextConfig: NextConfig = withTM({
   reactStrictMode: true,
   allowedDevOrigins: [(env.REPLIT_DOMAINS || "").split(",")[0]],
-  webpack: (config, { isServer }) => {
+    webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (!isServer) {
       config.resolve.fallback = {
         fs: false,

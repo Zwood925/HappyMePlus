@@ -48,7 +48,7 @@ export default function HomePage() {
 
     const { data, error } = await supabase
       .from("happy_moments")
-      .select("id, content")
+      .select("id, content, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -432,7 +432,7 @@ export default function HomePage() {
                                     : `${enc.sender_name || "An anonymous friend"} sent you a boost:`}
                                 </p>
 
-                                <p className="mt-1 text-base-content/80">{enc.content}</p>
+                                <p className="mt-1 text-base-content/80">{enc.message}</p>
                                 <p className="text-xs text-right text-base-content/60 mt-2">
                                   {new Date(enc.created_at).toLocaleString()}
                                 </p>

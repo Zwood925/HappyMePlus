@@ -56,12 +56,12 @@ function GroupJoin() {
       return;
     }
 
-    // Attempt to insert into group_members table
+    // ✅ Fix: Use a string for onConflict, not a string[]
     const { error: memberError } = await supabase
       .from("group_members")
       .upsert(
         [{ user_id: user.id, group_id: groupId }],
-        { onConflict: ['user_id', 'group_id'] }
+        { onConflict: "user_id,group_id" }
       );
 
     if (memberError) {

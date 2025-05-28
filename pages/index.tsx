@@ -250,13 +250,14 @@ export default function HomePage() {
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
                     <button
                       onClick={handleHappyParty}
-                      className="btn btn-accent btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform"
+                      className="btn btn-accent w-full sm:btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform whitespace-normal text-center"
                       disabled={isPartyTime}
                     >
                       <span className="mr-2 text-xl">🎉</span>
                       I Feel Good!
                       <span className="ml-2 text-xl">🥳</span>
                     </button>
+
 
                     <button
                       onClick={handleFeelingDown}

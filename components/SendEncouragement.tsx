@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 
 interface Props {
   groupId: string;
 }
 
 export default function SendEncouragement({ groupId }: Props) {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
 
   const [members, setMembers] = useState<any[]>([]);
   const [recipientId, setRecipientId] = useState("");
@@ -17,43 +16,47 @@ export default function SendEncouragement({ groupId }: Props) {
   useEffect(() => {
     if (!groupId || !user) return;
 
-    const fetchMembers = async () => {
-      const { data, error } = await supabase
-        .from("group_members")
-        .select("user_id, profiles(username)")
-        .eq("group_id", groupId)
-        .neq("user_id", user.id);
+    // TODO: Replace with Firebase Firestore queries
+    // const fetchMembers = async () => {
+    //   const { data, error } = await supabase
+    //     .from("group_members")
+    //     .select("user_id, profiles(username)")
+    //     .eq("group_id", groupId)
+    //     .neq("user_id", user.id);
 
-      if (error) {
-        console.error("Error fetching members:", error);
-      } else {
-        setMembers(data);
-      }
-    };
+    //   if (error) {
+    //     console.error("Error fetching members:", error);
+    //   } else {
+    //     setMembers(data);
+    //   }
+    // };
 
-    fetchMembers();
+    // fetchMembers();
   }, [groupId, user]);
 
   const sendEncouragement = async () => {
     if (!recipientId || !message) return;
 
-    const { error } = await supabase.from("direct_encouragements").insert([
-      {
-        sender_id: user?.id,
-        recipient_id: recipientId,
-        group_id: groupId,
-        message,
-      },
-    ]);
+    // TODO: Replace with Firebase Firestore queries
+    // const { error } = await supabase.from("direct_encouragements").insert([
+    //   {
+    //     sender_id: user?.id,
+    //     recipient_id: recipientId,
+    //     group_id: groupId,
+    //     message,
+    //   },
+    // ]);
 
-    if (error) {
-      console.error("Send error:", error);
-      setStatus("Failed to send 😢");
-    } else {
-      setStatus("Encouragement sent! ✅");
-      setMessage("");
-      setRecipientId("");
-    }
+    // if (error) {
+    //   console.error("Send error:", error);
+    //   setStatus("Failed to send 😢");
+    // } else {
+    //   setStatus("Encouragement sent! ✅");
+    //   setMessage("");
+    //   setRecipientId("");
+    // }
+    
+    setStatus("Feature coming soon! 🚧");
   };
 
   return (

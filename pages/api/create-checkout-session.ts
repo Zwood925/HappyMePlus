@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
+import { config } from "../../lib/config";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(config.stripe.secretKey, {
   apiVersion: "2025-04-30.basil",
 });
 
@@ -37,7 +38,7 @@ const session = await stripe.checkout.sessions.create({
   payment_method_types: ["card"],
   line_items: [
     {
-      price: "price_1RTTnrKBklPdPPorQugV6RWU", // ✅ Your live price ID
+      price: config.stripe.priceId,
       quantity: 1,
     },
   ],

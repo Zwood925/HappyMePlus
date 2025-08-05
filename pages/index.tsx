@@ -1,9 +1,12 @@
 // HomePage with full visuals and original logic from index.tsx
 import { useEffect, useState } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import { useEncouragements } from "../lib/useEncouragements";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+// import { useEncouragements } from "../hooks/useEncouragements";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import VideoCelebration from "../components/VideoCelebration";
+import SmileyButton from "../components/SmileyButton";
+import SadFaceButton from "../components/SadFaceButton";
 
 const bubbleColors = [
   "bg-cyan-200",
@@ -14,24 +17,28 @@ const bubbleColors = [
 ];
 
 export default function HomePage() {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
 
   const [input, setInput] = useState("");
   const [myMoments, setMyMoments] = useState<{ id: number; content: string; created_at: string }[]>([]);
   const [encouragement, setEncouragement] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>("");
 
-  const {
-    encouragements,
-    unreadCount,
-    loading: encouragementsLoading,
-    markAllAsRead,
-  } = useEncouragements();
+  // TODO: Replace with Firebase-based encouragements hook
+  // const {
+  //   encouragements,
+  //   unreadCount,
+  //   loading: encouragementsLoading,
+  //   markAllAsRead,
+  // } = useEncouragements();
+  
+  // Temporary placeholder values
+  const encouragements: any[] = [];
+  const unreadCount = 0;
+  const encouragementsLoading = false;
+  const markAllAsRead = () => {};
   const [inboxOpen, setInboxOpen] = useState(false);
-  const [isPartyTime, setIsPartyTime] = useState(false);
-  const [emojis, setEmojis] = useState<string[]>([]);
-  const [partyPhrase, setPartyPhrase] = useState("");
+  const [showVideoCelebration, setShowVideoCelebration] = useState(false);
 
   const toggleInbox = () => {
     setInboxOpen((prev) => {
@@ -46,24 +53,26 @@ export default function HomePage() {
   const fetchMoments = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from("happy_moments")
-      .select("id, content, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    // TODO: Replace with Firebase Firestore queries
+    // const { data, error } = await supabase
+    //   .from("happy_moments")
+    //   .select("id, content, created_at")
+    //   .eq("user_id", user.id)
+    //   .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setMyMoments(data);
-    }
+    // if (!error && data) {
+    //   setMyMoments(data);
+    // }
   };
 
   const fetchNickname = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("nickname")
-      .eq("id", user?.id)
-      .single();
-    if (data?.nickname) setNickname(data.nickname);
+    // TODO: Replace with Firebase Firestore queries
+    // const { data, error } = await supabase
+    //   .from("profiles")
+    //   .select("nickname")
+    //   .eq("id", user?.id)
+    //   .single();
+    // if (data?.nickname) setNickname(data.nickname);
   };
 
   useEffect(() => {
@@ -76,126 +85,96 @@ export default function HomePage() {
   }, [user]);
 
   const handleFeelingDown = async () => {
-    const { data: encouragements, error: encouragementError } = await supabase
-      .from("encouragements")
-      .select("content");
+    // TODO: Replace with Firebase Firestore queries
+    // const { data: encouragements, error: encouragementError } = await supabase
+    //   .from("encouragements")
+    //   .select("content");
 
-    if (encouragementError || !encouragements?.length) return;
+    // if (encouragementError || !encouragements?.length) return;
 
-    const randomEncouragement =
-      encouragements[Math.floor(Math.random() * encouragements.length)]?.content;
+    // const randomEncouragement =
+    //   encouragements[Math.floor(Math.random() * encouragements.length)]?.content;
 
-    setEncouragement(randomEncouragement);
+    // setEncouragement(randomEncouragement);
 
-    const { data: userGroups } = await supabase
-      .from("group_members")
-      .select("group_id")
-      .eq("user_id", user?.id);
+    // const { data: userGroups } = await supabase
+    //   .from("group_members")
+    //   .select("group_id")
+    //   .eq("user_id", user?.id);
 
-    const groupIds = userGroups?.map((g) => g.group_id) || [];
+    // const groupIds = userGroups?.map((g) => g.group_id) || [];
 
-    const { data: allMembers } = await supabase
-      .from("group_members")
-      .select("user_id")
-      .in("group_id", groupIds);
+    // const { data: allMembers } = await supabase
+    //   .from("group_members")
+    //   .select("user_id")
+    //   .in("group_id", groupIds);
 
-    const allUserIds = Array.from(new Set(allMembers?.map((m) => m.user_id))).filter(
-      (id) => id !== user?.id
-    );
+    // const allUserIds = Array.from(new Set(allMembers?.map((m) => m.user_id))).filter(
+    //   (id) => id !== user?.id
+    // );
 
-    const inserts = allUserIds.map((recipient_id) => ({
-      sender_id: user?.id!,
-      recipient_id,
-      message: `${nickname} is having a tough day and might need some encouragement.`,
-      created_at: new Date().toISOString(),
-    }));
+    // const inserts = allUserIds.map((recipient_id) => ({
+    //   sender_id: user?.id!,
+    //   recipient_id,
+    //   message: `${nickname} is having a tough day and might need some encouragement.`,
+    //   created_at: new Date().toISOString(),
+    // }));
 
-    if (inserts.length > 0) {
-      await supabase.from("direct_encouragements").insert(inserts);
-    }
+    // if (inserts.length > 0) {
+    //   await supabase.from("direct_encouragements").insert(inserts);
+    // }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    const { data: momentData, error: insertError } = await supabase
-      .from("happy_moments")
-      .insert([{ content: input, user_id: user.id }])
-      .select("id")
-      .single();
+    // TODO: Replace with Firebase Firestore queries
+    // const { data: momentData, error: insertError } = await supabase
+    //   .from("happy_moments")
+    //   .insert([{ content: input, user_id: user.id }])
+    //   .select("id")
+    //   .single();
 
-    if (insertError || !momentData?.id) {
-      console.error("Error inserting moment:", insertError);
-      return;
-    }
+    // if (insertError || !momentData?.id) {
+    //   console.error("Error inserting moment:", insertError);
+    //   return;
+    // }
 
-    const momentId = momentData.id;
+    // const momentId = momentData.id;
 
-    const { data: groupMemberships, error: groupError } = await supabase
-      .from("group_members")
-      .select("group_id")
-      .eq("user_id", user.id);
+    // const { data: groupMemberships, error: groupError } = await supabase
+    //   .from("group_members")
+    //   .select("group_id")
+    //   .eq("user_id", user.id);
 
-    if (groupMemberships && groupMemberships.length > 0) {
-      const linkInserts = groupMemberships.map((group) => ({
-        group_id: group.group_id,
-        moment_id: momentId,
-      }));
+    // if (groupMemberships && groupMemberships.length > 0) {
+    //   const linkInserts = groupMemberships.map((group) => ({
+    //     group_id: group.group_id,
+    //     moment_id: momentId,
+    //   }));
 
-      const { error: linkError } = await supabase
-        .from("group_moments")
-        .insert(linkInserts);
+    //   const { error: linkError } = await supabase
+    //     .from("group_moments")
+    //     .insert(linkInserts);
 
-      if (linkError) {
-        console.error("Error inserting into group_moments:", linkError);
-      }
-    }
+    //   if (linkError) {
+    //     console.error("Error inserting into group_moments:", linkError);
+    //   }
+    // }
 
     setInput("");
     fetchMoments();
   };
 
   const handleHappyParty = () => {
-    setIsPartyTime(true);
-    const phrases = [
-      "Party Time!",
-      "Feeling Groovy!",
-      "Happiness Activated!",
-      "Woohoo! It&apos;s a Good Day!",
-      "Joy Explosion!",
-    ];
-    setPartyPhrase(phrases[Math.floor(Math.random() * phrases.length)]);
-
-    const randomEmojis = Array.from({ length: 15 }, () =>
-      String.fromCodePoint(0x1f600 + Math.floor(Math.random() * 40))
-    );
-    setEmojis(randomEmojis);
-
-    setTimeout(() => {
-      setIsPartyTime(false);
-      setEmojis([]);
-      setPartyPhrase("");
-    }, 3500);
+    setShowVideoCelebration(true);
   };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
-  };
-
-  const emojiVariants = {
-    hidden: { y: -20, opacity: 0 },
-    visible: (i: number) => ({
-      y: 0,
-      opacity: 1,
-      transition: {
-        delay: i * 0.05 + 0.3,
-        type: "spring",
-        stiffness: 100,
-      },
-    }),
   };
 
   const floatingBubbles = Array.from({ length: 60 }, (_, i) => {
@@ -247,40 +226,10 @@ export default function HomePage() {
 
               {user && (
                 <div className="mb-6 text-center">
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={handleHappyParty}
-                      className="btn btn-accent w-full sm:btn-wide btn-lg shadow-lg transform hover:scale-105 transition-transform whitespace-normal text-center"
-                      disabled={isPartyTime}
-                    >
-                      <span className="mr-2 text-xl">🎉</span>
-                      I Feel Good!
-                      <span className="ml-2 text-xl">🥳</span>
-                    </button>
-
-
-                    <button
-                      onClick={handleFeelingDown}
-                      style={{
-                        backgroundColor: 'blue',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 15px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '1.125rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                        minHeight: '3rem',
-                        display: 'inline-flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: '8px',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      feelin kinda down 🌧️
-                    </button>
-                  </div>
+                                     <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center mb-6">
+                     <SmileyButton onClick={handleHappyParty} />
+                     <SadFaceButton onClick={handleFeelingDown} />
+                   </div>
 
                   {encouragement && (
                     <motion.div
@@ -355,41 +304,11 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Party Time Overlay */}
-              <AnimatePresence>
-                {isPartyTime && (
-                  <motion.div
-                    variants={modalVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="fixed inset-0 z-[9999] pointer-events-none flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm"
-                  >
-                    <motion.p
-                      initial={{ y: -50, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
-                      className="text-4xl md:text-5xl font-bold mb-6 text-white drop-shadow-lg px-4 text-center"
-                    >
-                      {partyPhrase}
-                    </motion.p>
-                    <div className="text-4xl md:text-5xl flex flex-wrap justify-center max-w-sm">
-                      {emojis.map((emoji, index) => (
-                        <motion.span
-                          key={index}
-                          custom={index}
-                          variants={emojiVariants}
-                          initial="hidden"
-                          animate="visible"
-                          className="inline-block m-1"
-                        >
-                          {emoji}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Video Celebration */}
+              <VideoCelebration 
+                isOpen={showVideoCelebration}
+                onClose={() => setShowVideoCelebration(false)}
+              />
 
               {/* Inbox Modal */}
               <AnimatePresence>

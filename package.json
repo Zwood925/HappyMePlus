@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "happymeplus",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,15 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "^4.6.0",
     "@stripe/stripe-js": "^7.3.0",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/auth-helpers-react": "^0.4.2",
-    "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.75.7",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
+    "firebase": "^12.0.0",
     "framer-motion": "^10.12.16",
     "micro": "^10.0.1",
     "next": "^15.3.2",
@@ -26,6 +22,7 @@
     "react-calendar": "^5.1.0",
     "react-dom": "^18.2.0",
     "stripe": "^18.1.0",
+    "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

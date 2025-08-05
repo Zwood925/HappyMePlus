@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRandomEncouragement } from '../../lib/getRandomEncouragement';
 import Link from "next/link";
@@ -21,8 +21,7 @@ const moods = [
 ];
 
 export default function JournalPage() {
-  const user = useUser();
-  const supabase = useSupabaseClient();
+  const { user } = useFirebaseAuth();
 
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [selectedMood, setSelectedMood] = useState('');
@@ -36,17 +35,18 @@ export default function JournalPage() {
     e.preventDefault();
     if (!user || !entry.trim()) return;
 
-    const { error } = await supabase.from('journal_entries').insert({
-      user_id: user.id,
-      content: entry,
-      mood: selectedMood,
-      prompt: selectedPrompt
-    });
+    // TODO: Replace with Firebase Firestore queries
+    // const { error } = await supabase.from('journal_entries').insert({
+    //   user_id: user.id,
+    //   content: entry,
+    //   mood: selectedMood,
+    //   prompt: selectedPrompt
+    // });
 
-    if (error) {
-      setMessage('Something went wrong. Please try again.');
-      return;
-    }
+    // if (error) {
+    //   setMessage('Something went wrong. Please try again.');
+    //   return;
+    // }
 
     setMessage('Entry saved! ✅');
     setEntry('');
@@ -54,40 +54,40 @@ export default function JournalPage() {
     setSelectedPrompt('');
 
     if ((selectedMood === 'sad' || selectedMood === 'angry')) {
-      const random = await getRandomEncouragement(supabase);
-      if (random) {
-        setEncouragement(random);
-        setShowModal(true);
-      }
+      // TODO: Replace with Firebase Firestore queries
+      // const random = await getRandomEncouragement(supabase);
+      // if (random) {
+      //   setEncouragement(random);
+      //   setShowModal(true);
+      // }
 
-      if (notifyGroups) {
-        const { data: groupMemberships } = await supabase
-          .from('group_members')
-          .select('group_id')
-          .eq('user_id', user.id);
+      // if (notifyGroups) {
+      //   const { data: groupMemberships } = await supabase
+      //     .from('group_members')
+      //     .select('group_id')
+      //     .eq('user_id', user.id);
 
-        if (groupMemberships) {
-          for (const group of groupMemberships) {
-            const { data: groupMembers } = await supabase
-              .from('group_members')
-              .select('user_id')
-              .eq('group_id', group.group_id);
+      //   if (groupMemberships) {
+      //     for (const group of groupMemberships) {
+      //       const { data: groupMembers } = await supabase
+      //         .from('group_members')
+      //         .select('user_id')
+      //         .eq('group_id', group.group_id);
 
-            if (groupMembers) {
-              for (const member of groupMembers) {
-                if (member.user_id !== user.id) {
-                  await supabase.from('direct_encouragements').insert({
-                    sender_id: user.id,
-                    recipient_id: member.user_id,
-                    message: `${user.user_metadata?.name || 'A friend'} had a rough day. Send them some encouragement!`,
-                    read: false
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
+      //     if (groupMembers) {
+      //       for (const member of groupMembers) {
+      //         if (member.user_id !== user.id) {
+      //           await supabase.from('direct_encouragements').insert({
+      //             sender_id: user.id,
+      //             recipient_id: member.user_id,
+      //             message: `${user.user_metadata?.name || 'A friend'} had a rough day. Send them some encouragement!`,
+      //             read: false
+      //           });
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
     }
   };
 

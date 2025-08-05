@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
 import { useEffect, useState } from "react";
 import { withAuth } from "../../lib/withAuth";
 import SendEncouragementModal from "../../components/SendEncouragementModal";
@@ -10,8 +10,7 @@ function GroupFeedPage() {
   const router = useRouter();
   const { id } = router.query;
 
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
 
   const [group, setGroup] = useState<any>(null);
   const [moments, setMoments] = useState<any[]>([]);
@@ -26,57 +25,64 @@ function GroupFeedPage() {
   }, [id, user]);
 
   const fetchGroupInfo = async () => {
-    const { data, error } = await supabase
-      .from("groups")
-      .select("*")
-      .eq("id", id)
-      .single();
+    // TODO: Replace with Firebase Firestore
+    // const { data, error } = await supabase
+    //   .from("groups")
+    //   .select("*")
+    //   .eq("id", id)
+    //   .single();
 
-    if (!error && data) {
-      setGroup(data);
-    } else {
-      console.error("Error fetching group info:", error);
-    }
+    // if (!error && data) {
+    //   setGroup(data);
+    // } else {
+    //   console.error("Error fetching group info:", error);
+    // }
+    
+    // Temporary placeholder
+    setGroup({ id, name: "Sample Group" });
   };
 
   const fetchGroupMoments = async () => {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("group_moments")
-      .select(
-        `
-        moment:moment_id (
-          content,
-          created_at,
-          user_id,
-          profiles (
-            nickname
-          )
-        )
-      `
-      )
-      .eq("group_id", id);
+    // TODO: Replace with Firebase Firestore
+    // const { data, error } = await supabase
+    //   .from("group_moments")
+    //   .select(
+    //     `
+    //     moment:moment_id (
+    //       content,
+    //       created_at,
+    //       user_id,
+    //       profiles (
+    //         nickname
+    //       )
+    //     )
+    //   `
+    //   )
+    //   .eq("group_id", id);
 
-    if (error) {
-      console.error("Group feed errors:", error);
-      setMoments([]);
-    } else {
-      setMoments(
-        (data || [])
-          .map((item: any) => ({
-            ...item.moment,
-            id: item.moment_id,
-            nickname: item.moment?.profiles?.nickname || "Unknown",
-          }))
-          .sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          )
-      );
-    }
+    // if (error) {
+    //   console.error("Group feed errors:", error);
+    //   setMoments([]);
+    // } else {
+    //   setMoments(
+    //     (data || [])
+    //       .map((item: any) => ({
+    //         ...item.moment,
+    //         id: item.moment_id,
+    //         nickname: item.moment?.profiles?.nickname || "Unknown",
+    //       }))
+    //       .sort(
+    //         (a, b) =>
+    //           new Date(b.created_at).getTime() -
+    //           new Date(a.created_at).getTime()
+    //       )
+    //   );
+    // }
 
+    // Temporary placeholder
+    setMoments([]);
     setLoading(false);
   };
 

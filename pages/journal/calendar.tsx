@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import dynamic from 'next/dynamic';
 import 'react-calendar/dist/Calendar.css';
 import { format, isSameDay } from 'date-fns';
@@ -14,19 +14,22 @@ interface Entry {
 }
 
 export default function JournalCalendar() {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
 
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const fetchEntries = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('user_id', user.id);
-    if (!error && data) setEntries(data);
+    // TODO: Replace with Firebase Firestore
+    // const { data, error } = await supabase
+    //   .from('journal_entries')
+    //   .select('*')
+    //   .eq('user_id', user.id);
+    // if (!error && data) setEntries(data);
+    
+    // Temporary placeholder
+    setEntries([]);
   };
 
   useEffect(() => {

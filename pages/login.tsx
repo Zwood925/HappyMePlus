@@ -1,41 +1,36 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useSessionContext } from "@supabase/auth-helpers-react";
-import Link from "next/link"; // ✅ NEW
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+import { signInWithEmail } from "../lib/firebaseAuth";
+import Link from "next/link";
 
 export default function LoginPage() {
-  const supabase = useSupabaseClient();
   const router = useRouter();
-  const { session, isLoading } = useSessionContext();
+  const { user, loading } = useFirebaseAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!isLoading && session?.user) {
+    if (!loading && user) {
       router.push("/");
     }
-  }, [isLoading, session]);
+  }, [loading, user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
+    try {
+      await signInWithEmail(email, password);
       router.push("/");
+    } catch (error: any) {
+      setErrorMsg(error.message || "Failed to sign in");
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">
         <p className="text-lg font-semibold text-gray-700">Checking your session...</p>

@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useUser } from "../lib/auth";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { useRouter } from "next/router";
 import Layout from "../components/layout";
 
 export default function EncouragementsPage() {
-  const user = useUser();
+  const { user } = useFirebaseAuth();
   const router = useRouter();
 
   useEffect(() => {

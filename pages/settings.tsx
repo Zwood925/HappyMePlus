@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+import { signOutUser } from "../lib/firebaseAuth";
 import { motion } from "framer-motion";
 
 export default function SettingsPage() {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
   const router = useRouter();
 
   const [newPassword, setNewPassword] = useState("");
@@ -25,7 +25,7 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOutUser();
     router.push("/login");
   };
 

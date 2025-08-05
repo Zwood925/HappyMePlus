@@ -1,12 +1,12 @@
 // pages/group-join.tsx
 import { useState } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
 import { useRouter } from "next/router";
-import Layout from "@/components/layout";
-import { withAuth } from "@/lib/withAuth";
+import Layout from "../../components/layout";
+import { withAuth } from "../../lib/withAuth";
 
 function GroupJoin() {
-  const supabase = useSupabaseClient();
+  const { user } = useFirebaseAuth();
   const router = useRouter();
 
   const [codeInput, setCodeInput] = useState("");
@@ -17,61 +17,64 @@ function GroupJoin() {
     setErrorMsg("");
     setLoading(true);
 
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    // TODO: Replace with Firebase Firestore
+    // const {
+    //   data: { user },
+    //   error,
+    // } = await supabase.auth.getUser();
 
-    if (error || !user) {
+    if (!user) {
       setErrorMsg("Unable to fetch user.");
       setLoading(false);
       return;
     }
 
-    const { data, error: groupError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("group_code", codeInput.toUpperCase())
-      .limit(1);
+    // TODO: Replace with Firebase Firestore
+    // const { data, error: groupError } = await supabase
+    //   .from("profiles")
+    //   .select("id")
+    //   .eq("group_code", codeInput.toUpperCase())
+    //   .limit(1);
 
-    if (groupError || !data || data.length === 0) {
-      setErrorMsg("Invalid group code. Please try again.");
-      setLoading(false);
-      return;
-    }
+    // if (groupError || !data || data.length === 0) {
+    //   setErrorMsg("Invalid group code. Please try again.");
+    //   setLoading(false);
+    //   return;
+    // }
 
-    const groupId = data[0].id;
-    console.log("🧠 Attempting to join group");
-    console.log("User ID:", user.id);
-    console.log("Group ID:", groupId);
+    // const groupId = data[0].id;
+    // console.log("🧠 Attempting to join group");
+    // console.log("User ID:", user.id);
+    // console.log("Group ID:", groupId);
 
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ group_code: codeInput.toUpperCase() })
-      .eq("id", user.id);
+    // const { error: updateError } = await supabase
+    //   .from("profiles")
+    //   .update({ group_code: codeInput.toUpperCase() })
+    //   .eq("id", user.id);
 
-    if (updateError) {
-      setErrorMsg("Failed to join group (profile update).");
-      setLoading(false);
-      return;
-    }
+    // if (updateError) {
+    //   setErrorMsg("Failed to join group (profile update).");
+    //   setLoading(false);
+    //   return;
+    // }
 
-    // ✅ Fix: Use a string for onConflict, not a string[]
-    const { error: memberError } = await supabase
-      .from("group_members")
-      .upsert(
-        [{ user_id: user.id, group_id: groupId }],
-        { onConflict: "user_id,group_id" }
-      );
+    // // ✅ Fix: Use a string for onConflict, not a string[]
+    // const { error: memberError } = await supabase
+    //   .from("group_members")
+    //   .upsert(
+    //     [{ user_id: user.id, group_id: groupId }],
+    //     { onConflict: "user_id,group_id" }
+    //   );
 
-    if (memberError) {
-      console.error("🚫 group_members insert error:", memberError.message);
-      setErrorMsg("Error joining group. Please try again.");
-    } else {
-      console.log("✅ User successfully added to group_members.");
-      router.push("/journal");
-    }
+    // if (memberError) {
+    //   console.error("🚫 group_members insert error:", memberError.message);
+    //   setErrorMsg("Error joining group. Please try again.");
+    // } else {
+    //   console.log("✅ User successfully added to group_members.");
+    //   router.push("/journal");
+    // }
 
+    setErrorMsg("Feature coming soon! 🚧");
     setLoading(false);
   };
 

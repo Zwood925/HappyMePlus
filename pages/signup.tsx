@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
+import { createUserWithEmail } from "../lib/firebaseAuth";
 import Link from "next/link";
 
-
 export default function SignupPage() {
-  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -18,72 +16,20 @@ export default function SignupPage() {
     e.preventDefault();
     setErrorMsg("");
 
-    const { error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError) {
-      console.error("Sign up failed:", signUpError);
-      setErrorMsg(signUpError.message);
-      return;
-    }
-
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-    if (loginError) {
-      console.error("Login after signup failed:", loginError);
-      setErrorMsg("Login after signup failed: " + loginError.message);
-      return;
-    }
-
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError || !session?.user) {
-      console.error("Session error:", sessionError);
-      setErrorMsg("No session available after login.");
-      return;
-    }
-
-    const finalNickname = nickname.trim() || email.split("@")[0];
-    const finalPromo = promoCode.trim() || "no_promo";
-
-    const { error: upsertError } = await supabase
-      .from("profiles")
-      .upsert([
-        {
-          id: session.user.id,
-          nickname: finalNickname,
-          promo_code: finalPromo,
-        },
-      ], { onConflict: "id" });
-
-    if (upsertError) {
-      console.error("Profile upsert failed:", upsertError);
-      setErrorMsg("Failed to save profile: " + upsertError.message);
-      return;
-    }
-
-    if (finalPromo.toUpperCase() === "FREE4EVER") {
-      router.push("/");
-      return;
-    }
-
     try {
-      const response = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ promoCode: finalPromo }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result?.url) {
-        window.location.href = result.url;
-      } else {
-        setErrorMsg("Unable to start checkout session: " + result.error);
-      }
-    } catch (err: any) {
-      console.error("Stripe fetch error:", err);
-      setErrorMsg("Payment error: " + err.message);
+      // Create user with Firebase
+      const userCredential = await createUserWithEmail(email, password);
+      
+      // TODO: Save user profile to Firestore
+      // const finalNickname = nickname.trim() || email.split("@")[0];
+      // const finalPromo = promoCode.trim() || "no_promo";
+      
+      // For now, just redirect to home
+      router.push("/");
+      
+    } catch (error: any) {
+      console.error("Sign up failed:", error);
+      setErrorMsg(error.message || "Failed to create account");
     }
   };
 

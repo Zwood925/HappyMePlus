@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import { getRandomEncouragement } from "../lib/getRandomEncouragement"; // ✅ import
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+// import { getRandomEncouragement } from "../lib/getRandomEncouragement"; // TODO: Update for Firebase
 
 interface Props {
   groupId: string;
@@ -9,8 +9,7 @@ interface Props {
 }
 
 export default function SendEncouragementModal({ groupId, isOpen, onClose }: Props) {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { user } = useFirebaseAuth();
 
   const [members, setMembers] = useState<any[]>([]);
   const [recipientId, setRecipientId] = useState("");
@@ -21,21 +20,22 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
   useEffect(() => {
     if (!groupId || !user || !isOpen) return;
 
-    const fetchMembers = async () => {
-      const { data, error } = await supabase
-        .from("group_members")
-        .select("user_id, profiles(nickname)")
-        .eq("group_id", groupId);
+    // TODO: Replace with Firebase Firestore queries
+    // const fetchMembers = async () => {
+    //   const { data, error } = await supabase
+    //     .from("group_members")
+    //     .select("user_id, profiles(nickname)")
+    //     .eq("group_id", groupId);
 
-      if (error) {
-        console.error("Error loading members:", error);
-      } else {
-        console.log("Fetched group members:", data);
-        setMembers(data);
-      }
-    };
+    //   if (error) {
+    //     console.error("Error loading members:", error);
+    //   } else {
+    //     console.log("Fetched group members:", data);
+    //     setMembers(data);
+    //   }
+    // };
 
-    fetchMembers();
+    // fetchMembers();
   }, [groupId, user, isOpen]);
 
   const handleSend = async () => {
@@ -47,14 +47,16 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
     let messageToSend = customMessage;
 
     if (useRandom) {
-      const random = await getRandomEncouragement(supabase);
+      // TODO: Replace with Firebase Firestore queries
+      // const random = await getRandomEncouragement(supabase);
 
-      if (!random) {
-        setStatus("Failed to fetch random message");
-        return;
-      }
+      // if (!random) {
+      //   setStatus("Failed to fetch random message");
+      //   return;
+      // }
 
-      messageToSend = random;
+      // messageToSend = random;
+      messageToSend = "You're doing great! Keep going! 🌟";
     }
 
     if (!messageToSend.trim()) {
@@ -62,23 +64,26 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
       return;
     }
 
-    const { error } = await supabase.from("direct_encouragements").insert([
-      {
-        sender_id: user?.id,
-        recipient_id: recipientId,
-        group_id: groupId,
-        message: messageToSend,
-      },
-    ]);
+    // TODO: Replace with Firebase Firestore queries
+    // const { error } = await supabase.from("direct_encouragements").insert([
+    //   {
+    //     sender_id: user?.id,
+    //     recipient_id: recipientId,
+    //     group_id: groupId,
+    //     message: messageToSend,
+    //   },
+    // ]);
 
-    if (error) {
-      console.error(error);
-      setStatus("Failed to send encouragement");
-    } else {
-      setStatus("Encouragement sent!");
-      setCustomMessage("");
-      setRecipientId("");
-    }
+    // if (error) {
+    //   console.error(error);
+    //   setStatus("Failed to send encouragement");
+    // } else {
+    //   setStatus("Encouragement sent!");
+    //   setCustomMessage("");
+    //   setRecipientId("");
+    // }
+    
+    setStatus("Feature coming soon! 🚧");
   };
 
   if (!isOpen) return null;
@@ -95,10 +100,10 @@ export default function SendEncouragementModal({ groupId, isOpen, onClose }: Pro
         >
           <option value="">Choose group member</option>
           {members.map((m) => (
-            <option key={m.user_id} value={m.user_id}>
-              {m.profiles?.nickname || m.user_id}
-              {m.user_id === user?.id ? " (You)" : ""}
-            </option>
+                         <option key={m.user_id} value={m.user_id}>
+               {m.profiles?.nickname || m.user_id}
+               {m.user_id === user?.uid ? " (You)" : ""}
+             </option>
           ))}
         </select>
 

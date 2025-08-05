@@ -1,13 +1,13 @@
 // pages/group-create.tsx
 import { useEffect, useState } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
 
 import { useRouter } from "next/router";
-import Layout from "@/components/layout";
-import { withAuth } from "@/lib/withAuth";
+import Layout from "../../components/layout";
+import { withAuth } from "../../lib/withAuth";
 
 function GroupCreate() {
-  const supabase = useSupabaseClient();
+  const { user } = useFirebaseAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -19,12 +19,13 @@ function GroupCreate() {
       setLoading(true);
       setErrorMsg("");
 
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      // TODO: Replace with Firebase Firestore
+      // const {
+      //   data: { user },
+      //   error,
+      // } = await supabase.auth.getUser();
 
-      if (error || !user) {
+      if (!user) {
         setErrorMsg("Unable to fetch user.");
         setLoading(false);
         return;
@@ -32,16 +33,17 @@ function GroupCreate() {
 
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ group_code: code })
-        .eq("id", user.id);
+      // TODO: Replace with Firebase Firestore
+      // const { error: updateError } = await supabase
+      //   .from("profiles")
+      //   .update({ group_code: code })
+      //   .eq("id", user.id);
 
-      if (updateError) {
-        setErrorMsg("Failed to create group. Please try again.");
-        setLoading(false);
-        return;
-      }
+      // if (updateError) {
+      //   setErrorMsg("Failed to create group. Please try again.");
+      //   setLoading(false);
+      //   return;
+      // }
 
       setGroupCode(code);
       setLoading(false);

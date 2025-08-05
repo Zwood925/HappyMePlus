@@ -1,14 +1,16 @@
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-
 import { useRouter } from "next/router";
+import { signOutUser } from "../lib/firebaseAuth";
 
 export default function LogoutButton() {
-  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+    try {
+      await signOutUser();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return <button onClick={handleLogout}>Logout</button>;

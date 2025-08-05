@@ -1,22 +1,26 @@
 import type { AppProps } from "next/app";
-import { useState } from "react";
 import { useRouter } from "next/router";
-import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
-import {
-  SessionContextProvider,
-  useSession,
-} from "@supabase/auth-helpers-react";
 import "../styles/globals.css";
 import Layout from "../components/layout";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import type { Router } from "next/router";
 
 type InnerAppProps = AppProps & { router: Router };
 
 function InnerApp({ Component, pageProps, router }: InnerAppProps) {
-  const session = useSession();
+  const { user, loading } = useFirebaseAuth();
 
   const excludedRoutes = ["/login", "/signup", "/success", "/cancel"];
-  const showLayout = session && !excludedRoutes.includes(router.pathname);
+  const showLayout = user && !excludedRoutes.includes(router.pathname);
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
 
   return showLayout ? (
     <Layout>
@@ -28,11 +32,5 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
 }
 
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
-  const [supabaseClient] = useState(() => createPagesBrowserClient());
-
-  return (
-    <SessionContextProvider supabaseClient={supabaseClient}>
-      <InnerApp Component={Component} pageProps={pageProps} router={router} />
-    </SessionContextProvider>
-  );
+  return <InnerApp Component={Component} pageProps={pageProps} router={router} />;
 }

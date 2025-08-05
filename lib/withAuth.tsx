@@ -1,21 +1,32 @@
-import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 
-export function withAuth(Component: any) {
-  return function ProtectedRoute(props: any) {
-    const session = useSession();
+export function withAuth<P extends object>(
+  WrappedComponent: React.ComponentType<P>
+) {
+  return function AuthenticatedComponent(props: P) {
+    const { user, loading } = useFirebaseAuth();
     const router = useRouter();
-    const supabase = useSupabaseClient();
 
     useEffect(() => {
-      if (session === null) {
-        router.replace("/login");
+      if (!loading && !user) {
+        router.push("/login");
       }
-    }, [session]);
+    }, [user, loading, router]);
 
-    if (session === null) return null;
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        </div>
+      );
+    }
 
-    return <Component {...props} />;
+    if (!user) {
+      return null;
+    }
+
+    return <WrappedComponent {...props} />;
   };
-}
+} 

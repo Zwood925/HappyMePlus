@@ -1,3 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom font classes */
+.font-comic {
+  font-family: 'Comic Neue', cursive;
+}
+
+.font-fredoka {
+  font-family: 'Fredoka One', cursive;
+}
+
+/* Custom animations */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Custom button styles */
+.smiley-button-glow {
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+}
+
+.smiley-button-glow:hover {
+  box-shadow: 0 0 30px rgba(255, 193, 7, 0.8);
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Ensure buttons are easy to tap on mobile */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Reduce animation complexity on mobile for better performance */
+  .animate-sparkle {
+    animation-duration: 2s;
+  }
+  
+  .animate-bounce-gentle {
+    animation-duration: 2.5s;
+  }
+}

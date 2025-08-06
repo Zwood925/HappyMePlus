@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import LogoutButton from './LogoutButton';
-import EmailVerification from './EmailVerification';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -39,7 +38,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Main content */}
       <main className="flex-1 relative min-h-screen bg-cyan-50 text-purple-700 px-4 py-8 overflow-hidden">
-        <EmailVerification />
         {children}
       </main>
     </div>

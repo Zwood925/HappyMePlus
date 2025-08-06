@@ -25,8 +25,16 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
-    await signOutUser();
-    router.push("/login");
+    try {
+      const result = await signOutUser();
+      if (result.error) {
+        console.error("Error signing out:", result.error);
+      } else {
+        router.push("/login");
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (

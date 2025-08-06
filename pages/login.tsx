@@ -23,8 +23,12 @@ export default function LoginPage() {
     setErrorMsg("");
 
     try {
-      await signInWithEmail(email, password);
-      router.push("/");
+      const result = await signInWithEmail(email, password);
+      if (result.error) {
+        setErrorMsg(result.error.message || "Failed to sign in");
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
       setErrorMsg(error.message || "Failed to sign in");
     }

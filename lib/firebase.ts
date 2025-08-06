@@ -7,26 +7,6 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { config } from './config';
 
-// Debug: Log Firebase config
-console.log('Firebase config:', {
-  apiKey: config.firebase.apiKey ? 'SET' : 'NOT SET',
-  authDomain: config.firebase.authDomain ? 'SET' : 'NOT SET',
-  projectId: config.firebase.projectId ? 'SET' : 'NOT SET',
-  storageBucket: config.firebase.storageBucket ? 'SET' : 'NOT SET',
-  messagingSenderId: config.firebase.messagingSenderId ? 'SET' : 'NOT SET',
-  appId: config.firebase.appId ? 'SET' : 'NOT SET',
-});
-
-// Debug: Log actual values (first few characters)
-console.log('Firebase config values:', {
-  apiKey: config.firebase.apiKey ? `${config.firebase.apiKey.substring(0, 10)}...` : 'NOT SET',
-  authDomain: config.firebase.authDomain ? `${config.firebase.authDomain.substring(0, 20)}...` : 'NOT SET',
-  projectId: config.firebase.projectId || 'NOT SET',
-  storageBucket: config.firebase.storageBucket || 'NOT SET',
-  messagingSenderId: config.firebase.messagingSenderId || 'NOT SET',
-  appId: config.firebase.appId ? `${config.firebase.appId.substring(0, 20)}...` : 'NOT SET',
-});
-
 // Initialize Firebase
 const firebaseConfig = {
   apiKey: config.firebase.apiKey,
@@ -37,21 +17,13 @@ const firebaseConfig = {
   appId: config.firebase.appId,
 };
 
-console.log('Initializing Firebase with config:', firebaseConfig);
-
 // Initialize Firebase app
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-console.log('Firebase app initialized:', app);
-console.log('Firebase app options:', app.options);
-
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getFirestore(app, 'happyme'); // Explicitly specify database name
 export const storage = getStorage(app);
-
-console.log('Firebase auth initialized:', auth);
-console.log('Firebase auth app:', auth.app);
 
 // Connect to emulators in development
 if (config.app.isDevelopment) {

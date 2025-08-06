@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { createUserWithEmail } from "../lib/firebaseAuth";
-import { sendEmailVerification } from "firebase/auth";
 import Link from "next/link";
 
 export default function SignupPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -20,18 +18,17 @@ export default function SignupPage() {
     setSuccessMsg("");
 
     try {
-      // Create user with Firebase
-      const userCredential = await createUserWithEmail(email, password);
+      const result = await createUserWithEmail(email, password);
       
-      // Send email verification immediately
-      if (userCredential.user) {
-        await sendEmailVerification(userCredential.user);
-        setSuccessMsg("Account created! Please check your email for verification link.");
+      if (result.error) {
+        setErrorMsg(result.error.message || "Failed to create account");
+      } else {
+        setSuccessMsg("Account created successfully!");
         
         // Redirect to home after a short delay
         setTimeout(() => {
           router.push("/");
-        }, 3000);
+        }, 2000);
       }
       
     } catch (error: any) {

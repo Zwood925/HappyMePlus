@@ -1,13 +1,16 @@
 import { withAuth } from "../../lib/withAuth";
 import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../lib/firebase";
 
 interface Group {
   id: string;
   name: string;
   invite_code: string;
   created_by: string;
+  members: Record<string, boolean>;
 }
 
 function GroupsDashboard() {
@@ -17,20 +20,42 @@ function GroupsDashboard() {
   const [groupName, setGroupName] = useState("");
   const [message, setMessage] = useState("");
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+
+  const fetchGroups = useCallback(async () => {
+    if (!user?.uid) return;
+    
+    setLoading(true);
+    try {
+      const groupsRef = collection(db, 'groups');
+      const q = query(
+        groupsRef,
+        where('members.' + user.uid, '==', true)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const groupsData: Group[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        groupsData.push({
+          id: doc.id,
+          ...doc.data()
+        } as Group);
+      });
+      
+      setMyGroups(groupsData);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.uid]);
 
   useEffect(() => {
     if (user?.uid) {
-      console.log("Fetching groups for user:", user.uid);
-      fetchMyGroups();
+      fetchGroups();
     }
-  }, [user]);
-
-  const fetchMyGroups = async () => {
-    // TODO: Replace with Firebase Firestore
-    // Temporary placeholder
-    setMyGroups([]);
-    setMemberCounts({});
-  };
+  }, [user, fetchGroups]);
 
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
@@ -54,14 +79,15 @@ function GroupsDashboard() {
         Your Groups
       </h2>
 
-      {myGroups.length === 0 ? (
+      {loading ? (
+        <p className="text-center text-neutral-content mb-6">Loading groups...</p>
+      ) : myGroups.length === 0 ? (
         <p className="text-center text-neutral-content mb-6">
           You&apos;re not in any groups yet.
         </p>
       ) : (
         <div className="grid gap-6 mb-10 sm:grid-cols-2 md:grid-cols-3">
           {myGroups.map((group) => {
-            console.log("Rendering group card:", group);
             return (
               <div
                 key={group.id}
@@ -73,7 +99,7 @@ function GroupsDashboard() {
                     Invite Code: <span className="font-mono">{group.invite_code}</span>
                   </p>
                   <p className="text-xs text-neutral-content">
-                    {memberCounts[group.id] || 0} members
+                    {Object.keys(group.members).length} members
                   </p>
                   <div className="card-actions justify-end">
                     <button

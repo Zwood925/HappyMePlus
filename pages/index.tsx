@@ -1,6 +1,7 @@
 // HomePage with full visuals and original logic from index.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+import { useHappyMoments } from "../hooks/useHappyMoments";
 // import { useEncouragements } from "../hooks/useEncouragements";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -18,9 +19,16 @@ const bubbleColors = [
 
 export default function HomePage() {
   const { user } = useFirebaseAuth();
+  const { 
+    recentMoments, 
+    loading: momentsLoading, 
+    submitting, 
+    totalCount,
+    error,
+    addMoment 
+  } = useHappyMoments();
 
   const [input, setInput] = useState("");
-  const [myMoments, setMyMoments] = useState<{ id: number; content: string; created_at: string }[]>([]);
   const [encouragement, setEncouragement] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>("");
 
@@ -50,22 +58,9 @@ export default function HomePage() {
     });
   };
 
-  const fetchMoments = async () => {
-    if (!user) return;
+  // Removed fetchMoments - now handled by useHappyMoments hook
 
-    // TODO: Replace with Firebase Firestore queries
-    // const { data, error } = await supabase
-    //   .from("happy_moments")
-    //   .select("id, content, created_at")
-    //   .eq("user_id", user.id)
-    //   .order("created_at", { ascending: false });
-
-    // if (!error && data) {
-    //   setMyMoments(data);
-    // }
-  };
-
-  const fetchNickname = async () => {
+  const fetchNickname = useCallback(async () => {
     // TODO: Replace with Firebase Firestore queries
     // const { data, error } = await supabase
     //   .from("profiles")
@@ -73,16 +68,13 @@ export default function HomePage() {
     //   .eq("id", user?.id)
     //   .single();
     // if (data?.nickname) setNickname(data.nickname);
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
-      fetchMoments();
       fetchNickname();
-    } else {
-      setMyMoments([]);
     }
-  }, [user]);
+  }, [user, fetchNickname]);
 
   const handleFeelingDown = async () => {
     // TODO: Replace with Firebase Firestore queries
@@ -129,42 +121,11 @@ export default function HomePage() {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    // TODO: Replace with Firebase Firestore queries
-    // const { data: momentData, error: insertError } = await supabase
-    //   .from("happy_moments")
-    //   .insert([{ content: input, user_id: user.id }])
-    //   .select("id")
-    //   .single();
-
-    // if (insertError || !momentData?.id) {
-    //   console.error("Error inserting moment:", insertError);
-    //   return;
-    // }
-
-    // const momentId = momentData.id;
-
-    // const { data: groupMemberships, error: groupError } = await supabase
-    //   .from("group_members")
-    //   .select("group_id")
-    //   .eq("user_id", user.id);
-
-    // if (groupMemberships && groupMemberships.length > 0) {
-    //   const linkInserts = groupMemberships.map((group) => ({
-    //     group_id: group.group_id,
-    //     moment_id: momentId,
-    //   }));
-
-    //   const { error: linkError } = await supabase
-    //     .from("group_moments")
-    //     .insert(linkInserts);
-
-    //   if (linkError) {
-    //     console.error("Error inserting into group_moments:", linkError);
-    //   }
-    // }
-
-    setInput("");
-    fetchMoments();
+    const success = await addMoment(input.trim());
+    if (success) {
+      setInput("");
+      // TODO: Add group logic here later
+    }
   };
 
   const handleHappyParty = () => {
@@ -255,15 +216,22 @@ export default function HomePage() {
                     className="textarea textarea-bordered w-full text-lg"
                     placeholder="Share a small joy, a big win, or anything that made you smile…"
                   />
-                  <div className="mt-4 text-center">
-                    <button
-                      type="submit"
-                      className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
-                      disabled={!input.trim()}
-                    >
-                      Add Happy Moment
-                    </button>
-                  </div>
+                                     <div className="mt-4 text-center">
+                     <button
+                       type="submit"
+                       className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
+                       disabled={!input.trim() || submitting}
+                     >
+                       {submitting ? (
+                         <>
+                           <div className="loading loading-spinner loading-sm"></div>
+                           Adding...
+                         </>
+                       ) : (
+                         'Add Happy Moment'
+                       )}
+                     </button>
+                   </div>
                 </form>
               ) : (
                 <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
@@ -275,34 +243,60 @@ export default function HomePage() {
                 </p>
               )}
 
-              {user && myMoments.length === 0 && !input && (
-                <div className="text-center p-6 bg-base-200 rounded-lg shadow">
-                  <p className="text-lg text-neutral-content">
-                    No happy moments recorded yet. Why not add one now?
-                  </p>
-                </div>
-              )}
+                             {user && recentMoments.length === 0 && !input && !momentsLoading && !error && (
+                 <div className="text-center p-6 bg-base-200 rounded-lg shadow">
+                   <p className="text-lg text-neutral-content">
+                     No happy moments recorded yet. Why not add one now?
+                   </p>
+                 </div>
+               )}
 
-              {user && myMoments.length > 0 && (
-                <div className="card bg-base-200 shadow-xl p-6 mt-6">
-                  <h3 className="text-2xl font-semibold mb-4 text-secondary">
-                    Your Recent Happy Moments
-                  </h3>
-                  <ul className="space-y-4">
-                    {myMoments.map((moment, index) => (
-                      <li
-                        key={`${moment.id}-${index}`}
-                        className="bg-pink-100 border-l-4 border-pink-500 shadow-md rounded-xl p-4 flex items-start gap-3 hover:shadow-lg transition"
-                      >
-                        <span className="text-2xl">🌟</span>
-                        <p className="text-lg font-bold text-pink-800 leading-snug">
-                          {moment.content || "No Happy Moment Found!"}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+               {error && (
+                 <div className="alert alert-error mb-6">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                   <span>{error}</span>
+                 </div>
+               )}
+
+               {user && recentMoments.length > 0 && (
+                 <div className="card bg-base-200 shadow-xl p-6 mt-6">
+                   <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-2xl font-semibold text-secondary">
+                       Your Recent Happy Moments
+                     </h3>
+                     <Link href="/happy-moments">
+                       <button className="btn btn-sm btn-outline btn-primary">
+                         See All ({totalCount})
+                       </button>
+                     </Link>
+                   </div>
+                   
+                   {momentsLoading ? (
+                     <div className="text-center py-4">
+                       <div className="loading loading-spinner loading-md text-primary"></div>
+                     </div>
+                   ) : (
+                     <ul className="space-y-4">
+                       {recentMoments.map((moment, index) => (
+                         <li
+                           key={moment.id}
+                           className="bg-pink-100 border-l-4 border-pink-500 shadow-md rounded-xl p-4 flex items-start gap-3 hover:shadow-lg transition"
+                         >
+                           <span className="text-2xl">🌟</span>
+                           <div className="flex-1">
+                             <p className="text-lg font-bold text-pink-800 leading-snug">
+                               {moment.content}
+                             </p>
+                             <p className="text-sm text-pink-600 mt-1">
+                               {moment.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                             </p>
+                           </div>
+                         </li>
+                       ))}
+                     </ul>
+                   )}
+                 </div>
+               )}
 
               {/* Video Celebration */}
               <VideoCelebration 

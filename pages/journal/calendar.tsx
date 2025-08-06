@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import dynamic from 'next/dynamic';
 import 'react-calendar/dist/Calendar.css';
@@ -19,7 +19,7 @@ export default function JournalCalendar() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     if (!user) return;
     // TODO: Replace with Firebase Firestore
     // const { data, error } = await supabase
@@ -30,11 +30,11 @@ export default function JournalCalendar() {
     
     // Temporary placeholder
     setEntries([]);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchEntries();
-  }, [user]);
+  }, [fetchEntries]);
 
   const moodDot = (mood: string) => {
     const color =

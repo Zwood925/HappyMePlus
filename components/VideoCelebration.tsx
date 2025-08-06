@@ -129,7 +129,7 @@ export default function VideoCelebration({ isOpen, onClose }: VideoCelebrationPr
             className="text-center mt-6"
           >
             <h2 className="text-3xl font-bold text-white mb-2">
-              🎉 You're Awesome! 🎉
+              🎉 You&apos;re Awesome! 🎉
             </h2>
             <p className="text-white text-lg opacity-90">
               Keep spreading that positive energy!

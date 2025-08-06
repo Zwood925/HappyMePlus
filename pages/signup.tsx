@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { createUserWithEmail } from "../lib/firebaseAuth";
+import { sendEmailVerification } from "firebase/auth";
 import Link from "next/link";
 
 export default function SignupPage() {
@@ -11,21 +12,27 @@ export default function SignupPage() {
   const [nickname, setNickname] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setSuccessMsg("");
 
     try {
       // Create user with Firebase
       const userCredential = await createUserWithEmail(email, password);
       
-      // TODO: Save user profile to Firestore
-      // const finalNickname = nickname.trim() || email.split("@")[0];
-      // const finalPromo = promoCode.trim() || "no_promo";
-      
-      // For now, just redirect to home
-      router.push("/");
+      // Send email verification immediately
+      if (userCredential.user) {
+        await sendEmailVerification(userCredential.user);
+        setSuccessMsg("Account created! Please check your email for verification link.");
+        
+        // Redirect to home after a short delay
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
+      }
       
     } catch (error: any) {
       console.error("Sign up failed:", error);
@@ -96,6 +103,7 @@ export default function SignupPage() {
           </button>
 
           {errorMsg && <p className="text-red-600 mt-2 text-center">{errorMsg}</p>}
+          {successMsg && <p className="text-green-600 mt-2 text-center">{successMsg}</p>}
         </form>
 
         <p className="text-sm text-center mt-6">

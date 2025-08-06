@@ -149,7 +149,7 @@ export default function SadFaceButton({ onClick, disabled = false }: SadFaceButt
         className="text-center mt-4"
       >
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-800 mb-1 font-fredoka animate-bounce-gentle">
-          Feelin' Down
+          Feelin&apos; Down
         </h3>
         <p className="text-xs sm:text-sm text-blue-600 font-medium font-comic">
           Need a hug? 🌧️

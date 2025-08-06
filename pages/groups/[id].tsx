@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { withAuth } from "../../lib/withAuth";
 import SendEncouragementModal from "../../components/SendEncouragementModal";
 import { motion } from "framer-motion";
@@ -9,7 +9,6 @@ import React from "react";
 function GroupFeedPage() {
   const router = useRouter();
   const { id } = router.query;
-
   const { user } = useFirebaseAuth();
 
   const [group, setGroup] = useState<any>(null);
@@ -17,14 +16,7 @@ function GroupFeedPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    if (id && user) {
-      fetchGroupInfo();
-      fetchGroupMoments();
-    }
-  }, [id, user]);
-
-  const fetchGroupInfo = async () => {
+  const fetchGroupInfo = useCallback(async () => {
     // TODO: Replace with Firebase Firestore
     // const { data, error } = await supabase
     //   .from("groups")
@@ -40,9 +32,9 @@ function GroupFeedPage() {
     
     // Temporary placeholder
     setGroup({ id, name: "Sample Group" });
-  };
+  }, [id]);
 
-  const fetchGroupMoments = async () => {
+  const fetchGroupMoments = useCallback(async () => {
     setLoading(true);
 
     // TODO: Replace with Firebase Firestore
@@ -84,7 +76,14 @@ function GroupFeedPage() {
     // Temporary placeholder
     setMoments([]);
     setLoading(false);
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && user) {
+      fetchGroupInfo();
+      fetchGroupMoments();
+    }
+  }, [id, user, fetchGroupInfo, fetchGroupMoments]);
 
   return (
     <div className="min-h-screen bg-green-50 p-6 text-base-content">

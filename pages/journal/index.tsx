@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRandomEncouragement } from '../../lib/getRandomEncouragement';
+import { addJournalEntry } from '../../lib/journal';
 import Link from "next/link";
-
 
 const prompts = [
   'What made you smile today?',
@@ -30,64 +30,40 @@ export default function JournalPage() {
   const [showModal, setShowModal] = useState(false);
   const [encouragement, setEncouragement] = useState('');
   const [notifyGroups, setNotifyGroups] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !entry.trim()) return;
 
-    // TODO: Replace with Firebase Firestore queries
-    // const { error } = await supabase.from('journal_entries').insert({
-    //   user_id: user.id,
-    //   content: entry,
-    //   mood: selectedMood,
-    //   prompt: selectedPrompt
-    // });
+    setSubmitting(true);
+    setMessage('');
 
-    // if (error) {
-    //   setMessage('Something went wrong. Please try again.');
-    //   return;
-    // }
+    try {
+      // Save journal entry to Firebase
+      await addJournalEntry({
+        user_id: user.uid,
+        content: entry,
+        mood: selectedMood as any || 'neutral',
+        prompt: selectedPrompt,
+        type: 'manual'
+      });
 
-    setMessage('Entry saved! ✅');
-    setEntry('');
-    setSelectedMood('');
-    setSelectedPrompt('');
+      setMessage('Entry saved! ✅');
+      setEntry('');
+      setSelectedMood('');
+      setSelectedPrompt('');
 
-    if ((selectedMood === 'sad' || selectedMood === 'angry')) {
-      // TODO: Replace with Firebase Firestore queries
-      // const random = await getRandomEncouragement(supabase);
-      // if (random) {
-      //   setEncouragement(random);
-      //   setShowModal(true);
+      // TODO: Add encouragement and group notifications later
+      // if ((selectedMood === 'sad' || selectedMood === 'angry')) {
+      //   // Handle encouragement and group notifications
       // }
 
-      // if (notifyGroups) {
-      //   const { data: groupMemberships } = await supabase
-      //     .from('group_members')
-      //     .select('group_id')
-      //     .eq('user_id', user.id);
-
-      //   if (groupMemberships) {
-      //     for (const group of groupMemberships) {
-      //       const { data: groupMembers } = await supabase
-      //         .from('group_members')
-      //         .select('user_id')
-      //         .eq('group_id', group.group_id);
-
-      //     if (groupMembers) {
-      //       for (const member of groupMembers) {
-      //         if (member.user_id !== user.id) {
-      //           await supabase.from('direct_encouragements').insert({
-      //             sender_id: user.id,
-      //             recipient_id: member.user_id,
-      //             message: `${user.user_metadata?.name || 'A friend'} had a rough day. Send them some encouragement!`,
-      //             read: false
-      //           });
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
+    } catch (error) {
+      console.error('Error saving journal entry:', error);
+      setMessage('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -98,14 +74,16 @@ export default function JournalPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold mb-2">Pick a prompt:</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {prompts.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
                 onClick={() => setSelectedPrompt(prompt)}
-                className={`p-4 rounded-xl text-left shadow-md transition-all border-2 ${
-                  selectedPrompt === prompt ? 'border-pink-500 bg-pink-100' : 'border-transparent bg-white'
+                className={`p-3 rounded-lg text-left transition-colors ${
+                  selectedPrompt === prompt
+                    ? 'bg-purple-200 border-2 border-purple-400'
+                    : 'bg-gray-100 hover:bg-gray-200'
                 }`}
               >
                 {prompt}
@@ -116,90 +94,96 @@ export default function JournalPage() {
 
         <div>
           <h2 className="text-xl font-semibold mb-2">How are you feeling?</h2>
-          <div className="flex gap-4 flex-wrap">
-            {moods.map((m) => (
+          <div className="flex gap-3 flex-wrap">
+            {moods.map((mood) => (
               <button
-                key={m.value}
+                key={mood.value}
                 type="button"
-                onClick={() => setSelectedMood(m.value)}
-                className={`w-[60px] h-[60px] rounded-full flex items-center justify-center text-2xl shadow-md hover:scale-110 transition-all ${
-                  selectedMood === m.value ? m.color : 'bg-white border border-gray-300'
+                onClick={() => setSelectedMood(mood.value)}
+                className={`p-3 rounded-lg transition-colors ${
+                  selectedMood === mood.value
+                    ? `${mood.color} border-2 border-purple-400`
+                    : 'bg-gray-100 hover:bg-gray-200'
                 }`}
               >
-                {m.emoji}
+                <span className="text-2xl">{mood.emoji}</span>
+                <div className="text-sm capitalize">{mood.value}</div>
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-2">Write it out:</h2>
+          <h2 className="text-xl font-semibold mb-2">Write your thoughts:</h2>
           <textarea
-            className="textarea textarea-bordered w-full text-lg"
-            rows={5}
-            placeholder="Start writing here..."
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
+            placeholder="Start writing..."
+            className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            required
           />
         </div>
 
-        <div className="form-control">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <span className="text-sm sm:text-base text-left break-words leading-snug">
-              Notify my group if this entry is sad or angry
-            </span>
-            <input
-              type="checkbox"
-              className="toggle toggle-primary"
-              checked={notifyGroups}
-              onChange={() => setNotifyGroups(!notifyGroups)}
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="notifyGroups"
+            checked={notifyGroups}
+            onChange={(e) => setNotifyGroups(e.target.checked)}
+            className="rounded"
+          />
+          <label htmlFor="notifyGroups" className="text-sm">
+            Notify my groups if I'm feeling down
+          </label>
         </div>
 
-        <div className="text-center">
-          <button
-            type="submit"
-            disabled={!entry.trim() || !selectedMood}
-            className="btn btn-primary btn-wide text-lg"
-          >
-            Save Entry
-          </button>
-        </div>
-
-        <div className="text-center mt-4">
-          <Link href="/journal/calendar" className="link link-primary text-sm underline">
-            📅 View past entries
-          </Link>
-        </div>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50"
+        >
+          {submitting ? 'Saving...' : 'Save Entry'}
+        </button>
 
         {message && (
-          <div className="text-center text-green-600 font-semibold text-lg">
+          <div className={`text-center p-3 rounded-lg ${
+            message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
             {message}
           </div>
         )}
       </form>
 
-      {/* Encouragement Modal */}
+      <div className="mt-8 text-center">
+        <Link href="/journal/calendar" className="text-purple-600 hover:text-purple-800 underline">
+          View Calendar 📅
+        </Link>
+      </div>
+
       <AnimatePresence>
         {showModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
             onClick={() => setShowModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
-              className="bg-white rounded-xl p-6 max-w-md w-full text-center shadow-lg"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-xl p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold mb-4 text-purple-700">💛 Encouragement</h2>
-              <p className="text-lg text-gray-700">{encouragement}</p>
-              <button className="btn btn-sm mt-6" onClick={() => setShowModal(false)}>Close</button>
+              <h3 className="text-xl font-semibold mb-4">Here's something to brighten your day:</h3>
+              <p className="text-gray-700 mb-4">{encouragement}</p>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Thank you! 💜
+              </button>
             </motion.div>
           </motion.div>
         )}

@@ -9,6 +9,7 @@ import {
   deleteOldNotifications,
   Notification
 } from '../lib/notifications';
+import { updateAppBadge, clearAppBadge } from '../lib/pushNotifications';
 
 export function useNotifications() {
   const { user } = useFirebaseAuth();
@@ -75,6 +76,7 @@ export function useNotifications() {
       );
       
       setUnreadCount(0);
+      clearAppBadge();
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
       setError('Failed to mark all notifications as read');
@@ -112,6 +114,13 @@ export function useNotifications() {
       // Update unread count
       const unread = newNotifications.filter(n => !n.read).length;
       setUnreadCount(unread);
+      
+      // Update app badge
+      if (unread > 0) {
+        updateAppBadge(unread);
+      } else {
+        clearAppBadge();
+      }
     });
 
     // Cleanup on unmount

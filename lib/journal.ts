@@ -6,8 +6,9 @@ export interface JournalEntryData {
   content: string;
   mood: 'happy' | 'sad' | 'neutral' | 'angry' | 'love';
   prompt?: string;
-  type: 'manual' | 'button';
+  type: 'manual' | 'button' | 'prompt';
   notify_groups?: boolean; // Whether to notify support groups
+  image_url?: string; // For entries with images
 }
 
 // Add a new journal entry

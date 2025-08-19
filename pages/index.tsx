@@ -9,6 +9,9 @@ import VideoCelebration from "../components/VideoCelebration";
 import SmileyButton from "../components/SmileyButton";
 import SadFaceButton from "../components/SadFaceButton";
 import GroupSelector from "../components/GroupSelector";
+import DailyPrompt from "../components/DailyPrompt";
+import NotificationPermission from "../components/NotificationPermission";
+import PWAInstallPrompt from "../components/PWAInstallPrompt";
 
 const bubbleColors = [
   "bg-cyan-200",
@@ -185,6 +188,14 @@ export default function HomePage() {
 
               {user && (
                 <div className="mb-6 text-center">
+                  {/* World Board Navigation */}
+                  <div className="flex justify-center mb-4">
+                    <Link href="/world-board">
+                      <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-2 px-6 rounded-full shadow-sm hover:shadow-md transition-all text-sm">
+                        🌍 World Board
+                      </button>
+                    </Link>
+                  </div>
                                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center mb-6">
                      <SmileyButton onClick={handleHappyParty} />
                      <SadFaceButton onClick={handleFeelingDown} />
@@ -199,6 +210,26 @@ export default function HomePage() {
                       ✨ {encouragement} ✨
                     </motion.div>
                   )}
+                </div>
+              )}
+
+              {/* Notification Permission */}
+              {user && (
+                <div className="max-w-2xl mx-auto mb-6">
+                  <NotificationPermission />
+                </div>
+              )}
+
+              {/* PWA Install Prompt */}
+              <PWAInstallPrompt />
+
+              {/* Daily Prompt Section */}
+              {user && (
+                <div className="max-w-2xl mx-auto mb-6">
+                  <DailyPrompt onResponseSubmitted={() => {
+                    // Refresh happy moments when user responds to daily prompt
+                    // This will be handled by the hook automatically
+                  }} />
                 </div>
               )}
 

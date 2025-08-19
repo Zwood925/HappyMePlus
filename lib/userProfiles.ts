@@ -21,6 +21,7 @@ export interface UserProfile {
   created_at: any;
   updated_at: any;
   default_group_id?: string;
+  fcm_token?: string; // Firebase Cloud Messaging token for push notifications
   notification_preferences?: {
     email_notifications: boolean;
     push_notifications: boolean;
@@ -193,5 +194,31 @@ export async function getUserDefaultHappyMomentGroups(userId: string): Promise<s
   } catch (error) {
     console.error('Error getting user default happy moment groups:', error);
     return [];
+  }
+}
+
+// Update FCM token for push notifications
+export async function updateFCMToken(userId: string, fcmToken: string): Promise<void> {
+  try {
+    const profileRef = doc(db, 'user_profiles', userId);
+    await updateDoc(profileRef, {
+      fcm_token: fcmToken,
+      updated_at: serverTimestamp()
+    });
+    console.log('FCM token updated for user:', userId);
+  } catch (error) {
+    console.error('Error updating FCM token:', error);
+    throw error;
+  }
+}
+
+// Get FCM token for a user
+export async function getFCMToken(userId: string): Promise<string | null> {
+  try {
+    const profile = await getUserProfile(userId);
+    return profile?.fcm_token || null;
+  } catch (error) {
+    console.error('Error getting FCM token:', error);
+    return null;
   }
 } 

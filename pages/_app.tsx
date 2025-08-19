@@ -1,5 +1,6 @@
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import "../styles/globals.css";
 import Layout from "../components/layout";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
@@ -32,6 +33,20 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
 }
 
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
+  // Register service worker for PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => {
+          console.log('SW registered: ', registration);
+        })
+        .catch((registrationError) => {
+          console.log('SW registration failed: ', registrationError);
+        });
+    }
+  }, []);
+
   return <InnerApp Component={Component} pageProps={pageProps} router={router} />;
 }
 // 

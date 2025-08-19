@@ -10,13 +10,12 @@ function HappyMomentsPage() {
     loading, 
     totalCount, 
     hasMore, 
-    loadMore, 
-    resetAndLoadAll 
+    loadAllMoments 
   } = useHappyMoments();
 
   useEffect(() => {
-    resetAndLoadAll();
-  }, [resetAndLoadAll]);
+    loadAllMoments(true); // true to reset
+  }, [loadAllMoments]);
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
@@ -101,7 +100,7 @@ function HappyMomentsPage() {
         {hasMore && !loading && (
           <div className="text-center mt-8">
             <button
-              onClick={loadMore}
+              onClick={() => loadAllMoments(false)}
               className="btn btn-primary btn-lg px-8"
             >
               Load More Moments

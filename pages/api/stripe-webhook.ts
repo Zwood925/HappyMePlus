@@ -13,11 +13,11 @@ export const config = {
   },
 };
 
-const stripe = new Stripe(appSettings.stripe.secretKey, {
+const stripe = new Stripe(appSettings.stripe.secretKey || "", {
   apiVersion: "2025-04-30.basil",
 });
 
-const webhookSecret = appSettings.stripe.webhookSecret;
+const webhookSecret = appSettings.stripe.webhookSecret || "";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import { config } from "../../lib/config";
 
-const stripe = new Stripe(config.stripe.secretKey, {
+const stripe = new Stripe(config.stripe.secretKey || "", {
   apiVersion: "2025-04-30.basil",
 });
 
@@ -38,7 +38,7 @@ const session = await stripe.checkout.sessions.create({
   payment_method_types: ["card"],
   line_items: [
     {
-      price: config.stripe.priceId,
+      price: config.stripe.priceId || "",
       quantity: 1,
     },
   ],

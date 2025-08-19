@@ -34,3 +34,4 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
   return <InnerApp Component={Component} pageProps={pageProps} router={router} />;
 }
+// 

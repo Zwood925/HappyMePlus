@@ -52,7 +52,9 @@ export async function createUserProfile(user: User, displayName?: string): Promi
       notification_preferences: {
         email_notifications: true,
         push_notifications: true,
-        group_notifications: true
+        group_notifications: true,
+        support_notifications: true,
+        group_invites: true
       },
       settings: {
         theme: 'auto',

@@ -11,7 +11,8 @@ import {
   serverTimestamp,
   orderBy,
   limit,
-  onSnapshot
+  onSnapshot,
+  deleteDoc
 } from 'firebase/firestore';
 
 export interface Notification {
@@ -22,6 +23,7 @@ export interface Notification {
   message: string;
   data?: {
     group_id?: string;
+    group_name?: string;
     sender_id?: string;
     sender_name?: string;
     invite_code?: string;
@@ -267,7 +269,7 @@ export async function deleteOldNotifications(userId: string, daysOld: number = 3
     );
     
     const querySnapshot = await getDocs(q);
-    const deletePromises = querySnapshot.docs.map(doc => doc.ref.delete());
+    const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
     
     await Promise.all(deletePromises);
   } catch (error) {

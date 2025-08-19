@@ -122,6 +122,9 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Firebase Functions (deploy separately)
+functions/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

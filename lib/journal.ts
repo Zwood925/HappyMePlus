@@ -7,6 +7,7 @@ export interface JournalEntryData {
   mood: 'happy' | 'sad' | 'neutral' | 'angry' | 'love';
   prompt?: string;
   type: 'manual' | 'button';
+  notify_groups?: boolean; // Whether to notify support groups
 }
 
 // Add a new journal entry

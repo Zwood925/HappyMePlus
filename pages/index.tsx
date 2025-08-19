@@ -2,12 +2,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { useHappyMoments } from "../hooks/useHappyMoments";
-// import { useEncouragements } from "../hooks/useEncouragements";
+import { useNotifications } from "../hooks/useNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import VideoCelebration from "../components/VideoCelebration";
 import SmileyButton from "../components/SmileyButton";
 import SadFaceButton from "../components/SadFaceButton";
+import GroupSelector from "../components/GroupSelector";
 
 const bubbleColors = [
   "bg-cyan-200",
@@ -28,23 +29,19 @@ export default function HomePage() {
     addMoment 
   } = useHappyMoments();
 
+  const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
+
   const [input, setInput] = useState("");
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [encouragement, setEncouragement] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>("");
-
-  // TODO: Replace with Firebase-based encouragements hook
-  // const {
-  //   encouragements,
-  //   unreadCount,
-  //   loading: encouragementsLoading,
-  //   markAllAsRead,
-  // } = useEncouragements();
-  
-  // Temporary placeholder values
-  const encouragements: any[] = [];
-  const unreadCount = 0;
-  const encouragementsLoading = false;
-  const markAllAsRead = () => {};
   const [inboxOpen, setInboxOpen] = useState(false);
   const [showVideoCelebration, setShowVideoCelebration] = useState(false);
 
@@ -52,7 +49,7 @@ export default function HomePage() {
     setInboxOpen((prev) => {
       const newOpenState = !prev;
       if (newOpenState && unreadCount > 0) {
-        // setTimeout(() => markAllAsRead(), 10000);
+        setTimeout(() => markAllAsRead(), 10000);
       }
       return newOpenState;
     });
@@ -121,10 +118,11 @@ export default function HomePage() {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    const success = await addMoment(input.trim());
+    const success = await addMoment(input.trim(), selectedGroups);
     if (success) {
       setInput("");
-      // TODO: Add group logic here later
+      setSelectedGroups([]);
+      setShowGroupSelector(false);
     }
   };
 
@@ -209,29 +207,54 @@ export default function HomePage() {
                   onSubmit={handleSubmit}
                   className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
                 >
-                  <textarea
+                                    <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     rows={4}
                     className="textarea textarea-bordered w-full text-lg"
                     placeholder="Share a small joy, a big win, or anything that made you smile…"
                   />
-                                     <div className="mt-4 text-center">
-                     <button
-                       type="submit"
-                       className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
-                       disabled={!input.trim() || submitting}
-                     >
-                       {submitting ? (
-                         <>
-                           <div className="loading loading-spinner loading-sm"></div>
-                           Adding...
-                         </>
-                       ) : (
-                         'Add Happy Moment'
-                       )}
-                     </button>
-                   </div>
+                  
+                  {/* Group Selection */}
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowGroupSelector(!showGroupSelector)}
+                      className="btn btn-outline btn-sm w-full"
+                    >
+                      {showGroupSelector ? 'Hide' : 'Share with Groups'} 
+                      {selectedGroups.length > 0 && ` (${selectedGroups.length} selected)`}
+                    </button>
+                    
+                    {showGroupSelector && (
+                      <div className="mt-3 p-4 bg-gray-50 rounded-lg">
+                        <GroupSelector
+                          selectedGroups={selectedGroups}
+                          onGroupsChange={setSelectedGroups}
+                          title="Share with Groups"
+                          description="Choose which groups to share this moment with:"
+                          maxSelection={3}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4 text-center">
+                    <button
+                      type="submit"
+                      className="btn bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm sm:text-base py-3 px-6 w-full rounded-full"
+                      disabled={!input.trim() || submitting}
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="loading loading-spinner loading-sm"></div>
+                          Adding...
+                        </>
+                      ) : (
+                        'Add Happy Moment'
+                      )}
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <p className="text-center text-lg mb-8 p-4 bg-base-200 rounded-md shadow">
@@ -326,36 +349,52 @@ export default function HomePage() {
                           <button className="btn btn-sm btn-circle btn-ghost" onClick={toggleInbox}>✕</button>
                         </div>
 
-                        {encouragementsLoading && (
+                        {notificationsLoading && (
                           <div className="flex justify-center my-8">
                             <span className="loading loading-lg loading-spinner text-primary"></span>
                           </div>
                         )}
 
-                        {!encouragementsLoading && encouragements.length === 0 && (
-                          <p className="text-center text-neutral-content py-4">You have no new encouragements right now. Keep shining!</p>
+                        {!notificationsLoading && notifications.length === 0 && (
+                          <p className="text-center text-neutral-content py-4">You have no new notifications right now. Keep shining!</p>
                         )}
 
-                        {!encouragementsLoading && encouragements.length > 0 && (
+                        {!notificationsLoading && notifications.length > 0 && (
                           <ul className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                            {encouragements.map((enc) => (
-                              <li key={enc.id} className={`p-3 rounded-lg shadow ${enc.read_at ? 'bg-base-200' : 'bg-primary/10 border border-primary'}`}>
-                                <p className="font-semibold text-base-content">
-                                  {enc.message
-                                    ? enc.message
-                                    : `${enc.sender_name || "An anonymous friend"} sent you a boost:`}
-                                </p>
-
-                                <p className="mt-1 text-base-content/80">{enc.message}</p>
-                                <p className="text-xs text-right text-base-content/60 mt-2">
-                                  {new Date(enc.created_at).toLocaleString()}
-                                </p>
+                            {notifications.map((notification) => (
+                              <li 
+                                key={notification.id} 
+                                className={`p-3 rounded-lg shadow cursor-pointer transition-colors ${
+                                  notification.read ? 'bg-base-200' : 'bg-primary/10 border border-primary'
+                                }`}
+                                onClick={() => {
+                                  if (!notification.read) {
+                                    markAsRead(notification.id!);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="text-2xl">
+                                    {notification.type === 'support_request' ? '💙' : 
+                                     notification.type === 'encouragement' ? '💝' : 
+                                     notification.type === 'group_invite' ? '👥' : '🔔'}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-base-content">
+                                      {notification.title}
+                                    </p>
+                                    <p className="mt-1 text-base-content/80">{notification.message}</p>
+                                    <p className="text-xs text-right text-base-content/60 mt-2">
+                                      {notification.created_at?.toDate?.()?.toLocaleString() || 'Just now'}
+                                    </p>
+                                  </div>
+                                </div>
                               </li>
                             ))}
                           </ul>
                         )}
 
-                        {unreadCount > 0 && !encouragementsLoading && (
+                        {unreadCount > 0 && !notificationsLoading && (
                           <div className="card-actions justify-end mt-6">
                             <button className="btn btn-primary btn-sm" onClick={() => markAllAsRead()}>
                               Mark all as read

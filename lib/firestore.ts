@@ -17,6 +17,7 @@ export interface HappyMoment {
   id?: string;
   content: string;
   userId: string;
+  groupIds?: string[]; // Groups this moment should be shared with
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -26,17 +27,35 @@ export interface HappyMomentWithId extends HappyMoment {
 }
 
 // Add a new happy moment
-export async function addHappyMoment(content: string, userId: string): Promise<string> {
+export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
   try {
+    // Import here to avoid circular dependencies
+    const { ensureUserProfile } = await import('./userProfiles');
+    const { getCurrentUser } = await import('./firebaseAuth');
+    
+    // Ensure user profile exists
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      try {
+        await ensureUserProfile(currentUser);
+        console.log('User profile ensured for happy moment creation');
+      } catch (profileError) {
+        console.error('Failed to ensure user profile:', profileError);
+        // Continue with happy moment creation even if profile creation fails
+      }
+    }
+    
     const momentData: Omit<HappyMoment, 'id'> = {
       content,
       userId,
+      groupIds: groupIds || [],
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
 
     const collectionRef = collection(db, 'happy_moments');
     const docRef = await addDoc(collectionRef, momentData);
+    console.log('Happy moment created successfully:', docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error adding happy moment:', error);

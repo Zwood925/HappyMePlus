@@ -46,7 +46,8 @@ export default function JournalPage() {
         content: entry,
         mood: selectedMood as any || 'neutral',
         prompt: selectedPrompt,
-        type: 'manual'
+        type: 'manual',
+        notify_groups: notifyGroups
       });
 
       setMessage('Entry saved! ✅');

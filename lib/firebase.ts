@@ -22,7 +22,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app, 'happyme'); // Explicitly specify database name
+export const db = getFirestore(app, 'happyme'); // Use the correct database name
 export const storage = getStorage(app);
 
 // Connect to emulators in development

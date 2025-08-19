@@ -12,10 +12,6 @@ import {
 
 // Sign in with email and password
 export async function signInWithEmail(email: string, password: string) {
-  if (!auth) {
-    return { user: null, error: new Error('Firebase auth not initialized') };
-  }
-  
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
@@ -26,10 +22,6 @@ export async function signInWithEmail(email: string, password: string) {
 
 // Create user with email and password
 export async function createUserWithEmail(email: string, password: string) {
-  if (!auth) {
-    return { user: null, error: new Error('Firebase auth not initialized') };
-  }
-  
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
@@ -53,10 +45,6 @@ export async function createUserWithEmail(email: string, password: string) {
 
 // Sign out user
 export async function signOutUser() {
-  if (!auth) {
-    return { error: new Error('Firebase auth not initialized') };
-  }
-  
   try {
     await firebaseSignOut(auth);
     return { error: null };
@@ -67,19 +55,15 @@ export async function signOutUser() {
 
 // Get current user
 export function getCurrentUser(): User | null {
-  return auth?.currentUser || null;
+  return auth.currentUser;
 }
 
 // Listen to auth state changes
 export function onAuthStateChange(callback: (user: User | null) => void) {
-  if (!auth) {
-    // Return a no-op unsubscribe function if auth is not initialized
-    return () => {};
-  }
   return onAuthStateChanged(auth, callback);
 }
 
 // Check if user is authenticated
 export const isAuthenticated = (): boolean => {
-  return auth?.currentUser !== null;
+  return auth.currentUser !== null;
 }; 

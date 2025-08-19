@@ -13,14 +13,6 @@ import {
   writeBatch
 } from 'firebase/firestore';
 
-// Helper function to check if Firestore is available
-function checkFirestore() {
-  if (!db) {
-    throw new Error('Firestore is not initialized');
-  }
-  return db;
-}
-
 export interface Group {
   id: string;
   name: string;
@@ -94,8 +86,7 @@ export async function createGroup(
     console.log('Creating group with data:', groupData);
     
     // Try creating just the group first
-    const firestore = checkFirestore();
-    const groupRef = await addDoc(collection(firestore, 'groups'), groupData);
+    const groupRef = await addDoc(collection(db, 'groups'), groupData);
     console.log('Group created with ID:', groupRef.id);
     
     // Wait a moment before creating the member record

@@ -13,6 +13,8 @@ import {
   startAfter
 } from 'firebase/firestore';
 
+
+
 export interface HappyMoment {
   id?: string;
   content: string;
@@ -66,7 +68,8 @@ export async function addHappyMoment(content: string, userId: string, groupIds?:
 // Get recent happy moments for a user
 export async function getRecentHappyMoments(userId: string, limitCount: number = 5): Promise<HappyMomentWithId[]> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
+    const firestore = checkFirestore();
+    const collectionRef = collection(firestore, 'happy_moments');
     
     const q = query(
       collectionRef,
@@ -100,7 +103,8 @@ export async function getAllHappyMoments(
   lastDoc?: QueryDocumentSnapshot<DocumentData>
 ): Promise<{ moments: HappyMomentWithId[], lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
+    const firestore = checkFirestore();
+    const collectionRef = collection(firestore, 'happy_moments');
     
     let q = query(
       collectionRef,
@@ -145,7 +149,8 @@ export async function getAllHappyMoments(
 // Get count of happy moments for a user
 export async function getHappyMomentsCount(userId: string): Promise<number> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
+    const firestore = checkFirestore();
+    const collectionRef = collection(firestore, 'happy_moments');
     const q = query(
       collectionRef,
       where('userId', '==', userId)

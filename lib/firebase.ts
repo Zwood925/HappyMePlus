@@ -17,13 +17,19 @@ const firebaseConfig = {
   appId: config.firebase.appId,
 };
 
-// Initialize Firebase app
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Only initialize Firebase if we have the required config and we're not in a build environment
+let app;
+if (firebaseConfig.apiKey && firebaseConfig.projectId && typeof window !== 'undefined') {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+} else {
+  console.warn('Firebase config not available or in build environment, skipping initialization');
+  app = null;
+}
 
 // Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app, 'happyme'); // Use the correct database name
-export const storage = getStorage(app);
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app, 'happyme') : null; // Use the correct database name
+export const storage = app ? getStorage(app) : null;
 
 // Connect to emulators in development
 if (config.app.isDevelopment) {

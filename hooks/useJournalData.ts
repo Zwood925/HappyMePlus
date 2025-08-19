@@ -33,7 +33,7 @@ export function useJournalData() {
 
   // Fetch all entries for a user
   const loadEntries = useCallback(async () => {
-    if (!user?.uid) return;
+    if (!user?.uid || !db) return;
 
     setLoading(true);
     setError(null);

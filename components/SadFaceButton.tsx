@@ -16,7 +16,7 @@ export default function SadFaceButton({ onClick, disabled = false }: SadFaceButt
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {/* 3D Sad Face Container */}
-      <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48">
+      <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40">
         {/* Storm Cloud */}
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
           <div className="relative">
@@ -148,10 +148,10 @@ export default function SadFaceButton({ onClick, disabled = false }: SadFaceButt
         transition={{ delay: 0.2 }}
         className="text-center mt-4"
       >
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-800 mb-1 font-fredoka animate-bounce-gentle">
+        <h3 className="text-sm sm:text-lg md:text-xl font-bold text-blue-800 mb-1 font-fredoka animate-bounce-gentle">
           Feelin&apos; Down
         </h3>
-        <p className="text-xs sm:text-sm text-blue-600 font-medium font-comic">
+        <p className="text-xs text-blue-600 font-medium font-comic">
           Need a hug? 🌧️
         </p>
       </motion.div>

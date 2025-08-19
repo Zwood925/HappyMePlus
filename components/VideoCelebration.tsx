@@ -80,14 +80,14 @@ export default function VideoCelebration({ isOpen, onClose }: VideoCelebrationPr
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative max-w-4xl w-full mx-4"
+          className="relative max-w-4xl w-full mx-2 sm:mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Video Container */}
           <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
-              className="w-full h-auto max-h-[80vh] object-contain"
+              className="w-full h-auto max-h-[70vh] sm:max-h-[80vh] object-contain"
               onEnded={handleVideoEnd}
               onError={(e) => {
                 console.error('Video error:', e);
@@ -128,10 +128,10 @@ export default function VideoCelebration({ isOpen, onClose }: VideoCelebrationPr
             transition={{ delay: 0.2 }}
             className="text-center mt-6"
           >
-            <h2 className="text-3xl font-bold text-white mb-2">
+            <h2 className="text-xl sm:text-3xl font-bold text-white mb-2">
               🎉 You&apos;re Awesome! 🎉
             </h2>
-            <p className="text-white text-lg opacity-90">
+            <p className="text-white text-base sm:text-lg opacity-90">
               Keep spreading that positive energy!
             </p>
           </motion.div>

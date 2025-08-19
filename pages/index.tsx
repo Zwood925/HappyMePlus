@@ -160,7 +160,7 @@ export default function HomePage() {
   
       return (
         <>
-          <div className="relative min-h-screen overflow-hidden bg-cyan-50 text-purple-700 px-4 py-8">
+          <div className="relative min-h-screen overflow-hidden bg-cyan-50 text-purple-700 px-2 sm:px-4 py-4 sm:py-8">
             {/* Bubbles */}
             <div className="absolute inset-0 z-0 overflow-hidden">{floatingBubbles}</div>
 
@@ -236,7 +236,7 @@ export default function HomePage() {
               {user ? (
                 <form
                   onSubmit={handleSubmit}
-                  className="bg-white p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-10"
+                  className="bg-white p-4 sm:p-6 rounded-3xl shadow-xl max-w-2xl mx-auto mb-6 sm:mb-10"
                 >
                                     <textarea
                     value={input}
@@ -366,11 +366,11 @@ export default function HomePage() {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1001] flex items-center justify-center p-4"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1001] flex items-center justify-center p-2 sm:p-4"
                     onClick={toggleInbox}
                   >
                     <motion.div
-                      className="card w-full max-w-lg bg-base-100 shadow-xl"
+                      className="card w-full max-w-lg bg-base-100 shadow-xl max-h-[90vh] overflow-hidden"
                       onClick={(e) => e.stopPropagation()}
                       variants={modalVariants}
                     >
@@ -391,7 +391,7 @@ export default function HomePage() {
                         )}
 
                         {!notificationsLoading && notifications.length > 0 && (
-                          <ul className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                          <ul className="space-y-3 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto pr-2">
                             {notifications.map((notification) => (
                               <li 
                                 key={notification.id} 

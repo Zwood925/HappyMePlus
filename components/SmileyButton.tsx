@@ -16,7 +16,7 @@ export default function SmileyButton({ onClick, disabled = false }: SmileyButton
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {/* 3D Smiley Face Container */}
-      <div className="relative w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48">
+      <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40">
         {/* Main Face Circle */}
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-full shadow-2xl border-4 border-yellow-600 transform rotate-3 group-hover:rotate-0 transition-transform duration-300">
           {/* 3D Effect - Top highlight */}
@@ -54,10 +54,10 @@ export default function SmileyButton({ onClick, disabled = false }: SmileyButton
         transition={{ delay: 0.2 }}
         className="text-center mt-4"
       >
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-purple-800 mb-1 font-fredoka animate-bounce-gentle">
+        <h3 className="text-sm sm:text-lg md:text-xl font-bold text-purple-800 mb-1 font-fredoka animate-bounce-gentle">
           I Feel Good!
         </h3>
-        <p className="text-xs sm:text-sm text-purple-600 font-medium font-comic">
+        <p className="text-xs text-purple-600 font-medium font-comic">
           Click me! 🎉
         </p>
       </motion.div>

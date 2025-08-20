@@ -3,7 +3,7 @@ import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import { getWorldBoardResponses, DailyPromptResponse } from '../lib/dailyPrompts';
 import { sendEncouragementNotification } from '../lib/notifications';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import BottomNavigation from '../components/BottomNavigation';
 
 export default function WorldBoard() {
   const { user } = useFirebaseAuth();
@@ -73,161 +73,101 @@ export default function WorldBoard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50">
+    <>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="text-4xl">🌍</div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">World Board</h1>
-                <p className="text-gray-600">Joy from around the world</p>
-              </div>
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center space-x-3">
+            <div className="text-2xl">🌍</div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-800">World Board</h1>
+              <p className="text-xs text-gray-500">Joy from around the world</p>
             </div>
-            <Link href="/">
-              <button className="text-gray-500 hover:text-gray-700 transition-colors">
-                <span className="text-2xl">←</span>
-              </button>
-            </Link>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Main Content */}
+      <div className="pt-16 pb-20 min-h-screen bg-gray-50">
         {/* Stats */}
-        <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-purple-600">{responses.length}</div>
-              <div className="text-gray-600">Joy shared today</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-pink-600">🌍</div>
-              <div className="text-gray-600">Around the world</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-yellow-600">✨</div>
-              <div className="text-gray-600">Spreading joy</div>
-            </div>
+        <div className="bg-white m-4 rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600 mb-1">{responses.length}</div>
+            <div className="text-sm text-gray-600">Moments of joy shared today</div>
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading joy from around the world...</p>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <p className="text-red-700 mb-4">{error}</p>
-            <button
-              onClick={loadWorldBoardResponses}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
-
-        {/* World Board Responses */}
-        {!loading && !error && (
-          <div className="space-y-6">
-            {responses.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🌟</div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Be the first to share joy!</h3>
-                <p className="text-gray-600 mb-6">Share your daily prompt response publicly to appear on the World Board</p>
-                <Link href="/">
-                  <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-                    Share Your Joy
-                  </button>
-                </Link>
-              </div>
-            ) : (
-              <AnimatePresence>
-                {responses.map((response, index) => (
-                  <motion.div
-                    key={response.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-                  >
-                    {/* Prompt */}
-                    <div className="mb-4">
-                      <div className="text-sm text-purple-600 font-medium mb-2">
-                        Today's Prompt
-                      </div>
-                      <div className="text-lg text-gray-800 font-medium italic">
-                        "{response.promptText}"
-                      </div>
-                    </div>
-
-                    {/* Response */}
-                    <div className="mb-4">
-                      <div className="text-gray-700 leading-relaxed text-lg">
-                        {response.response}
-                      </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-2xl">{getRandomEmoji()}</div>
-                        <div className="text-sm text-gray-500">
-                          {getTimeAgo(response.createdAt)}
-                        </div>
-                      </div>
-
-                      {user && user.uid !== response.userId && (
-                        <button
-                          onClick={() => handleSendEncouragement(response)}
-                          disabled={sendingEncouragement === response.id}
-                          className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                        >
-                          {sendingEncouragement === response.id ? (
-                            <span className="flex items-center">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Sending...
-                            </span>
-                          ) : (
-                            'Send Encouragement 💝'
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            )}
-          </div>
-        )}
-
-        {/* Call to Action */}
-        {!loading && !error && responses.length > 0 && (
-          <div className="text-center mt-12">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Share your joy with the world!</h3>
-              <p className="text-gray-600 mb-6">
-                Your daily prompt response could inspire someone across the globe
-              </p>
-              <Link href="/">
-                <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition-all">
-                  Share Your Joy
-                </button>
-              </Link>
+        {/* Content */}
+        <div className="px-4">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="loading loading-spinner loading-lg text-purple-500"></div>
             </div>
-          </div>
-        )}
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">😔</div>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button
+                onClick={loadWorldBoardResponses}
+                className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : responses.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🌍</div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">No joy shared yet</h3>
+              <p className="text-gray-500">Be the first to share joy with the world!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {responses.map((response) => (
+                <motion.div
+                  key={response.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
+                      {getRandomEmoji()}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 mb-2">
+                        {getTimeAgo(response.createdAt)}
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3 mb-3">
+                        <p className="text-sm text-purple-700 font-medium mb-1">
+                          "{response.promptText}"
+                        </p>
+                        <p className="text-gray-800">{response.response}</p>
+                      </div>
+                      <button
+                        onClick={() => handleSendEncouragement(response)}
+                        disabled={sendingEncouragement === response.id}
+                        className="text-sm text-purple-600 hover:text-purple-700 font-medium disabled:opacity-50"
+                      >
+                        {sendingEncouragement === response.id ? (
+                          <span className="flex items-center">
+                            <div className="loading loading-spinner loading-xs mr-1"></div>
+                            Sending...
+                          </span>
+                        ) : (
+                          '💝 Send Encouragement'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
+    </>
   );
 }

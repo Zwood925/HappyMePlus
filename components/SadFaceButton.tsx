@@ -31,15 +31,15 @@ export default function SadFaceButton({ onClick, disabled = false }: SadFaceButt
           {/* Simple Highlight */}
           <div className="absolute top-3 left-6 w-12 h-6 bg-gradient-to-b from-blue-200 to-transparent rounded-full opacity-50"></div>
           
-          {/* Left Eye - Larger and cleaner */}
-          <div className="absolute top-10 left-10 w-5 h-5 bg-black rounded-full">
+          {/* Left Eye - Spread further apart */}
+          <div className="absolute top-10 left-8 w-5 h-5 bg-black rounded-full">
             <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
             {/* Simple sad eyebrow */}
             <div className="absolute -top-0.5 left-0 w-5 h-0.5 bg-black rounded-full transform rotate-6"></div>
           </div>
           
-          {/* Right Eye - Larger and cleaner */}
-          <div className="absolute top-10 right-10 w-5 h-5 bg-black rounded-full">
+          {/* Right Eye - Spread further apart */}
+          <div className="absolute top-10 right-8 w-5 h-5 bg-black rounded-full">
             <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
             {/* Simple sad eyebrow */}
             <div className="absolute -top-0.5 right-0 w-5 h-0.5 bg-black rounded-full transform -rotate-6"></div>

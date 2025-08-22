@@ -104,11 +104,11 @@ function CommunityPage() {
     console.log(`Shared post ${postId}`);
   };
 
-  const handleShareJoy = async (data: { content: string; isPublic: boolean }) => {
+  const handleShareJoy = async (data: { content: string; isPublic: boolean; imageFile?: File }) => {
     if (!user?.uid || !user?.displayName) return;
     
     try {
-      await createPost(user.uid, user.displayName, data.content, data.isPublic);
+      await createPost(user.uid, user.displayName, data.content, data.isPublic, data.imageFile);
       setShowSharingModal(false);
       fetchPosts();
     } catch (error) {

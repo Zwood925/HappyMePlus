@@ -5,7 +5,7 @@ import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 interface JoySharingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onShare: (data: { content: string; isPublic: boolean }) => void;
+  onShare: (data: { content: string; isPublic: boolean; imageFile?: File }) => void;
 }
 
 const JOY_PROMPTS = [
@@ -24,6 +24,59 @@ export default function JoySharingModal({
   const [content, setContent] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be smaller than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleGalleryClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
+      fileInputRef.current.click();
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleShare = async () => {
     if (!content.trim() || !user) return;
@@ -32,9 +85,12 @@ export default function JoySharingModal({
     try {
       await onShare({
         content: content.trim(),
-        isPublic
+        isPublic,
+        imageFile: selectedImage || undefined
       });
       setContent('');
+      setSelectedImage(null);
+      setImagePreview(null);
       onClose();
     } catch (error) {
       console.error('Error sharing joy:', error);
@@ -57,7 +113,7 @@ export default function JoySharingModal({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-xl shadow-2xl max-w-md w-full"
+            className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -92,6 +148,52 @@ export default function JoySharingModal({
                   ))}
                 </div>
               </div>
+
+              {/* Photo Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Add a Photo 📸
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCameraClick}
+                    className="flex-1 py-2 px-3 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                  >
+                    📷 Camera
+                  </button>
+                  <button
+                    onClick={handleGalleryClick}
+                    className="flex-1 py-2 px-3 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                  >
+                    🖼️ Gallery
+                  </button>
+                </div>
+                
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
 
               {/* Content Input */}
               <div>

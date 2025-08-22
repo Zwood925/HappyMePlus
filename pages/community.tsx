@@ -6,7 +6,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import JoyChallenge from '../components/JoyChallenge';
 import EnhancedPostCard from '../components/EnhancedPostCard';
 import JoySharingModal from '../components/JoySharingModal';
-import { createPost, getPublicPosts, addReaction, addComment, Post } from '../lib/community';
+import { createPost, getPublicPosts, addReaction, addComment, Post, subscribeToPosts } from '../lib/community';
 
 interface Challenge {
   id: string;
@@ -82,8 +82,7 @@ function CommunityPage() {
     
     try {
       await addReaction(postId, user.uid, emoji);
-      // Refresh posts to show updated reactions
-      fetchPosts();
+      // Real-time updates will handle the UI refresh
     } catch (error) {
       console.error('Error adding reaction:', error);
     }
@@ -94,8 +93,7 @@ function CommunityPage() {
     
     try {
       await addComment(postId, user.uid, user.displayName, content);
-      // Refresh posts to show new comment
-      fetchPosts();
+      // Real-time updates will handle the UI refresh
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -131,7 +129,14 @@ function CommunityPage() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    // Set up real-time listener for posts
+    const unsubscribe = subscribeToPosts((updatedPosts) => {
+      setPosts(updatedPosts);
+      setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   const tabs = [

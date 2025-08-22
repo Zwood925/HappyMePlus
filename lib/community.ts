@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc, getDoc, arrayUnion, onSnapshot } from 'firebase/firestore';
 
 export interface Post {
   id: string;
@@ -60,6 +60,26 @@ export const getPublicPosts = async (): Promise<Post[]> => {
     console.error('Error fetching posts:', error);
     throw new Error('Failed to fetch posts');
   }
+};
+
+// Real-time listener for posts
+export const subscribeToPosts = (callback: (posts: Post[]) => void) => {
+  const q = query(
+    collection(db, 'posts'),
+    where('isPublic', '==', true),
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(q, (querySnapshot) => {
+    const posts: Post[] = [];
+    querySnapshot.forEach((doc) => {
+      posts.push({
+        id: doc.id,
+        ...doc.data()
+      } as Post);
+    });
+    callback(posts);
+  });
 };
 
 // Reactions Functions
@@ -157,4 +177,23 @@ export const getPostComments = async (postId: string): Promise<any[]> => {
     console.error('Error fetching comments:', error);
     throw new Error('Failed to fetch comments');
   }
+};
+
+// Real-time listener for comments
+export const subscribeToComments = (postId: string, callback: (comments: any[]) => void) => {
+  const q = query(
+    collection(db, 'posts', postId, 'comments'),
+    orderBy('createdAt', 'asc')
+  );
+
+  return onSnapshot(q, (querySnapshot) => {
+    const comments: any[] = [];
+    querySnapshot.forEach((doc) => {
+      comments.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    callback(comments);
+  });
 };

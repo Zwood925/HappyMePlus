@@ -14,10 +14,10 @@ export default function BottomNavigation() {
       active: router.pathname === '/'
     },
     {
-      path: '/world-board',
+      path: '/community',
       icon: '🌍',
-      label: 'World',
-      active: router.pathname === '/world-board'
+      label: 'Community',
+      active: router.pathname === '/community'
     },
     {
       path: '/journal',

@@ -5,6 +5,7 @@ import { signOutUser } from "../lib/firebaseAuth";
 import { motion } from "framer-motion";
 import GroupSelector from "../components/GroupSelector";
 import { getUserSupportGroups, getUserDefaultHappyMomentGroups, updateGroupNotificationPreferences } from "../lib/userProfiles";
+import BottomNavigation from "../components/BottomNavigation";
 
 export default function SettingsPage() {
   const { user } = useFirebaseAuth();
@@ -93,166 +94,165 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 flex items-center justify-center p-6">
-      <motion.div
-        className="max-w-xl w-full"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <h1 className="text-2xl font-bold mb-6">Settings ⚙️</h1>
-
-        {errorMsg && <p className="text-red-500 mb-4">{errorMsg}</p>}
-        {successMsg && <p className="text-green-600 mb-4">{successMsg}</p>}
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (newPassword !== confirmPassword) {
-              setErrorMsg("Passwords do not match.");
-              setSuccessMsg("");
-              return;
-            }
-
-            setErrorMsg("");
-            setSuccessMsg("Password updated!");
-          }}
-          className="card bg-base-100 shadow p-6 mb-6"
-        >
-          <h2 className="font-semibold text-lg mb-4">Change Password</h2>
-          <input
-            type="password"
-            className="input input-bordered w-full mb-3"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            className="input input-bordered w-full mb-3"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <button className="btn btn-primary w-full" type="submit">
-            Update Password
-          </button>
-        </form>
-
-        <div className="card bg-base-100 shadow p-6 mb-6">
-          <h2 className="font-semibold text-lg mb-4">Preferences</h2>
-
-          <div className="form-control mb-4">
-            <label className="label cursor-pointer justify-between">
-              <span className="label-text">Enable Notifications</span>
-              <input
-                type="checkbox"
-                className="toggle toggle-primary"
-                checked={notificationEnabled}
-                onChange={() => setNotificationEnabled(!notificationEnabled)}
-              />
-            </label>
-          </div>
-
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Privacy</span>
-            </label>
-            <select
-              className="select select-bordered"
-              value={privacySetting}
-              onChange={(e) => setPrivacySetting(e.target.value)}
-            >
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-              <option value="friends-only">Friends Only</option>
-            </select>
+    <>
+      {/* Header */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center space-x-3">
+            <div className="text-2xl">⚙️</div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-800">Settings</h1>
+              <p className="text-xs text-gray-500">Customize your experience</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Group Settings */}
-        <div className="card bg-base-100 shadow p-6 mb-6">
-          <h2 className="font-semibold text-lg mb-4">Group Settings</h2>
-          
-          {loadingGroups ? (
-            <div className="flex justify-center py-4">
-              <div className="loading loading-spinner loading-md"></div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Support Groups */}
-              <div>
-                <h3 className="font-medium text-base mb-3">Support Groups</h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  These groups will be notified when you're feeling down or having a rough day.
-                </p>
-                <GroupSelector
-                  selectedGroups={supportGroups}
-                  onGroupsChange={setSupportGroups}
-                  title="Support Groups"
-                  description="Groups to notify when you need support:"
-                  maxSelection={5}
-                />
+      {/* Main Content */}
+      <div className="pt-16 pb-20 min-h-screen bg-gray-50">
+        <div className="p-4">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="space-y-4"
+          >
+            {/* Messages */}
+            {errorMsg && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{errorMsg}</p>
               </div>
-
-              {/* Default Happy Moment Groups */}
-              <div>
-                <h3 className="font-medium text-base mb-3">Default Happy Moment Groups</h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  These groups will be pre-selected when you share happy moments.
-                </p>
-                <GroupSelector
-                  selectedGroups={defaultHappyMomentGroups}
-                  onGroupsChange={setDefaultHappyMomentGroups}
-                  title="Default Groups"
-                  description="Groups to share happy moments with by default:"
-                  maxSelection={3}
-                />
+            )}
+            
+            {successMsg && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 text-sm">{successMsg}</p>
               </div>
+            )}
 
-              {/* Save Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSaveGroupPreferences}
-                  disabled={savingGroups}
-                  className="btn btn-primary"
-                >
-                  {savingGroups ? (
-                    <>
-                      <div className="loading loading-spinner loading-sm"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Group Preferences'
-                  )}
-                </button>
+            {/* Account Settings */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h2 className="text-lg font-semibold mb-4">Account</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Display Name</label>
+                  <input
+                    type="text"
+                    value={user?.displayName || ''}
+                    disabled
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
+                  />
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Notifications */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Push Notifications</p>
+                    <p className="text-sm text-gray-500">Get notified about new messages and updates</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={notificationEnabled}
+                    onChange={(e) => setNotificationEnabled(e.target.checked)}
+                    className="toggle toggle-primary"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Privacy */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h2 className="text-lg font-semibold mb-4">Privacy</h2>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Default Privacy</label>
+                  <select
+                    value={privacySetting}
+                    onChange={(e) => setPrivacySetting(e.target.value)}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="public">Public - Share with everyone</option>
+                    <option value="friends">Friends - Share with friends only</option>
+                    <option value="private">Private - Share with no one</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Group Preferences */}
+            {!loadingGroups && (
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-semibold mb-4">Group Preferences</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Support Groups</label>
+                    <p className="text-sm text-gray-500 mb-3">Groups to notify when you're feeling down</p>
+                    <GroupSelector
+                      selectedGroups={supportGroups}
+                      onGroupsChange={setSupportGroups}
+                      title="Select Support Groups"
+                      description="Choose groups to notify when you need support:"
+                      maxSelection={5}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Default Share Groups</label>
+                    <p className="text-sm text-gray-500 mb-3">Groups to automatically share happy moments with</p>
+                    <GroupSelector
+                      selectedGroups={defaultHappyMomentGroups}
+                      onGroupsChange={setDefaultHappyMomentGroups}
+                      title="Select Default Groups"
+                      description="Choose groups to automatically share with:"
+                      maxSelection={3}
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleSaveGroupPreferences}
+                    disabled={savingGroups}
+                    className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
+                  >
+                    {savingGroups ? 'Saving...' : 'Save Group Preferences'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Logout */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <button
+                onClick={handleLogout}
+                className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition-colors font-medium"
+              >
+                Sign Out
+              </button>
+            </div>
+          </motion.div>
         </div>
+      </div>
 
-        {/* Messages */}
-        {errorMsg && (
-          <div className="alert alert-error mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="alert alert-success mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        {/* Logout Button */}
-        <div className="text-center mt-6">
-          <button onClick={handleLogout} className="btn btn-warning btn-wide">
-            Logout
-          </button>
-        </div>
-      </motion.div>
-    </div>
+      {/* Bottom Navigation */}
+      <BottomNavigation />
+    </>
   );
 }

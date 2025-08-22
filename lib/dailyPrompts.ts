@@ -11,6 +11,8 @@ import {
   doc,
   getDoc
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from './firebase';
 
 export interface DailyPrompt {
   id: string;
@@ -58,7 +60,7 @@ export async function getTodaysPrompt(): Promise<DailyPrompt | null> {
 export async function submitDailyPromptResponse(
   userId: string,
   response: string,
-  imageUrl?: string,
+  imageFile?: File,
   isPublic: boolean = false
 ): Promise<string> {
   try {
@@ -72,6 +74,15 @@ export async function submitDailyPromptResponse(
     const existingResponse = await getUserResponseForToday(userId, todaysPrompt.id);
     if (existingResponse) {
       throw new Error('You have already responded to today\'s prompt');
+    }
+    
+    let imageUrl: string | undefined;
+
+    // Upload image if provided
+    if (imageFile) {
+      const imageRef = ref(storage, `daily_prompts/${userId}/${Date.now()}_${imageFile.name}`);
+      const snapshot = await uploadBytes(imageRef, imageFile);
+      imageUrl = await getDownloadURL(snapshot.ref);
     }
     
     // Create the response

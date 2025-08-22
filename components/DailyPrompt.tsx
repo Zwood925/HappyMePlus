@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import { getTodaysPrompt, submitDailyPromptResponse, getUserResponseForToday, DailyPrompt as DailyPromptType, DailyPromptResponse } from '../lib/dailyPrompts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,9 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showJoyCardGenerator, setShowJoyCardGenerator] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadTodaysPrompt();
@@ -46,13 +49,63 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
     }
   };
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be smaller than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleGalleryClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
+      fileInputRef.current.click();
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.uid || !todaysPrompt || !response.trim() || isSubmitting) return;
 
     try {
       setIsSubmitting(true);
-      await submitDailyPromptResponse(user.uid, response.trim(), undefined, isPublic);
+      await submitDailyPromptResponse(user.uid, response.trim(), selectedImage, isPublic);
       setUserResponse({
         id: 'temp',
         userId: user.uid,
@@ -62,6 +115,8 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
         createdAt: new Date() as any,
         isPublic
       });
+      setSelectedImage(null);
+      setImagePreview(null);
       setIsExpanded(false);
       onResponseSubmitted?.();
     } catch (error) {
@@ -160,6 +215,55 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
           animate={{ opacity: 1, height: 'auto' }}
         >
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Photo Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Add a Photo 📸
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCameraClick}
+                  className="flex-1 py-2 px-3 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                >
+                  📷 Camera
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGalleryClick}
+                  className="flex-1 py-2 px-3 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                >
+                  🖼️ Gallery
+                </button>
+              </div>
+              
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </div>
+
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             <div>
               <textarea
                 value={response}

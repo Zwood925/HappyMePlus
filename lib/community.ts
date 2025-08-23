@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc, getDoc, arrayUnion, onSnapshot, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc, getDoc, arrayUnion, onSnapshot, setDoc, limit } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from './firebase';
 
@@ -22,6 +22,7 @@ export interface UserProfile {
   email: string;
   avatarUrl?: string;
   bio?: string;
+  isPublic?: boolean;
   createdAt: any;
   groups: string[];
 }
@@ -35,6 +36,33 @@ export interface Group {
   inviteCode: string;
   createdAt: any;
   isPublic: boolean;
+}
+
+export interface FriendRequest {
+  id?: string;
+  fromUserId: string;
+  toUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: any;
+  fromUser?: UserProfile;
+}
+
+export interface Invite {
+  id?: string;
+  fromUserId: string;
+  toUsername: string;
+  message?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: any;
+  fromUser?: UserProfile;
+}
+
+export interface SocialShare {
+  id?: string;
+  userId: string;
+  postId: string;
+  platform: 'twitter' | 'whatsapp' | 'facebook' | 'copy';
+  sharedAt: any;
 }
 
 // User Profile Functions
@@ -83,6 +111,189 @@ export const checkUsernameAvailability = async (username: string): Promise<boole
   } catch (error) {
     console.error('Error checking username availability:', error);
     throw new Error('Failed to check username availability');
+  }
+};
+
+// Search users by username
+export const searchUsersByUsername = async (searchQuery: string): Promise<UserProfile[]> => {
+  try {
+    // Use a range query to search for usernames that start with the query
+    const q = query(
+      collection(db, 'users'),
+      where('username', '>=', searchQuery),
+      where('username', '<=', searchQuery + '\uf8ff'),
+      limit(10)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const users: UserProfile[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      users.push(doc.data() as UserProfile);
+    });
+    
+    return users;
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw new Error('Failed to search users');
+  }
+};
+
+// Send friend request
+export const sendFriendRequest = async (fromUserId: string, toUserId: string): Promise<void> => {
+  try {
+    // Check if request already exists
+    const existingQuery = query(
+      collection(db, 'friend_requests'),
+      where('fromUserId', '==', fromUserId),
+      where('toUserId', '==', toUserId)
+    );
+    
+    const existingSnapshot = await getDocs(existingQuery);
+    if (!existingSnapshot.empty) {
+      throw new Error('Friend request already sent');
+    }
+
+    // Create friend request
+    const requestData = {
+      fromUserId,
+      toUserId,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    };
+
+    await addDoc(collection(db, 'friend_requests'), requestData);
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    throw error;
+  }
+};
+
+// Get friend requests for a user
+export const getFriendRequests = async (userId: string): Promise<FriendRequest[]> => {
+  try {
+    const q = query(
+      collection(db, 'friend_requests'),
+      where('toUserId', '==', userId),
+      where('status', '==', 'pending'),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const requests: FriendRequest[] = [];
+    
+    // Get user profiles for each request
+    for (const doc of querySnapshot.docs) {
+      const requestData = doc.data() as FriendRequest;
+      const fromUser = await getUserProfile(requestData.fromUserId);
+      
+      requests.push({
+        id: doc.id,
+        ...requestData,
+        fromUser: fromUser || undefined
+      });
+    }
+    
+    return requests;
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    throw new Error('Failed to get friend requests');
+  }
+};
+
+// Accept friend request
+export const acceptFriendRequest = async (requestId: string): Promise<void> => {
+  try {
+    const requestRef = doc(db, 'friend_requests', requestId);
+    const requestDoc = await getDoc(requestRef);
+    
+    if (!requestDoc.exists()) {
+      throw new Error('Friend request not found');
+    }
+    
+    const requestData = requestDoc.data() as FriendRequest;
+    
+    // Update request status
+    await updateDoc(requestRef, {
+      status: 'accepted'
+    });
+    
+    // Add to friends list for both users (you might want to create a friends collection)
+    // For now, we'll just mark the request as accepted
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    throw new Error('Failed to accept friend request');
+  }
+};
+
+// Reject friend request
+export const rejectFriendRequest = async (requestId: string): Promise<void> => {
+  try {
+    const requestRef = doc(db, 'friend_requests', requestId);
+    const requestDoc = await getDoc(requestRef);
+    
+    if (!requestDoc.exists()) {
+      throw new Error('Friend request not found');
+    }
+    
+    // Update request status
+    await updateDoc(requestRef, {
+      status: 'rejected'
+    });
+  } catch (error) {
+    console.error('Error rejecting friend request:', error);
+    throw new Error('Failed to reject friend request');
+  }
+};
+
+// Get friends list for a user
+export const getFriends = async (userId: string): Promise<UserProfile[]> => {
+  try {
+    // Get accepted friend requests where user is either sender or receiver
+    const sentRequests = query(
+      collection(db, 'friend_requests'),
+      where('fromUserId', '==', userId),
+      where('status', '==', 'accepted')
+    );
+    
+    const receivedRequests = query(
+      collection(db, 'friend_requests'),
+      where('toUserId', '==', userId),
+      where('status', '==', 'accepted')
+    );
+    
+    const [sentSnapshot, receivedSnapshot] = await Promise.all([
+      getDocs(sentRequests),
+      getDocs(receivedRequests)
+    ]);
+    
+    const friendIds = new Set<string>();
+    
+    // Add friends from sent requests
+    sentSnapshot.forEach(doc => {
+      const data = doc.data() as FriendRequest;
+      friendIds.add(data.toUserId);
+    });
+    
+    // Add friends from received requests
+    receivedSnapshot.forEach(doc => {
+      const data = doc.data() as FriendRequest;
+      friendIds.add(data.fromUserId);
+    });
+    
+    // Get user profiles for all friends
+    const friends: UserProfile[] = [];
+    for (const friendId of friendIds) {
+      const friendProfile = await getUserProfile(friendId);
+      if (friendProfile) {
+        friends.push(friendProfile);
+      }
+    }
+    
+    return friends;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw new Error('Failed to get friends');
   }
 };
 
@@ -374,4 +585,165 @@ export const subscribeToComments = (postId: string, callback: (comments: any[]) 
     });
     callback(comments);
   });
+};
+
+// Enhanced Social Features
+
+// Send username-based invite
+export const sendUsernameInvite = async (
+  fromUserId: string,
+  toUsername: string,
+  message?: string
+): Promise<void> => {
+  try {
+    // First, find the user by username
+    const q = query(collection(db, 'users'), where('username', '==', toUsername));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      throw new Error('User not found');
+    }
+    
+    const toUserDoc = querySnapshot.docs[0];
+    const toUserId = toUserDoc.id;
+    
+    // Check if invite already exists
+    const existingInviteQuery = query(
+      collection(db, 'invites'),
+      where('fromUserId', '==', fromUserId),
+      where('toUsername', '==', toUsername),
+      where('status', '==', 'pending')
+    );
+    const existingInviteSnapshot = await getDocs(existingInviteQuery);
+    
+    if (!existingInviteSnapshot.empty) {
+      throw new Error('Invite already sent');
+    }
+    
+    // Create the invite
+    const inviteData: Invite = {
+      fromUserId,
+      toUsername,
+      message,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    };
+    
+    await addDoc(collection(db, 'invites'), inviteData);
+  } catch (error) {
+    console.error('Error sending username invite:', error);
+    throw error;
+  }
+};
+
+// Get invites for a user
+export const getInvitesForUser = async (username: string): Promise<Invite[]> => {
+  try {
+    const q = query(
+      collection(db, 'invites'),
+      where('toUsername', '==', username),
+      where('status', '==', 'pending'),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const invites: Invite[] = [];
+    
+    for (const doc of querySnapshot.docs) {
+      const invite = { id: doc.id, ...doc.data() } as Invite;
+      
+      // Get the sender's profile
+      if (invite.fromUserId) {
+        const fromUser = await getUserProfile(invite.fromUserId);
+        if (fromUser) {
+          invite.fromUser = fromUser;
+        }
+      }
+      
+      invites.push(invite);
+    }
+    
+    return invites;
+  } catch (error) {
+    console.error('Error fetching invites:', error);
+    throw new Error('Failed to fetch invites');
+  }
+};
+
+// Accept or reject invite
+export const respondToInvite = async (inviteId: string, status: 'accepted' | 'rejected'): Promise<void> => {
+  try {
+    const inviteRef = doc(db, 'invites', inviteId);
+    await updateDoc(inviteRef, { status });
+    
+    if (status === 'accepted') {
+      // Get the invite to find the users
+      const inviteDoc = await getDoc(inviteRef);
+      const inviteData = inviteDoc.data() as Invite;
+      
+      // Create friend request
+      await sendFriendRequest(inviteData.fromUserId, inviteData.toUsername);
+    }
+  } catch (error) {
+    console.error('Error responding to invite:', error);
+    throw new Error('Failed to respond to invite');
+  }
+};
+
+// Track social share
+export const trackSocialShare = async (
+  userId: string,
+  postId: string,
+  platform: 'twitter' | 'whatsapp' | 'facebook' | 'copy'
+): Promise<void> => {
+  try {
+    const shareData: SocialShare = {
+      userId,
+      postId,
+      platform,
+      sharedAt: serverTimestamp()
+    };
+    
+    await addDoc(collection(db, 'social_shares'), shareData);
+  } catch (error) {
+    console.error('Error tracking social share:', error);
+    // Don't throw error for tracking - it shouldn't break the share
+  }
+};
+
+// Get friend activity feed
+export const getFriendActivity = async (userId: string): Promise<Post[]> => {
+  try {
+    // Get user's friends
+    const friends = await getFriends(userId);
+    const friendIds = friends.map(friend => friend.uid);
+    
+    if (friendIds.length === 0) {
+      return [];
+    }
+    
+    // Get posts from friends
+    const q = query(
+      collection(db, 'posts'),
+      where('userId', 'in', friendIds),
+      where('isPublic', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const posts: Post[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      posts.push({
+        id: doc.id,
+        ...doc.data()
+      } as Post);
+    });
+    
+    return posts;
+  } catch (error) {
+    console.error('Error fetching friend activity:', error);
+    throw new Error('Failed to fetch friend activity');
+  }
 };

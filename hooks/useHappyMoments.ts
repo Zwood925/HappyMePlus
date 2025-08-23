@@ -79,7 +79,7 @@ export function useHappyMoments() {
   }, [user?.uid]);
 
   // Add a new happy moment
-  const addMoment = useCallback(async (content: string, groupIds?: string[]) => {
+  const addMoment = useCallback(async (content: string, groupIds?: string[], imageFile?: File) => {
     if (!user?.uid) {
       throw new Error('User not authenticated');
     }
@@ -87,7 +87,7 @@ export function useHappyMoments() {
     setSubmitting(true);
     setError(null);
     try {
-      const momentId = await addHappyMoment(content, user.uid, groupIds);
+      const momentId = await addHappyMoment(content, user.uid, groupIds, imageFile);
       
       // Refresh the data
       await loadRecentMoments();

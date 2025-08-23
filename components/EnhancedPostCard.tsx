@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import PostReactions from './PostReactions';
 import PostComments from './PostComments';
+import ImageViewer from './ImageViewer';
 
 interface Post {
   id: string;
@@ -11,9 +12,9 @@ interface Post {
   content: string;
   createdAt: any; // Firebase timestamp
   imageUrl?: string;
-  isPublic?: boolean;
-  reactions?: any[];
-  comments?: any[];
+  isPublic: boolean;
+  reactions: any[];
+  comments: any[];
   challengeId?: string;
 }
 
@@ -22,6 +23,7 @@ interface EnhancedPostCardProps {
   onReaction?: (emoji: string) => void;
   onComment?: (content: string) => void;
   onShare?: () => void;
+  onSocialShare?: (post: Post) => void;
   className?: string;
 }
 
@@ -30,10 +32,12 @@ export default function EnhancedPostCard({
   onReaction,
   onComment,
   onShare,
+  onSocialShare,
   className = ''
 }: EnhancedPostCardProps) {
   const { user } = useFirebaseAuth();
   const [showActions, setShowActions] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
 
   const formatTimeAgo = (date: any) => {
     const now = new Date();
@@ -59,6 +63,10 @@ export default function EnhancedPostCard({
       // You could add a toast notification here
     }
     onShare?.();
+  };
+
+  const handleSocialShare = () => {
+    onSocialShare?.(post);
   };
 
   return (
@@ -108,7 +116,8 @@ export default function EnhancedPostCard({
             <img
               src={post.imageUrl}
               alt="Post image"
-              className="w-full rounded-lg object-cover max-h-64"
+              className="w-full rounded-lg object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setShowImageViewer(true)}
             />
           </div>
         )}
@@ -129,15 +138,24 @@ export default function EnhancedPostCard({
           onAddComment={onComment}
         />
 
-        {/* Share Button */}
+        {/* Share Buttons */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <button
-            onClick={handleShare}
-            className="flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-600 transition-colors"
-          >
-            <span className="text-lg">📤</span>
-            <span>Share Joy</span>
-          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleShare}
+              className="flex items-center space-x-2 text-sm text-gray-500 hover:text-purple-600 transition-colors"
+            >
+              <span className="text-lg">📤</span>
+              <span>Share Joy</span>
+            </button>
+            <button
+              onClick={handleSocialShare}
+              className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <span className="text-lg">🌐</span>
+              <span>Social Share</span>
+            </button>
+          </div>
           
           <div className="flex items-center space-x-4 text-xs text-gray-500">
             <span>💫 {post.reactions?.length || 0} reactions</span>
@@ -169,6 +187,14 @@ export default function EnhancedPostCard({
           </button>
         </motion.div>
       )}
+
+      {/* Image Viewer */}
+      <ImageViewer
+        isOpen={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        imageUrl={post.imageUrl || ''}
+        alt="Post image"
+      />
     </motion.div>
   );
 }

@@ -6,6 +6,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import JoyChallenge from '../components/JoyChallenge';
 import EnhancedPostCard from '../components/EnhancedPostCard';
 import JoySharingModal from '../components/JoySharingModal';
+import SocialShareModal from '../components/SocialShareModal';
 import { createPost, getPublicPosts, addReaction, addComment, Post, subscribeToPosts } from '../lib/community';
 
 interface Challenge {
@@ -64,6 +65,8 @@ function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [participatedChallenges, setParticipatedChallenges] = useState<string[]>([]);
   const [showSharingModal, setShowSharingModal] = useState(false);
+  const [showSocialShare, setShowSocialShare] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
   const handleChallengeParticipation = (challengeId: string) => {
@@ -97,6 +100,11 @@ function CommunityPage() {
     } catch (error) {
       console.error('Error adding comment:', error);
     }
+  };
+
+  const handleSocialShare = (post: Post) => {
+    setSelectedPost(post);
+    setShowSocialShare(true);
   };
 
   const handlePostShare = (postId: string) => {
@@ -256,6 +264,7 @@ function CommunityPage() {
                     onReaction={(emoji) => handlePostReaction(post.id, emoji)}
                     onComment={(content) => handlePostComment(post.id, content)}
                     onShare={() => handlePostShare(post.id)}
+                    onSocialShare={handleSocialShare}
                   />
                 ))
               ) : (
@@ -309,6 +318,7 @@ function CommunityPage() {
                     onReaction={(emoji) => handlePostReaction(post.id, emoji)}
                     onComment={(content) => handlePostComment(post.id, content)}
                     onShare={() => handlePostShare(post.id)}
+                    onSocialShare={handleSocialShare}
                   />
                 ))}
             </div>
@@ -324,6 +334,13 @@ function CommunityPage() {
         isOpen={showSharingModal}
         onClose={() => setShowSharingModal(false)}
         onShare={handleShareJoy}
+      />
+
+      {/* Social Share Modal */}
+      <SocialShareModal
+        isOpen={showSocialShare}
+        onClose={() => setShowSocialShare(false)}
+        post={selectedPost || { id: '', content: '', userName: '' }}
       />
     </>
   );

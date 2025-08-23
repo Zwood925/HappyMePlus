@@ -13,6 +13,14 @@ import DailyPrompt from "../components/DailyPrompt";
 import NotificationPermission from "../components/NotificationPermission";
 import PWAInstallPrompt from "../components/PWAInstallPrompt";
 import BottomNavigation from "../components/BottomNavigation";
+import UsernameSetupModal from "../components/UsernameSetupModal";
+import UserSearch from "../components/UserSearch";
+import FriendRequests from "../components/FriendRequests";
+import FriendsList from "../components/FriendsList";
+import ImageViewer from "../components/ImageViewer";
+import UsernameInviteModal from "../components/UsernameInviteModal";
+import InvitesModal from "../components/InvitesModal";
+import SocialShareModal from "../components/SocialShareModal";
 
 export default function HomePage() {
   const { user } = useFirebaseAuth();
@@ -43,6 +51,16 @@ export default function HomePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUsernameSetup, setShowUsernameSetup] = useState(false);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const [showFriendRequests, setShowFriendRequests] = useState(false);
+  const [showFriendsList, setShowFriendsList] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [viewerImageUrl, setViewerImageUrl] = useState<string>('');
+  const [showUsernameInvite, setShowUsernameInvite] = useState(false);
+  const [showInvites, setShowInvites] = useState(false);
+  const [showSocialShare, setShowSocialShare] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   const toggleInbox = () => {
     setInboxOpen((prev) => {
@@ -63,7 +81,7 @@ export default function HomePage() {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    const success = await addMoment(input.trim(), selectedGroups, selectedImage);
+    const success = await addMoment(input.trim(), selectedGroups, selectedImage || undefined);
     if (success) {
       setInput("");
       setSelectedGroups([]);
@@ -172,7 +190,23 @@ export default function HomePage() {
             <h1 className="text-xl font-bold text-gray-800">HappyMe+</h1>
           </div>
           
-          <div className="flex items-center space-x-3">
+                               <div className="flex items-center space-x-3">
+            {/* Invites */}
+            <button
+              onClick={() => setShowInvites(true)}
+              className="relative p-2 text-gray-600 hover:text-purple-600 transition-colors"
+            >
+              <span className="text-xl">📬</span>
+            </button>
+            
+            {/* Friend Requests */}
+            <button
+              onClick={() => setShowFriendRequests(true)}
+              className="relative p-2 text-gray-600 hover:text-purple-600 transition-colors"
+            >
+              <span className="text-xl">👥</span>
+            </button>
+            
             {/* Notifications */}
             <button
               onClick={toggleInbox}
@@ -211,6 +245,40 @@ export default function HomePage() {
             <SadFaceButton onClick={handleFeelingDown} />
           </div>
         </div>
+
+                 {/* Social Actions */}
+         <div className="bg-white p-4 border-b border-gray-200">
+           <div className="grid grid-cols-2 gap-3">
+             <button
+               onClick={() => setShowUserSearch(true)}
+               className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+             >
+               <span>🔍</span>
+               <span className="text-sm font-medium">Find Friends</span>
+             </button>
+             <button
+               onClick={() => setShowUsernameInvite(true)}
+               className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+             >
+               <span>📤</span>
+               <span className="text-sm font-medium">Invite @User</span>
+             </button>
+             <button
+               onClick={() => setShowFriendsList(true)}
+               className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+             >
+               <span>👥</span>
+               <span className="text-sm font-medium">My Friends</span>
+             </button>
+             <button
+               onClick={() => setShowUsernameSetup(true)}
+               className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+             >
+               <span>✨</span>
+               <span className="text-sm font-medium">Setup Profile</span>
+             </button>
+           </div>
+         </div>
 
         {/* Encouragement Message */}
         {encouragement && (
@@ -256,6 +324,24 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-gray-800 leading-relaxed">{moment.content}</p>
+                      
+                      {/* Image Display */}
+                      {moment.imageUrl && (
+                        <div className="mt-3">
+                          <img
+                            src={moment.imageUrl}
+                            alt="Happy moment"
+                            className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => {
+                              if (moment.imageUrl) {
+                                setViewerImageUrl(moment.imageUrl);
+                                setShowImageViewer(true);
+                              }
+                            }}
+                          />
+                        </div>
+                      )}
+                      
                       <p className="text-sm text-gray-500 mt-2">
                         {moment.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}
                       </p>
@@ -304,6 +390,55 @@ export default function HomePage() {
               </div>
               
               <form onSubmit={handleSubmit} className="p-4">
+                {/* Photo Upload */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Add a Photo 📸
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCameraClick}
+                      className="flex-1 py-2 px-3 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                    >
+                      📷 Camera
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleGalleryClick}
+                      className="flex-1 py-2 px-3 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                    >
+                      🖼️ Gallery
+                    </button>
+                  </div>
+                  
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="relative mb-4">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -444,6 +579,67 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Username Setup Modal */}
+      <UsernameSetupModal
+        isOpen={showUsernameSetup}
+        onClose={() => setShowUsernameSetup(false)}
+        onComplete={(username) => {
+          setShowUsernameSetup(false);
+          // You could show a success message here
+        }}
+      />
+
+      {/* User Search Modal */}
+      <UserSearch
+        isOpen={showUserSearch}
+        onClose={() => setShowUserSearch(false)}
+      />
+
+      {/* Friend Requests Modal */}
+      <FriendRequests
+        isOpen={showFriendRequests}
+        onClose={() => setShowFriendRequests(false)}
+      />
+
+      {/* Friends List Modal */}
+      <FriendsList
+        isOpen={showFriendsList}
+        onClose={() => setShowFriendsList(false)}
+      />
+
+      {/* Image Viewer */}
+      <ImageViewer
+        isOpen={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        imageUrl={viewerImageUrl}
+        alt="Happy moment"
+      />
+
+      {/* Username Invite Modal */}
+      <UsernameInviteModal
+        isOpen={showUsernameInvite}
+        onClose={() => setShowUsernameInvite(false)}
+        onInviteSent={() => {
+          // Could refresh friend requests or show success message
+        }}
+      />
+
+      {/* Invites Modal */}
+      <InvitesModal
+        isOpen={showInvites}
+        onClose={() => setShowInvites(false)}
+        onInviteResponded={() => {
+          // Could refresh friend requests
+        }}
+      />
+
+      {/* Social Share Modal */}
+      <SocialShareModal
+        isOpen={showSocialShare}
+        onClose={() => setShowSocialShare(false)}
+        post={selectedPost || { id: '', content: '', userName: '' }}
+      />
     </>
   );
 }

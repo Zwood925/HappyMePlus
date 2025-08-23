@@ -1,5 +1,5 @@
 // HomePage with full visuals and original logic from index.tsx
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { useHappyMoments } from "../hooks/useHappyMoments";
 import { useNotifications } from "../hooks/useNotifications";
@@ -40,6 +40,9 @@ export default function HomePage() {
   const [inboxOpen, setInboxOpen] = useState(false);
   const [showVideoCelebration, setShowVideoCelebration] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleInbox = () => {
     setInboxOpen((prev) => {
@@ -60,10 +63,12 @@ export default function HomePage() {
     e.preventDefault();
     if (!input.trim() || !user) return;
 
-    const success = await addMoment(input.trim(), selectedGroups);
+    const success = await addMoment(input.trim(), selectedGroups, selectedImage);
     if (success) {
       setInput("");
       setSelectedGroups([]);
+      setSelectedImage(null);
+      setImagePreview(null);
       setShowGroupSelector(false);
       setShowCreatePost(false);
     }
@@ -71,6 +76,56 @@ export default function HomePage() {
 
   const handleHappyParty = () => {
     setShowVideoCelebration(true);
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be smaller than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleGalleryClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*';
+      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
+      fileInputRef.current.click();
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const modalVariants = {

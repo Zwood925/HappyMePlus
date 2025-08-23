@@ -12,12 +12,15 @@ import {
   QueryDocumentSnapshot,
   startAfter
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from './firebase';
 
 export interface HappyMoment {
   id?: string;
   content: string;
   userId: string;
   groupIds?: string[]; // Groups this moment should be shared with
+  imageUrl?: string; // URL of uploaded image
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -27,7 +30,7 @@ export interface HappyMomentWithId extends HappyMoment {
 }
 
 // Add a new happy moment
-export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
+export async function addHappyMoment(content: string, userId: string, groupIds?: string[], imageFile?: File): Promise<string> {
   try {
     // Import here to avoid circular dependencies
     const { ensureUserProfile } = await import('./userProfiles');
@@ -44,11 +47,21 @@ export async function addHappyMoment(content: string, userId: string, groupIds?:
         // Continue with happy moment creation even if profile creation fails
       }
     }
+
+    let imageUrl: string | undefined;
+
+    // Upload image if provided
+    if (imageFile) {
+      const imageRef = ref(storage, `happy_moments/${userId}/${Date.now()}_${imageFile.name}`);
+      const snapshot = await uploadBytes(imageRef, imageFile);
+      imageUrl = await getDownloadURL(snapshot.ref);
+    }
     
     const momentData: Omit<HappyMoment, 'id'> = {
       content,
       userId,
       groupIds: groupIds || [],
+      imageUrl,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };

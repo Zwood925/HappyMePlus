@@ -49,10 +49,30 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
-    // User profiles - users can only access their own
+    // User profiles - users can read public profiles, write their own
     match /user_profiles/{document} {
-      allow read, write: if isAuthenticated() && 
+      allow read: if isAuthenticated() && 
+        (document == request.auth.uid || resource.data.isPublic == true);
+      allow write: if isAuthenticated() && 
         (document == request.auth.uid || resource == null);
+    }
+    
+    // Users collection (for username search) - read public profiles, write own
+    match /users/{document} {
+      allow read: if isAuthenticated() && 
+        (document == request.auth.uid || resource.data.isPublic == true);
+      allow write: if isAuthenticated() && 
+        (document == request.auth.uid || resource == null);
+    }
+    
+    // Friend requests - users can read their own requests, write new ones
+    match /friend_requests/{document} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      allow create: if isAuthenticated() && 
+        request.auth.uid == resource.data.fromUserId;
+      allow update: if isAuthenticated() && 
+        request.auth.uid == resource.data.toUserId;
     }
     
     // Notifications - users can only access their own
@@ -81,6 +101,14 @@ service cloud.firestore {
     match /daily_prompts/{document} {
       allow read: if isAuthenticated();
       allow write: if false; // Only admin can create prompts
+    }
+    
+    // Posts - users can read public posts, write their own
+    match /posts/{document} {
+      allow read: if isAuthenticated() && 
+        (resource.data.isPublic == true || resource.data.userId == request.auth.uid);
+      allow write: if isAuthenticated() && 
+        (resource == null || resource.data.userId == request.auth.uid);
     }
   }
 }

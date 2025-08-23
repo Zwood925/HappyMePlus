@@ -105,7 +105,7 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
 
     try {
       setIsSubmitting(true);
-      await submitDailyPromptResponse(user.uid, response.trim(), selectedImage, isPublic);
+      await submitDailyPromptResponse(user.uid, response.trim(), selectedImage || undefined, isPublic);
       setUserResponse({
         id: 'temp',
         userId: user.uid,

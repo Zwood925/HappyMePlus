@@ -1,36 +1,30 @@
-# HappyMePlus - Mental Wellness App
+# BarBook – Digital Lyric Notebook
 
-A Next.js-based mental wellness application that helps users track happy moments, receive encouragement, and connect with support groups.
+BarBook is a lightweight creative sketchpad for rappers, poets, and lyricists. It lets artists jot down bars, experiment with AI‑generated beats, and receive smart writing assistance such as rhyme suggestions and cadence breakdowns.
 
 ## 🚀 Features
 
-- **Happy Moments Tracking**: Users can log and view their positive experiences
-- **Encouragement System**: Send and receive encouraging messages
-- **Group Support**: Join and participate in support groups
-- **Journal with Calendar**: Track mood and experiences over time
-- **Stripe Integration**: Subscription and payment processing
-- **Real-time Updates**: Live notifications and updates
+- **Notebook Pages**: Capture lyrical ideas in simple text pages.
+- **AI Beat Generator**: Produce instrumental loops with services like MusicGen or Riffusion.
+- **Writing Assistant**: Get rhymes, cadence help, and next‑line ideas tailored to a selected genre.
+- **Export**: Paid users can export notebooks as PDF/Doc along with accompanying beats.
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Next.js 15, React 18, TypeScript
-- **Styling**: Tailwind CSS, DaisyUI
-- **Authentication**: Firebase Auth
-- **Database**: Firebase Firestore
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, DaisyUI
+- **Backend**: Firebase (Auth, Firestore, Storage) with optional Node.js/Express APIs
+- **AI Integration**: OpenAI for writing help, MusicGen or Riffusion for beats
 - **Payments**: Stripe
-- **Animations**: Framer Motion
-- **State Management**: React Query (TanStack Query)
 
 ## 📁 Project Structure
 
 ```
-HappyMePlus/
+BarBook/
 ├── components/          # Reusable UI components
 ├── lib/                # Utility functions and configurations
 ├── pages/              # Next.js pages and API routes
 │   ├── api/           # API endpoints
-│   ├── groups/        # Group-related pages
-│   └── journal/       # Journal and calendar pages
+│   └── barbook.tsx    # Sample writing assistant page
 ├── public/            # Static assets
 ├── styles/            # Global styles and Tailwind config
 └── cache/             # Application cache
@@ -50,7 +44,7 @@ HappyMePlus/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd HappyMePlus
+   cd BarBook
    ```
 
 2. **Install dependencies**

@@ -110,5 +110,23 @@ service cloud.firestore {
       allow write: if isAuthenticated() && 
         (resource == null || resource.data.userId == request.auth.uid);
     }
+    
+    // Invites - users can read invites sent to them, write their own
+    match /invites/{document} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.fromUserId || 
+         resource.data.toUsername == request.auth.token.display_name);
+      allow create: if isAuthenticated() && 
+        request.auth.uid == resource.data.fromUserId;
+      allow update: if isAuthenticated() && 
+        (request.auth.uid == resource.data.fromUserId || 
+         resource.data.toUsername == request.auth.token.display_name);
+    }
+    
+    // Social shares - users can read their own shares, write their own
+    match /social_shares/{document} {
+      allow read, write: if isAuthenticated() && 
+        (resource == null || request.auth.uid == resource.data.userId);
+    }
   }
 }

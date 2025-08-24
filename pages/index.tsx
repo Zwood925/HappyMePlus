@@ -21,6 +21,10 @@ import ImageViewer from "../components/ImageViewer";
 import UsernameInviteModal from "../components/UsernameInviteModal";
 import InvitesModal from "../components/InvitesModal";
 import SocialShareModal from "../components/SocialShareModal";
+import JournalHistory from "../components/JournalHistory";
+import FriendActivityFeed from "../components/FriendActivityFeed";
+import EnhancedNotificationItem from "../components/EnhancedNotificationItem";
+import NotificationSettings from "../components/NotificationSettings";
 
 export default function HomePage() {
   const { user } = useFirebaseAuth();
@@ -50,7 +54,8 @@ export default function HomePage() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [showUsernameSetup, setShowUsernameSetup] = useState(false);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
@@ -61,6 +66,36 @@ export default function HomePage() {
   const [showInvites, setShowInvites] = useState(false);
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showJournalHistory, setShowJournalHistory] = useState(false);
+  const [showFriendActivity, setShowFriendActivity] = useState(false);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+
+  const handleNotificationClick = (notification: any) => {
+    // Handle different notification types
+    switch (notification.type) {
+      case 'friend_request':
+        setShowFriendRequests(true);
+        break;
+      case 'username_invite':
+        setShowInvites(true);
+        break;
+      case 'post_reaction':
+      case 'post_comment':
+        // Could navigate to the specific post
+        console.log('Navigate to post:', notification.data?.post_id);
+        break;
+      case 'daily_reminder':
+        setShowCreatePost(true);
+        break;
+      case 'achievement':
+        // Could show achievement modal
+        console.log('Show achievement:', notification.data?.achievement_type);
+        break;
+      default:
+        // Default behavior - just close the notification modal
+        break;
+    }
+  };
 
   const toggleInbox = () => {
     setInboxOpen((prev) => {
@@ -123,26 +158,25 @@ export default function HomePage() {
   };
 
   const handleCameraClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
-      fileInputRef.current.click();
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
   const handleGalleryClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
-      fileInputRef.current.click();
+    if (galleryInputRef.current) {
+      galleryInputRef.current.click();
     }
   };
 
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
     }
   };
 
@@ -207,6 +241,14 @@ export default function HomePage() {
               <span className="text-xl">👥</span>
             </button>
             
+            {/* Journal History */}
+            <button
+              onClick={() => setShowJournalHistory(true)}
+              className="relative p-2 text-gray-600 hover:text-purple-600 transition-colors"
+            >
+              <span className="text-xl">📝</span>
+            </button>
+            
             {/* Notifications */}
             <button
               onClick={toggleInbox}
@@ -248,36 +290,43 @@ export default function HomePage() {
 
                  {/* Social Actions */}
          <div className="bg-white p-4 border-b border-gray-200">
-           <div className="grid grid-cols-2 gap-3">
-             <button
-               onClick={() => setShowUserSearch(true)}
-               className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-             >
-               <span>🔍</span>
-               <span className="text-sm font-medium">Find Friends</span>
-             </button>
-             <button
-               onClick={() => setShowUsernameInvite(true)}
-               className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-             >
-               <span>📤</span>
-               <span className="text-sm font-medium">Invite @User</span>
-             </button>
-             <button
-               onClick={() => setShowFriendsList(true)}
-               className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-             >
-               <span>👥</span>
-               <span className="text-sm font-medium">My Friends</span>
-             </button>
-             <button
-               onClick={() => setShowUsernameSetup(true)}
-               className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
-             >
-               <span>✨</span>
-               <span className="text-sm font-medium">Setup Profile</span>
-             </button>
-           </div>
+                       <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowUserSearch(true)}
+                className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <span>🔍</span>
+                <span className="text-sm font-medium">Find Friends</span>
+              </button>
+              <button
+                onClick={() => setShowUsernameInvite(true)}
+                className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                <span>📤</span>
+                <span className="text-sm font-medium">Invite @User</span>
+              </button>
+              <button
+                onClick={() => setShowFriendsList(true)}
+                className="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+              >
+                <span>👥</span>
+                <span className="text-sm font-medium">My Friends</span>
+              </button>
+              <button
+                onClick={() => setShowFriendActivity(true)}
+                className="flex items-center space-x-2 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors"
+              >
+                <span>🌟</span>
+                <span className="text-sm font-medium">Friend Activity</span>
+              </button>
+              <button
+                onClick={() => setShowUsernameSetup(true)}
+                className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors col-span-2"
+              >
+                <span>✨</span>
+                <span className="text-sm font-medium">Setup Profile</span>
+              </button>
+            </div>
          </div>
 
         {/* Encouragement Message */}
@@ -412,10 +461,19 @@ export default function HomePage() {
                     </button>
                   </div>
                   
-                  {/* Hidden file input */}
+                  {/* Hidden file inputs */}
                   <input
-                    ref={fileInputRef}
+                    ref={cameraInputRef}
                     type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
                     onChange={handleImageSelect}
                     className="hidden"
                   />
@@ -532,49 +590,38 @@ export default function HomePage() {
                     <p className="text-gray-500">No new notifications</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-3 rounded-lg border ${
-                          notification.read ? 'bg-gray-50 border-gray-200' : 'bg-purple-50 border-purple-200'
-                        }`}
-                        onClick={() => {
-                          if (!notification.read) {
-                            markAsRead(notification.id!);
-                          }
-                        }}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className="text-2xl">
-                            {notification.type === 'support_request' ? '💙' : 
-                             notification.type === 'encouragement' ? '💝' : 
-                             notification.type === 'group_invite' ? '👥' : '🔔'}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-800">{notification.title}</p>
-                            <p className="text-gray-600 text-sm mt-1">{notification.message}</p>
-                            <p className="text-xs text-gray-500 mt-2">
-                              {notification.created_at?.toDate?.()?.toLocaleString() || 'Just now'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                                     <div className="space-y-3">
+                     {notifications.map((notification) => (
+                       <EnhancedNotificationItem
+                         key={notification.id}
+                         notification={notification}
+                         onClick={() => handleNotificationClick(notification)}
+                         onMarkAsRead={() => markAsRead(notification.id!)}
+                       />
+                     ))}
+                   </div>
                 )}
               </div>
 
-              {unreadCount > 0 && (
-                <div className="p-4 border-t border-gray-200">
-                  <button
-                    onClick={() => markAllAsRead()}
-                    className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
-                  >
-                    Mark all as read
-                  </button>
-                </div>
-              )}
+                             {unreadCount > 0 && (
+                 <div className="p-4 border-t border-gray-200">
+                   <button
+                     onClick={() => markAllAsRead()}
+                     className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                   >
+                     Mark all as read
+                   </button>
+                 </div>
+               )}
+               
+               <div className="p-4 border-t border-gray-200">
+                 <button
+                   onClick={() => setShowNotificationSettings(true)}
+                   className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                 >
+                   ⚙️ Notification Settings
+                 </button>
+               </div>
             </motion.div>
           </motion.div>
         )}
@@ -634,12 +681,30 @@ export default function HomePage() {
         }}
       />
 
-      {/* Social Share Modal */}
-      <SocialShareModal
-        isOpen={showSocialShare}
-        onClose={() => setShowSocialShare(false)}
-        post={selectedPost || { id: '', content: '', userName: '' }}
-      />
+             {/* Social Share Modal */}
+       <SocialShareModal
+         isOpen={showSocialShare}
+         onClose={() => setShowSocialShare(false)}
+         post={selectedPost || { id: '', content: '', userName: '' }}
+       />
+
+               {/* Journal History Modal */}
+        <JournalHistory
+          isOpen={showJournalHistory}
+          onClose={() => setShowJournalHistory(false)}
+        />
+
+        {/* Friend Activity Feed Modal */}
+        <FriendActivityFeed
+          isOpen={showFriendActivity}
+          onClose={() => setShowFriendActivity(false)}
+        />
+
+        {/* Notification Settings Modal */}
+        <NotificationSettings
+          isOpen={showNotificationSettings}
+          onClose={() => setShowNotificationSettings(false)}
+        />
     </>
   );
 }

@@ -20,7 +20,8 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
   const [showJoyCardGenerator, setShowJoyCardGenerator] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadTodaysPrompt();
@@ -76,26 +77,25 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
   };
 
   const handleCameraClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
-      fileInputRef.current.click();
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
   const handleGalleryClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
-      fileInputRef.current.click();
+    if (galleryInputRef.current) {
+      galleryInputRef.current.click();
     }
   };
 
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
     }
   };
 
@@ -237,10 +237,19 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
                 </button>
               </div>
               
-              {/* Hidden file input */}
+              {/* Hidden file inputs */}
               <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
                 type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
                 onChange={handleImageSelect}
                 className="hidden"
               />

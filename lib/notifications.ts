@@ -18,7 +18,7 @@ import {
 export interface Notification {
   id?: string;
   user_id: string;
-  type: 'group_invite' | 'support_request' | 'encouragement' | 'group_activity' | 'system';
+  type: 'group_invite' | 'support_request' | 'encouragement' | 'group_activity' | 'system' | 'friend_request' | 'username_invite' | 'post_reaction' | 'post_comment' | 'daily_reminder' | 'achievement';
   title: string;
   message: string;
   data?: {
@@ -28,10 +28,16 @@ export interface Notification {
     sender_name?: string;
     invite_code?: string;
     action_url?: string;
+    post_id?: string;
+    reaction_emoji?: string;
+    comment_text?: string;
+    achievement_type?: string;
+    streak_count?: number;
   };
   read: boolean;
   created_at: any;
   expires_at?: any;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export interface SupportRequest {
@@ -254,6 +260,198 @@ export function subscribeToNotifications(
     
     callback(notifications);
   });
+}
+
+// Send friend request notification
+export async function sendFriendRequestNotification(
+  recipientUserId: string,
+  senderId: string,
+  senderName: string
+): Promise<string> {
+  try {
+    return await createNotification({
+      user_id: recipientUserId,
+      type: 'friend_request',
+      title: `${senderName} wants to be your friend`,
+      message: `${senderName} sent you a friend request. Accept to start sharing joy together!`,
+      data: {
+        sender_id: senderId,
+        sender_name: senderName,
+        action_url: '/friend-requests'
+      },
+      read: false,
+      priority: 'medium'
+    });
+  } catch (error) {
+    console.error('Error sending friend request notification:', error);
+    throw error;
+  }
+}
+
+// Send username invite notification
+export async function sendUsernameInviteNotification(
+  recipientUserId: string,
+  senderId: string,
+  senderName: string,
+  message?: string
+): Promise<string> {
+  try {
+    return await createNotification({
+      user_id: recipientUserId,
+      type: 'username_invite',
+      title: `${senderName} invited you to connect`,
+      message: message || `${senderName} would like to connect with you on HappyMe+!`,
+      data: {
+        sender_id: senderId,
+        sender_name: senderName,
+        action_url: '/invites'
+      },
+      read: false,
+      priority: 'medium'
+    });
+  } catch (error) {
+    console.error('Error sending username invite notification:', error);
+    throw error;
+  }
+}
+
+// Send post reaction notification
+export async function sendPostReactionNotification(
+  postOwnerId: string,
+  reactorId: string,
+  reactorName: string,
+  postId: string,
+  emoji: string
+): Promise<string> {
+  try {
+    return await createNotification({
+      user_id: postOwnerId,
+      type: 'post_reaction',
+      title: `${reactorName} reacted to your post`,
+      message: `${reactorName} reacted with ${emoji} to your happy moment!`,
+      data: {
+        sender_id: reactorId,
+        sender_name: reactorName,
+        post_id: postId,
+        reaction_emoji: emoji,
+        action_url: `/posts/${postId}`
+      },
+      read: false,
+      priority: 'low'
+    });
+  } catch (error) {
+    console.error('Error sending post reaction notification:', error);
+    throw error;
+  }
+}
+
+// Send post comment notification
+export async function sendPostCommentNotification(
+  postOwnerId: string,
+  commenterId: string,
+  commenterName: string,
+  postId: string,
+  commentText: string
+): Promise<string> {
+  try {
+    return await createNotification({
+      user_id: postOwnerId,
+      type: 'post_comment',
+      title: `${commenterName} commented on your post`,
+      message: `${commenterName}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+      data: {
+        sender_id: commenterId,
+        sender_name: commenterName,
+        post_id: postId,
+        comment_text: commentText,
+        action_url: `/posts/${postId}`
+      },
+      read: false,
+      priority: 'medium'
+    });
+  } catch (error) {
+    console.error('Error sending post comment notification:', error);
+    throw error;
+  }
+}
+
+// Send daily reminder notification
+export async function sendDailyReminderNotification(
+  userId: string,
+  userName: string
+): Promise<string> {
+  try {
+    return await createNotification({
+      user_id: userId,
+      type: 'daily_reminder',
+      title: 'Time to share your joy! ✨',
+      message: `Hey ${userName}! Don't forget to share what made you smile today. Your joy could brighten someone else's day!`,
+      data: {
+        action_url: '/'
+      },
+      read: false,
+      priority: 'low'
+    });
+  } catch (error) {
+    console.error('Error sending daily reminder notification:', error);
+    throw error;
+  }
+}
+
+// Send achievement notification
+export async function sendAchievementNotification(
+  userId: string,
+  userName: string,
+  achievementType: string,
+  streakCount?: number
+): Promise<string> {
+  try {
+    let title = '';
+    let message = '';
+    
+    switch (achievementType) {
+      case 'first_post':
+        title = '🎉 Your first happy moment!';
+        message = 'Congratulations on sharing your first moment of joy! Keep spreading happiness!';
+        break;
+      case 'streak_7':
+        title = '🔥 7-day streak!';
+        message = `Amazing! You've shared joy for ${streakCount} days in a row. You're building a beautiful habit!`;
+        break;
+      case 'streak_30':
+        title = '🌟 30-day streak!';
+        message = `Incredible! You've been sharing joy for ${streakCount} days. You're a joy-spreading champion!`;
+        break;
+      case 'first_friend':
+        title = '👥 Your first friend!';
+        message = 'You made your first friend on HappyMe+! Start sharing joy together!';
+        break;
+      case 'first_reaction':
+        title = '💖 First reaction received!';
+        message = 'Someone reacted to your post! Your joy is spreading and making others happy!';
+        break;
+      default:
+        title = '🎉 Achievement unlocked!';
+        message = 'You\'ve reached a new milestone on your joy journey!';
+    }
+    
+    return await createNotification({
+      user_id: userId,
+      type: 'achievement',
+      title,
+      message,
+      data: {
+        achievement_type: achievementType,
+        streak_count: streakCount,
+        action_url: '/achievements'
+      },
+      read: false,
+      priority: 'high'
+    });
+  } catch (error) {
+    console.error('Error sending achievement notification:', error);
+    throw error;
+  }
 }
 
 // Delete old notifications (cleanup)

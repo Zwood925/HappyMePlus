@@ -2,6 +2,12 @@ import { db } from './firebase';
 import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc, getDoc, arrayUnion, onSnapshot, setDoc, limit } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from './firebase';
+import { 
+  sendFriendRequestNotification, 
+  sendUsernameInviteNotification, 
+  sendPostReactionNotification, 
+  sendPostCommentNotification 
+} from './notifications';
 
 export interface Post {
   id: string;
@@ -163,6 +169,12 @@ export const sendFriendRequest = async (fromUserId: string, toUserId: string): P
     };
 
     await addDoc(collection(db, 'friend_requests'), requestData);
+    
+    // Send notification to recipient
+    const fromUser = await getUserProfile(fromUserId);
+    if (fromUser) {
+      await sendFriendRequestNotification(toUserId, fromUserId, fromUser.displayName);
+    }
   } catch (error) {
     console.error('Error sending friend request:', error);
     throw error;
@@ -509,6 +521,12 @@ export const addReaction = async (
     await updateDoc(postRef, {
       reactions: post.reactions
     });
+    
+    // Send notification to post owner if it's a new reaction
+    const userProfile = await getUserProfile(userId);
+    if (userProfile && post.userId !== userId) {
+      await sendPostReactionNotification(post.userId, userId, userProfile.displayName, postId, emoji);
+    }
   } catch (error) {
     console.error('Error adding reaction:', error);
     throw new Error('Failed to add reaction');
@@ -536,6 +554,15 @@ export const addComment = async (
     await updateDoc(postRef, {
       comments: arrayUnion(commentRef.id)
     });
+    
+    // Send notification to post owner
+    const postDoc = await getDoc(postRef);
+    if (postDoc.exists()) {
+      const post = postDoc.data() as Post;
+      if (post.userId !== userId) {
+        await sendPostCommentNotification(post.userId, userId, userName, postId, content);
+      }
+    }
 
     return commentRef.id;
   } catch (error) {
@@ -630,6 +657,12 @@ export const sendUsernameInvite = async (
     };
     
     await addDoc(collection(db, 'invites'), inviteData);
+    
+    // Send notification to recipient
+    const fromUser = await getUserProfile(fromUserId);
+    if (fromUser) {
+      await sendUsernameInviteNotification(toUserId, fromUserId, fromUser.displayName, message);
+    }
   } catch (error) {
     console.error('Error sending username invite:', error);
     throw error;

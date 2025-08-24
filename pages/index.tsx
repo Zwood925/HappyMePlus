@@ -25,6 +25,7 @@ import JournalHistory from "../components/JournalHistory";
 import FriendActivityFeed from "../components/FriendActivityFeed";
 import EnhancedNotificationItem from "../components/EnhancedNotificationItem";
 import NotificationSettings from "../components/NotificationSettings";
+import AchievementsDisplay from "../components/AchievementsDisplay";
 
 export default function HomePage() {
   const { user } = useFirebaseAuth();
@@ -69,6 +70,7 @@ export default function HomePage() {
   const [showJournalHistory, setShowJournalHistory] = useState(false);
   const [showFriendActivity, setShowFriendActivity] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
 
   const handleNotificationClick = (notification: any) => {
     // Handle different notification types
@@ -319,13 +321,20 @@ export default function HomePage() {
                 <span>🌟</span>
                 <span className="text-sm font-medium">Friend Activity</span>
               </button>
-              <button
-                onClick={() => setShowUsernameSetup(true)}
-                className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors col-span-2"
-              >
-                <span>✨</span>
-                <span className="text-sm font-medium">Setup Profile</span>
-              </button>
+                             <button
+                 onClick={() => setShowUsernameSetup(true)}
+                 className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+               >
+                 <span>✨</span>
+                 <span className="text-sm font-medium">Setup Profile</span>
+               </button>
+               <button
+                 onClick={() => setShowAchievements(true)}
+                 className="flex items-center space-x-2 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+               >
+                 <span>🏆</span>
+                 <span className="text-sm font-medium">Achievements</span>
+               </button>
             </div>
          </div>
 
@@ -704,6 +713,12 @@ export default function HomePage() {
         <NotificationSettings
           isOpen={showNotificationSettings}
           onClose={() => setShowNotificationSettings(false)}
+        />
+
+        {/* Achievements Display Modal */}
+        <AchievementsDisplay
+          isOpen={showAchievements}
+          onClose={() => setShowAchievements(false)}
         />
     </>
   );

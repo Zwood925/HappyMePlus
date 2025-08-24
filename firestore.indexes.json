@@ -150,6 +150,16 @@
       ]
     },
     {
+      "collectionGroup": "user_stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "totalPosts",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "posts",
       "queryScope": "COLLECTION",
       "fields": [

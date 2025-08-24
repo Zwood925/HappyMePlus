@@ -8,6 +8,7 @@ import {
   sendPostReactionNotification, 
   sendPostCommentNotification 
 } from './notifications';
+import { incrementUserStats, checkAndAwardAchievements, updateStreak } from './achievements';
 
 export interface Post {
   id: string;
@@ -232,6 +233,16 @@ export const acceptFriendRequest = async (requestId: string): Promise<void> => {
     
     // Add to friends list for both users (you might want to create a friends collection)
     // For now, we'll just mark the request as accepted
+    
+    // Update friend stats for both users
+    try {
+      await incrementUserStats(requestData.fromUserId, 'totalFriends');
+      await incrementUserStats(requestData.toUserId, 'totalFriends');
+      await checkAndAwardAchievements(requestData.fromUserId);
+      await checkAndAwardAchievements(requestData.toUserId);
+    } catch (error) {
+      console.error('Error updating friend stats:', error);
+    }
   } catch (error) {
     console.error('Error accepting friend request:', error);
     throw new Error('Failed to accept friend request');
@@ -431,6 +442,17 @@ export const createPost = async (
     };
 
     const docRef = await addDoc(collection(db, 'posts'), postData);
+    
+    // Update user stats and check for achievements
+    try {
+      await incrementUserStats(userId, 'totalPosts');
+      await updateStreak(userId);
+      await checkAndAwardAchievements(userId);
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+      // Don't throw error here as the post was created successfully
+    }
+    
     return docRef.id;
   } catch (error) {
     console.error('Error creating post:', error);
@@ -526,6 +548,14 @@ export const addReaction = async (
     const userProfile = await getUserProfile(userId);
     if (userProfile && post.userId !== userId) {
       await sendPostReactionNotification(post.userId, userId, userProfile.displayName, postId, emoji);
+      
+      // Update post owner's stats and check for achievements
+      try {
+        await incrementUserStats(post.userId, 'totalReactions');
+        await checkAndAwardAchievements(post.userId);
+      } catch (error) {
+        console.error('Error updating post owner stats:', error);
+      }
     }
   } catch (error) {
     console.error('Error adding reaction:', error);
@@ -561,6 +591,14 @@ export const addComment = async (
       const post = postDoc.data() as Post;
       if (post.userId !== userId) {
         await sendPostCommentNotification(post.userId, userId, userName, postId, content);
+        
+        // Update post owner's stats and check for achievements
+        try {
+          await incrementUserStats(post.userId, 'totalComments');
+          await checkAndAwardAchievements(post.userId);
+        } catch (error) {
+          console.error('Error updating post owner stats:', error);
+        }
       }
     }
 

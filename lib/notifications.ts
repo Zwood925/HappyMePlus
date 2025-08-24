@@ -59,10 +59,43 @@ export async function createNotification(notification: Omit<Notification, 'id' |
       ...notification,
       created_at: serverTimestamp(),
     });
-    return docRef.id;
+        return docRef.id;
   } catch (error) {
     console.error('Error creating notification:', error);
     throw error;
+  }
+}
+
+export async function sendDailyReminderNotification(
+  userId: string,
+  streakDays: number = 0
+): Promise<void> {
+  try {
+    const title = streakDays > 0 
+      ? `Keep your ${streakDays}-day streak going! 🔥`
+      : "Time to share some joy! ✨";
+    
+    const message = streakDays > 0
+      ? `You're on a ${streakDays}-day streak of sharing joy! Don't break the chain - share what made you smile today.`
+      : "Take a moment to reflect on what brought you joy today and share it with the world!";
+    
+    const notification: Notification = {
+      id: undefined,
+      user_id: userId,
+      type: 'daily_reminder',
+      title,
+      message,
+      read: false,
+      created_at: serverTimestamp(),
+      priority: 'medium',
+      data: {
+        streak_count: streakDays
+      }
+    };
+
+    await addDoc(collection(db, 'notifications'), notification);
+  } catch (error) {
+    console.error('Error sending daily reminder notification:', error);
   }
 }
 
@@ -375,28 +408,7 @@ export async function sendPostCommentNotification(
   }
 }
 
-// Send daily reminder notification
-export async function sendDailyReminderNotification(
-  userId: string,
-  userName: string
-): Promise<string> {
-  try {
-    return await createNotification({
-      user_id: userId,
-      type: 'daily_reminder',
-      title: 'Time to share your joy! ✨',
-      message: `Hey ${userName}! Don't forget to share what made you smile today. Your joy could brighten someone else's day!`,
-      data: {
-        action_url: '/'
-      },
-      read: false,
-      priority: 'low'
-    });
-  } catch (error) {
-    console.error('Error sending daily reminder notification:', error);
-    throw error;
-  }
-}
+
 
 // Send achievement notification
 export async function sendAchievementNotification(

@@ -128,5 +128,9 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && 
         (resource == null || request.auth.uid == resource.data.userId);
     }
+    
+    match /user_stats/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
   }
 }

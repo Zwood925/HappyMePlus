@@ -1,19 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
+import {
+  JoySharingHeader,
+  JoyPrompts,
+  JoySharingImageUpload,
+  JoySharingImagePreview,
+  JoySharingFooter
+} from './joy-sharing';
 
 interface JoySharingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onShare: (data: { content: string; isPublic: boolean; imageFile?: File }) => void;
 }
-
-const JOY_PROMPTS = [
-  "What made you smile today? 😊",
-  "Share a moment of gratitude 🌱",
-  "What's bringing you joy right now? ✨",
-  "Tell us about a kind act you witnessed or did 💫"
-];
 
 export default function JoySharingModal({
   isOpen,
@@ -26,7 +26,6 @@ export default function JoySharingModal({
   const [isSharing, setIsSharing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -54,28 +53,9 @@ export default function JoySharingModal({
     }
   };
 
-  const handleCameraClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.capture = 'environment'; // Use back camera on mobile
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleGalleryClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = 'image/*';
-      fileInputRef.current.removeAttribute('capture'); // Allow gallery selection
-      fileInputRef.current.click();
-    }
-  };
-
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const handleShare = async () => {
@@ -117,82 +97,26 @@ export default function JoySharingModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="text-2xl">🌟</div>
-                  <h2 className="text-lg font-bold text-gray-800">Share Your Joy</h2>
-                </div>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                  <span className="text-xl">×</span>
-                </button>
-              </div>
-            </div>
+            <JoySharingHeader onClose={onClose} />
 
             {/* Content */}
             <div className="p-4 space-y-4">
               {/* Joy Prompts */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Need inspiration? 💡
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {JOY_PROMPTS.map((prompt) => (
-                    <button
-                      key={prompt}
-                      onClick={() => setContent(prompt)}
-                      className="text-left p-2 rounded-lg text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <JoyPrompts onPromptSelect={setContent} />
 
               {/* Photo Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add a Photo 📸
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCameraClick}
-                    className="flex-1 py-2 px-3 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-                  >
-                    📷 Camera
-                  </button>
-                  <button
-                    onClick={handleGalleryClick}
-                    className="flex-1 py-2 px-3 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
-                  >
-                    🖼️ Gallery
-                  </button>
-                </div>
-                
-                {/* Hidden file input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-              </div>
+              <JoySharingImageUpload
+                onCameraClick={() => {}} // This will be handled by the component
+                onGalleryClick={() => {}} // This will be handled by the component
+                onImageSelect={handleImageSelect}
+              />
 
               {/* Image Preview */}
               {imagePreview && (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                  >
-                    ×
-                  </button>
-                </div>
+                <JoySharingImagePreview
+                  imagePreview={imagePreview}
+                  onRemoveImage={removeImage}
+                />
               )}
 
               {/* Content Input */}
@@ -225,23 +149,12 @@ export default function JoySharingModal({
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleShare}
-                  disabled={!content.trim() || isSharing}
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {isSharing ? 'Sharing...' : 'Share Joy ✨'}
-                </button>
-              </div>
-            </div>
+            <JoySharingFooter
+              onClose={onClose}
+              onShare={handleShare}
+              isSharing={isSharing}
+              canShare={!!content.trim()}
+            />
           </motion.div>
         </motion.div>
       )}

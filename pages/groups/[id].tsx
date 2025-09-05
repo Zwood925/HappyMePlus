@@ -17,65 +17,56 @@ function GroupFeedPage() {
   const [showModal, setShowModal] = useState(false);
 
   const fetchGroupInfo = useCallback(async () => {
-    // TODO: Replace with Firebase Firestore
-    // const { data, error } = await supabase
-    //   .from("groups")
-    //   .select("*")
-    //   .eq("id", id)
-    //   .single();
-
-    // if (!error && data) {
-    //   setGroup(data);
-    // } else {
-    //   console.error("Error fetching group info:", error);
-    // }
+    if (!id) return;
     
-    // Temporary placeholder
-    setGroup({ id, name: "Sample Group" });
+    try {
+      // For now, create a simple group object
+      // TODO: Implement proper group fetching from Firebase
+      setGroup({ 
+        id, 
+        name: "Sample Group", 
+        description: "A sample group for testing",
+        invite_code: "ABC123",
+        created_by: "user123",
+        created_at: new Date(),
+        updated_at: new Date(),
+        members: {},
+        member_count: 1
+      });
+    } catch (error) {
+      console.error('Error fetching group info:', error);
+    }
   }, [id]);
 
   const fetchGroupMoments = useCallback(async () => {
+    if (!id) return;
+    
     setLoading(true);
+    try {
+      // TODO: Implement getGroupMoments function
+      // const groupMoments = await getGroupMoments(id);
+      // setMoments(
+      //   groupMoments
+      //     .map((item: any) => ({
+      //       ...item.moment,
+      //       id: item.moment_id,
+      //       nickname: item.moment?.profiles?.nickname || "Unknown",
+      //     }))
+      //     .sort(
+      //       (a, b) =>
+      //         new Date(b.created_at).getTime() -
+      //         new Date(a.created_at).getTime()
+      //     )
+      //   );
+      // }
 
-    // TODO: Replace with Firebase Firestore
-    // const { data, error } = await supabase
-    //   .from("group_moments")
-    //   .select(
-    //     `
-    //     moment:moment_id (
-    //       content,
-    //       created_at,
-    //       user_id,
-    //       profiles (
-    //         nickname
-    //       )
-    //     )
-    //   `
-    //   )
-    //   .eq("group_id", id);
-
-    // if (error) {
-    //   console.error("Group feed errors:", error);
-    //   setMoments([]);
-    // } else {
-    //   setMoments(
-    //     (data || [])
-    //       .map((item: any) => ({
-    //         ...item.moment,
-    //         id: item.moment_id,
-    //         nickname: item.moment?.profiles?.nickname || "Unknown",
-    //       }))
-    //       .sort(
-    //         (a, b) =>
-    //           new Date(b.created_at).getTime() -
-    //           new Date(a.created_at).getTime()
-    //       )
-    //   );
-    // }
-
-    // Temporary placeholder
-    setMoments([]);
-    setLoading(false);
+      // Temporary placeholder
+      setMoments([]);
+    } catch (error) {
+      console.error('Error fetching group moments:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {

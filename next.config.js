@@ -1,14 +1,6 @@
-import type { NextConfig } from "next";
-import { env } from "process";
-
-const withTM = require("next-transpile-modules")([
-  "framer-motion",
-]); // pass the modules you would like to see transpiled
-
 /** @type {import('next').NextConfig} */
-const nextConfig: NextConfig = withTM({
+const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: [(env.REPLIT_DOMAINS || "").split(",")[0]],
   // PWA Configuration
   async headers() {
     return [
@@ -32,7 +24,7 @@ const nextConfig: NextConfig = withTM({
       },
     ];
   },
-    webpack: (config: any, { isServer }: { isServer: boolean }) => {
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         fs: false,
@@ -47,6 +39,6 @@ const nextConfig: NextConfig = withTM({
 
     return config;
   },
-});
+};
 
 module.exports = nextConfig;

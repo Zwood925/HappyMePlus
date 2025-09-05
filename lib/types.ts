@@ -7,14 +7,12 @@ export interface User {
   email: string;
   nickname?: string;
   created_at: string;
-  stripe_status?: 'free' | 'paid' | 'subscribed';
 }
 
 export interface Profile {
   id: string;
   email: string;
   nickname?: string;
-  stripe_status: 'free' | 'paid' | 'subscribed';
   created_at: string;
   updated_at: string;
 }
@@ -72,16 +70,6 @@ export interface JournalEntry {
   tags?: string[];
   created_at: string;
   updated_at: string;
-}
-
-// Stripe Types
-export interface StripeSession {
-  id: string;
-  url?: string;
-  customer_email?: string;
-  metadata?: {
-    promoCode?: string;
-  };
 }
 
 // API Response Types

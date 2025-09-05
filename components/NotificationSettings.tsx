@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 
@@ -35,20 +35,20 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && user?.uid) {
-      loadPreferences();
-    }
-  }, [isOpen, user?.uid]);
-
-  const loadPreferences = async () => {
+  const loadPreferences = useCallback(async () => {
     // In a real app, you'd load from Firebase
     // For now, we'll use localStorage
     const saved = localStorage.getItem(`notification_preferences_${user?.uid}`);
     if (saved) {
       setPreferences(JSON.parse(saved));
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (isOpen && user?.uid) {
+      loadPreferences();
+    }
+  }, [isOpen, user?.uid, loadPreferences]);
 
   const savePreferences = async () => {
     if (!user?.uid) return;

@@ -139,7 +139,7 @@ export default function WorldBoard() {
                       </div>
                       <div className="bg-purple-50 rounded-lg p-3 mb-3">
                         <p className="text-sm text-purple-700 font-medium mb-1">
-                          "{response.promptText}"
+                          &ldquo;{response.promptText}&rdquo;
                         </p>
                         <p className="text-gray-800">{response.response}</p>
                       </div>

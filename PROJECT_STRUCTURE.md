@@ -32,11 +32,7 @@ HappyMePlus/
 │   ├── signup.tsx          # Signup page
 │   ├── settings.tsx        # User settings
 │   ├── encouragements.tsx  # Encouragements page
-│   ├── success.tsx         # Payment success
-│   ├── cancel.tsx          # Payment cancellation
 │   ├── api/                # API endpoints
-│   │   ├── create-checkout-session.ts
-│   │   └── stripe-webhook.ts
 │   ├── groups/             # Group-related pages
 │   │   ├── index.tsx       # Groups list
 │   │   ├── create.tsx      # Create group
@@ -65,7 +61,6 @@ HappyMePlus/
 
 ### Environment Variables (`env.example`)
 - **Firebase**: Database, authentication, and storage configuration
-- **Stripe**: Payment processing configuration
 - **App**: General application settings
 
 ### Centralized Configuration (`lib/config.ts`)
@@ -86,10 +81,6 @@ HappyMePlus/
 - **Firebase**: Auth, Firestore database, and storage
 - **Firebase SDK**: Official Firebase JavaScript SDK
 
-### Payments
-- **Stripe**: Payment processing
-- **@stripe/stripe-js**: Stripe client library
-
 ### UI & Animation
 - **Framer Motion**: Animations
 - **React Calendar**: Calendar component
@@ -109,7 +100,6 @@ HappyMePlus/
 3. **Encouragement System**: Send/receive encouraging messages
 4. **Group Support**: Join and participate in support groups
 5. **Journal**: Personal journal with calendar view
-6. **Stripe Integration**: Subscription and payment processing
 
 ### Planned Features (Future Enhancements)
 1. **Enhanced Authentication**: Social providers (Google, Facebook, etc.)
@@ -156,7 +146,7 @@ HappyMePlus/
 ## 🔍 File Naming Conventions
 
 - **Components**: PascalCase (e.g., `SendEncouragement.tsx`)
-- **Pages**: kebab-case (e.g., `create-checkout-session.ts`)
-- **Utilities**: camelCase (e.g., `supabaseClient.ts`)
+- **Pages**: kebab-case (e.g., `index.tsx`)
+- **Utilities**: camelCase (e.g., `firebaseClient.ts`)
 - **Types**: camelCase (e.g., `types.ts`)
 - **Constants**: camelCase (e.g., `constants.ts`) 

@@ -20,14 +20,11 @@ export const ROUTES = {
   encouragements: '/encouragements',
   journal: '/journal',
   groups: '/groups',
-  success: '/success',
-  cancel: '/cancel',
 } as const;
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  createCheckoutSession: '/api/create-checkout-session',
-  stripeWebhook: '/api/stripe-webhook',
+  // API endpoints will be added here as needed
 } as const;
 
 // Database Table Names
@@ -46,12 +43,7 @@ export const USER_ROLES = {
   member: 'member',
 } as const;
 
-// Subscription Status
-export const SUBSCRIPTION_STATUS = {
-  free: 'free',
-  paid: 'paid',
-  subscribed: 'subscribed',
-} as const;
+
 
 // Mood Scale
 export const MOOD_SCALE = {

@@ -117,7 +117,7 @@ export default function GroupInvite({ groupId, groupName, inviteCode, onInviteSe
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter friend's email address"
+            placeholder="Enter friend&apos;s email address"
             className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all"
             required
           />
@@ -156,7 +156,7 @@ export default function GroupInvite({ groupId, groupName, inviteCode, onInviteSe
       {/* Info Section */}
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <p className="text-xs text-blue-700">
-          💡 <strong>Tip:</strong> When someone joins using your invite link, they'll automatically be added to the group and you'll both receive a notification!
+          💡 <strong>Tip:</strong> When someone joins using your invite link, they&apos;ll automatically be added to the group and you&apos;ll both receive a notification!
         </p>
       </div>
     </motion.div>

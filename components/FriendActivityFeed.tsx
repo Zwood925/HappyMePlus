@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
-import { getFriendActivity, Post } from '../lib/community';
+import { getFriendActivity, addReaction, addComment, Post } from '../lib/community';
 import EnhancedPostCard from './EnhancedPostCard';
-import { addReaction, addComment } from '../lib/community';
 
 interface FriendActivityFeedProps {
   isOpen: boolean;
@@ -16,13 +15,7 @@ export default function FriendActivityFeed({ isOpen, onClose }: FriendActivityFe
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && user?.uid) {
-      loadFriendActivity();
-    }
-  }, [isOpen, user?.uid]);
-
-  const loadFriendActivity = async () => {
+  const loadFriendActivity = useCallback(async () => {
     if (!user?.uid) return;
     
     setLoading(true);
@@ -36,7 +29,13 @@ export default function FriendActivityFeed({ isOpen, onClose }: FriendActivityFe
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (isOpen && user?.uid) {
+      loadFriendActivity();
+    }
+  }, [isOpen, user?.uid, loadFriendActivity]);
 
   const handlePostReaction = async (postId: string, emoji: string) => {
     if (!user?.uid) return;
@@ -128,7 +127,7 @@ export default function FriendActivityFeed({ isOpen, onClose }: FriendActivityFe
                     No friend activity yet
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    When your friends share posts, they'll appear here.
+                    When your friends share posts, they&apos;ll appear here.
                   </p>
                   <button
                     onClick={loadFriendActivity}

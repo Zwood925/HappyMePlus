@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
-import { getAllHappyMoments } from '../lib/firestore';
+import { getJournalEntries, JournalEntryData } from '../lib/journal';
 import ImageViewer from './ImageViewer';
 
 interface JournalHistoryProps {
@@ -9,11 +9,9 @@ interface JournalHistoryProps {
   onClose: () => void;
 }
 
-interface JournalEntry {
+interface JournalEntry extends JournalEntryData {
   id: string;
-  content: string;
-  createdAt: any;
-  imageUrl?: string;
+  created_at: any;
 }
 
 export default function JournalHistory({ isOpen, onClose }: JournalHistoryProps) {
@@ -24,27 +22,28 @@ export default function JournalHistory({ isOpen, onClose }: JournalHistoryProps)
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
 
+  const loadJournalHistory = useCallback(async () => {
+    if (!user?.uid) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const journalEntries = await getJournalEntries(user.uid);
+      setEntries(journalEntries as JournalEntry[]);
+    } catch (error) {
+      console.error('Error loading journal history:', error);
+      setError('Failed to load journal history');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.uid]);
+
   useEffect(() => {
     if (isOpen && user?.uid) {
       loadJournalHistory();
     }
-  }, [isOpen, user?.uid]);
-
-  const loadJournalHistory = async () => {
-    if (!user?.uid) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const result = await getAllHappyMoments(user.uid);
-      setEntries(result.moments);
-    } catch (error: any) {
-      setError(error.message || 'Failed to load journal history');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isOpen, user?.uid, loadJournalHistory]);
 
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -143,21 +142,21 @@ export default function JournalHistory({ isOpen, onClose }: JournalHistoryProps)
                       </p>
 
                       {/* Image */}
-                      {entry.imageUrl && (
+                      {entry.image_url && (
                         <div className="mb-3">
                           <img
-                            src={entry.imageUrl}
+                            src={entry.image_url}
                             alt="Journal entry"
                             className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => handleImageClick(entry.imageUrl!)}
+                            onClick={() => handleImageClick(entry.image_url!)}
                           />
                         </div>
                       )}
 
                       {/* Date and Time */}
                       <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span>{formatDate(entry.createdAt)}</span>
-                        <span>{formatTime(entry.createdAt)}</span>
+                        <span>{formatDate(entry.created_at)}</span>
+                        <span>{formatTime(entry.created_at)}</span>
                       </div>
                     </motion.div>
                   ))}

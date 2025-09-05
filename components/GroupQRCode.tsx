@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface GroupQRCodeProps {
   inviteCode: string;
@@ -64,16 +65,22 @@ export default function GroupQRCode({ inviteCode, groupName, onClose }: GroupQRC
         <div className="flex justify-center mb-6">
           <div className="bg-gray-50 p-4 rounded-lg">
             {qrCodeUrl ? (
-              <img
+              <Image
                 src={qrCodeUrl}
-                alt="QR Code"
-                className="w-48 h-48"
+                alt="Group QR Code"
+                width={200}
+                height={200}
+                className="mx-auto mb-4 rounded-lg shadow-lg"
+                unoptimized
               />
             ) : (
               <div className="w-48 h-48 bg-gray-200 rounded-lg flex items-center justify-center">
                 <div className="loading loading-spinner loading-lg"></div>
               </div>
             )}
+            <p className="text-sm text-gray-600">
+              Scan this QR code to join the group
+            </p>
           </div>
         </div>
 

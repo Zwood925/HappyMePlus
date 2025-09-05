@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import { getUserGroups, createGroup, joinGroup, deleteGroup, leaveGroup, Group } from '../../lib/groups';
 import { withAuth } from '../../lib/withAuth';
@@ -33,23 +33,24 @@ function GroupsPage() {
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     if (!user?.uid) return;
-    
+
+    setLoading(true);
     try {
       const userGroups = await getUserGroups(user.uid);
       setGroups(userGroups);
     } catch (error) {
       console.error('Error fetching groups:', error);
-      setMessage('Failed to load groups. Please refresh the page.');
+      setMessage('Failed to load groups');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
 
   useEffect(() => {
     fetchGroups();
-  }, [user?.uid]);
+  }, [fetchGroups]);
 
   const handleCreate = async () => {
     if (!groupName.trim() || !user?.uid) {

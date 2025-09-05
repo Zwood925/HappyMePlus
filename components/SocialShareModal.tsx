@@ -154,7 +154,7 @@ export default function SocialShareModal({
                   {/* Post Preview */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-gray-800 text-sm mb-2">
-                      "{post.content}"
+                      &ldquo;{post.content}&rdquo;
                     </p>
                     <p className="text-xs text-gray-500">
                       - @{post.userName}

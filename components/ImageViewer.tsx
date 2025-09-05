@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 interface ImageViewerProps {
   isOpen: boolean;
@@ -34,30 +35,31 @@ export default function ImageViewer({ isOpen, onClose, imageUrl, alt = "Image" }
           tabIndex={0}
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="relative max-w-full max-h-full"
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
-            >
-              ✕
-            </button>
-
-            {/* Image */}
-            <img
-              src={imageUrl}
-              alt={alt}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              draggable={false}
-            />
-
-            {/* Image Info */}
-            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-lg">
-              <p className="text-sm opacity-90">Click outside or press ESC to close</p>
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-800">Image Viewer</h2>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 p-2"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-4 flex justify-center">
+              <Image
+                src={imageUrl}
+                alt={alt}
+                width={800}
+                height={600}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                unoptimized
+              />
             </div>
           </motion.div>
         </motion.div>

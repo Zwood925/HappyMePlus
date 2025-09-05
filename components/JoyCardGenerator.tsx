@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { DailyPromptResponse } from '../lib/dailyPrompts';
 import { 
   createJoyCardFromResponse, 
@@ -148,35 +149,32 @@ export default function JoyCardGenerator({ response, onClose }: JoyCardGenerator
             <div className="space-y-6">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Joy Card is Ready! 🎉</h3>
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <img
+                {generatedCard && (
+                  <div className="text-center">
+                    <Image
                       src={generatedCard}
                       alt="Generated Joy Card"
-                      className="w-64 h-auto rounded-lg shadow-lg"
+                      width={400}
+                      height={300}
+                      className="mx-auto mb-4 rounded-lg shadow-lg"
+                      unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+                    <div className="flex justify-center space-x-3">
+                      <button
+                        onClick={handleDownload}
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        📥 Download
+                      </button>
+                      <button
+                        onClick={handleShare}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        📤 Share
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleDownload}
-                  className="flex-1 bg-green-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  📥 Download
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleShare}
-                  className="flex-1 bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  📤 Share
-                </motion.button>
+                )}
               </div>
 
               <div className="text-center">

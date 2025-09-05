@@ -86,7 +86,7 @@ export default function NotificationPermission({ onPermissionGranted, className 
           </h3>
           <p className="text-gray-600 mb-4">
             Get notified when friends send you encouragement, invite you to groups, or when someone needs support. 
-            We'll only send you meaningful notifications that bring joy.
+            We&apos;ll only send you meaningful notifications that bring joy.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3">

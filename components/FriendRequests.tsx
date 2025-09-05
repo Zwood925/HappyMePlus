@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getFriendRequests, acceptFriendRequest, rejectFriendRequest, FriendRequest, UserProfile } from '../lib/community';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
@@ -14,13 +14,7 @@ export default function FriendRequests({ isOpen, onClose }: FriendRequestsProps)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && user?.uid) {
-      loadFriendRequests();
-    }
-  }, [isOpen, user?.uid]);
-
-  const loadFriendRequests = async () => {
+  const loadFriendRequests = useCallback(async () => {
     if (!user?.uid) return;
 
     setLoading(true);
@@ -35,7 +29,13 @@ export default function FriendRequests({ isOpen, onClose }: FriendRequestsProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (isOpen && user?.uid) {
+      loadFriendRequests();
+    }
+  }, [isOpen, user?.uid, loadFriendRequests]);
 
   const handleAccept = async (requestId: string) => {
     try {

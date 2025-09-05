@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getFriends, UserProfile } from '../lib/community';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
@@ -15,13 +15,7 @@ export default function FriendsList({ isOpen, onClose, onFriendSelected }: Frien
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && user?.uid) {
-      loadFriends();
-    }
-  }, [isOpen, user?.uid]);
-
-  const loadFriends = async () => {
+  const loadFriends = useCallback(async () => {
     if (!user?.uid) return;
 
     setLoading(true);
@@ -36,7 +30,13 @@ export default function FriendsList({ isOpen, onClose, onFriendSelected }: Frien
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (isOpen && user?.uid) {
+      loadFriends();
+    }
+  }, [isOpen, user?.uid, loadFriends]);
 
   const handleFriendClick = (friend: UserProfile) => {
     if (onFriendSelected) {

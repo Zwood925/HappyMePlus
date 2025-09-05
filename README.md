@@ -8,7 +8,6 @@ A Next.js-based mental wellness application that helps users track happy moments
 - **Encouragement System**: Send and receive encouraging messages
 - **Group Support**: Join and participate in support groups
 - **Journal with Calendar**: Track mood and experiences over time
-- **Stripe Integration**: Subscription and payment processing
 - **Real-time Updates**: Live notifications and updates
 
 ## 🛠 Tech Stack
@@ -17,7 +16,6 @@ A Next.js-based mental wellness application that helps users track happy moments
 - **Styling**: Tailwind CSS, DaisyUI
 - **Authentication**: Firebase Auth
 - **Database**: Firebase Firestore
-- **Payments**: Stripe
 - **Animations**: Framer Motion
 - **State Management**: React Query (TanStack Query)
 
@@ -43,7 +41,6 @@ HappyMePlus/
 - Node.js 18+ 
 - npm or yarn
 - Firebase account
-- Stripe account (for payments)
 
 ### Installation
 
@@ -65,7 +62,6 @@ HappyMePlus/
    
    Fill in your actual values in `.env.local`:
    - Firebase credentials
-   - Stripe API keys
    - Other configuration values
 
 4. **Run the development server**
@@ -87,8 +83,6 @@ Create a `.env.local` file with the following variables:
 - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` - Your Firebase storage bucket
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` - Your Firebase messaging sender ID
 - `NEXT_PUBLIC_FIREBASE_APP_ID` - Your Firebase app ID
-- `STRIPE_SECRET_KEY` - Your Stripe secret key
-- `STRIPE_WEBHOOK_SECRET` - Your Stripe webhook secret
 
 ### Optional
 - `NEXT_PUBLIC_APP_URL` - Your application URL

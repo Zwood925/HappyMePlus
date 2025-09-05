@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import { getInvitesForUser, respondToInvite, Invite } from '../lib/community';
@@ -9,38 +9,35 @@ interface InvitesModalProps {
   onInviteResponded?: () => void;
 }
 
-export default function InvitesModal({ 
-  isOpen, 
-  onClose, 
-  onInviteResponded 
-}: InvitesModalProps) {
+export default function InvitesModal({ isOpen, onClose, onInviteResponded }: InvitesModalProps) {
   const { user } = useFirebaseAuth();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
 
+  const loadInvites = useCallback(async () => {
+    if (!user?.displayName) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const userInvites = await getInvitesForUser(user.displayName);
+      setInvites(userInvites);
+    } catch (error) {
+      console.error('Error loading invites:', error);
+      setError('Failed to load invites');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.displayName]);
+
   useEffect(() => {
     if (isOpen && user?.displayName) {
       loadInvites();
     }
-  }, [isOpen, user?.displayName]);
-
-  const loadInvites = async () => {
-    if (!user?.displayName) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const fetchedInvites = await getInvitesForUser(user.displayName);
-      setInvites(fetchedInvites);
-    } catch (error: any) {
-      setError(error.message || 'Failed to load invites');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isOpen, user?.displayName, loadInvites]);
 
   const handleRespond = async (inviteId: string, status: 'accepted' | 'rejected') => {
     setRespondingTo(inviteId);

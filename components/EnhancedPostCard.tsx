@@ -4,6 +4,7 @@ import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import PostReactions from './PostReactions';
 import PostComments from './PostComments';
 import ImageViewer from './ImageViewer';
+import Image from 'next/image';
 
 interface Post {
   id: string;
@@ -113,11 +114,14 @@ export default function EnhancedPostCard({
         
         {post.imageUrl && (
           <div className="mb-3">
-            <img
+            <Image
               src={post.imageUrl}
               alt="Post image"
+              width={400}
+              height={256}
               className="w-full rounded-lg object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => setShowImageViewer(true)}
+              unoptimized
             />
           </div>
         )}

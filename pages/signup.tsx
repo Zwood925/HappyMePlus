@@ -8,7 +8,6 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
-  const [promoCode, setPromoCode] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -76,18 +75,6 @@ export default function SignupPage() {
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              className="border border-purple-300 rounded px-3 py-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="promoCode" className="block font-semibold text-sm mb-1">Promo Code (optional):</label>
-            <input
-              id="promoCode"
-              name="promoCode"
-              type="text"
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
               className="border border-purple-300 rounded px-3 py-2 w-full"
             />
           </div>

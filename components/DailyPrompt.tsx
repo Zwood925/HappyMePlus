@@ -22,7 +22,6 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
   const [todaysPrompt, setTodaysPrompt] = useState<DailyPromptType | null>(null);
   const [userResponse, setUserResponse] = useState<DailyPromptResponse | null>(null);
   const [response, setResponse] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showJoyCardGenerator, setShowJoyCardGenerator] = useState(false);
@@ -43,7 +42,6 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
         setUserResponse(existingResponse);
         if (existingResponse) {
           setResponse(existingResponse.response);
-          setIsPublic(existingResponse.isPublic);
         }
       }
     } catch (error) {
@@ -112,7 +110,7 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
 
     try {
       setIsSubmitting(true);
-      await submitDailyPromptResponse(user.uid, response.trim(), selectedImage || undefined, isPublic);
+      await submitDailyPromptResponse(user.uid, response.trim(), selectedImage || undefined);
       setUserResponse({
         id: 'temp',
         userId: user.uid,
@@ -120,8 +118,8 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
         promptText: todaysPrompt.text,
         response: response.trim(),
         createdAt: new Date() as any,
-        isPublic
       });
+      
       setSelectedImage(null);
       setImagePreview(null);
       onResponseSubmitted?.();
@@ -159,12 +157,10 @@ export default function DailyPrompt({ onResponseSubmitted }: DailyPromptProps) {
       ) : (
         <DailyPromptForm
           response={response}
-          isPublic={isPublic}
           isSubmitting={isSubmitting}
           selectedImage={selectedImage}
           imagePreview={imagePreview}
           onResponseChange={setResponse}
-          onPublicChange={setIsPublic}
           onCameraClick={handleCameraClick}
           onGalleryClick={() => {}} // This will be handled by the form component
           onRemoveImage={removeImage}

@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
-    "target": "es2020",                     // ✅ bump to ES2020 (modern default)
+    "target": "es2020",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -11,9 +11,8 @@
     "jsx": "preserve",
     "noEmit": true,
     "incremental": true,
-    "skipLibCheck": true,                   // ✅ this is your lifesaver
-    "strict": true,                         // ✅ turn back on for better inference
-    "baseUrl": ".",
+    "skipLibCheck": true,
+    "strict": true,
     "paths": {
       "@/*": ["./*"]
     },

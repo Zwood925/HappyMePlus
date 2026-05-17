@@ -4,12 +4,10 @@ import DailyPromptImageUpload from './DailyPromptImageUpload';
 
 interface DailyPromptFormProps {
   response: string;
-  isPublic: boolean;
   isSubmitting: boolean;
   selectedImage: File | null;
   imagePreview: string | null;
   onResponseChange: (value: string) => void;
-  onPublicChange: (isPublic: boolean) => void;
   onCameraClick: () => void;
   onGalleryClick: () => void;
   onRemoveImage: () => void;
@@ -19,12 +17,10 @@ interface DailyPromptFormProps {
 
 export default function DailyPromptForm({
   response,
-  isPublic,
   isSubmitting,
   selectedImage,
   imagePreview,
   onResponseChange,
-  onPublicChange,
   onCameraClick,
   onGalleryClick,
   onRemoveImage,
@@ -61,31 +57,6 @@ export default function DailyPromptForm({
             <span className="text-xs text-gray-500">
               {response.length}/500
             </span>
-          </div>
-        </div>
-
-        {/* Privacy Toggle */}
-        <div className="flex items-center justify-between">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => onPublicChange(e.target.checked)}
-              className="sr-only"
-            />
-            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-              isPublic ? 'bg-blue-500' : 'bg-gray-300'
-            }`}>
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                isPublic ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </div>
-            <span className="ml-3 text-sm text-gray-700">
-              Share on World Board
-            </span>
-          </label>
-          <div className="text-xs text-gray-500">
-            {isPublic ? '🌍 Public' : '👥 Friends only'}
           </div>
         </div>
 

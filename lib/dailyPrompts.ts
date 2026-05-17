@@ -30,7 +30,6 @@ export interface DailyPromptResponse {
   response: string;
   imageUrl?: string;
   createdAt: Timestamp;
-  isPublic: boolean; // for "World Board"
 }
 
 // Get today's active prompt
@@ -61,7 +60,6 @@ export async function submitDailyPromptResponse(
   userId: string,
   response: string,
   imageFile?: File,
-  isPublic: boolean = false
 ): Promise<string> {
   try {
     // Get today's prompt
@@ -92,7 +90,6 @@ export async function submitDailyPromptResponse(
       promptText: todaysPrompt.text,
       response,
       createdAt: Timestamp.now(),
-      isPublic
     };
     
     // Only add imageUrl if it's provided
@@ -173,39 +170,6 @@ export async function getFriendsResponsesForToday(userId: string, friendIds: str
   }
 }
 
-// Get "World Board" responses (public responses from today)
-export async function getWorldBoardResponses(limitCount: number = 20): Promise<DailyPromptResponse[]> {
-  try {
-    const todaysPrompt = await getTodaysPrompt();
-    if (!todaysPrompt) {
-      return [];
-    }
-    
-    const responsesRef = collection(db, 'daily_prompt_responses');
-    const q = query(
-      responsesRef,
-      where('promptId', '==', todaysPrompt.id),
-      where('isPublic', '==', true),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
-    
-    const querySnapshot = await getDocs(q);
-    const responses: DailyPromptResponse[] = [];
-    
-    querySnapshot.forEach((doc) => {
-      responses.push({
-        id: doc.id,
-        ...doc.data()
-      } as DailyPromptResponse);
-    });
-    
-    return responses;
-  } catch (error) {
-    console.error('Error getting world board responses:', error);
-    throw error;
-  }
-}
 
 // Create a journal entry from a daily prompt response
 async function createJournalEntryFromResponse(userId: string, responseData: Omit<DailyPromptResponse, 'id'>) {

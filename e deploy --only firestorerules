@@ -1,5 +1,0 @@
-[33m3668079[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Simplify Firebase initialization - remove complex null checking and conditional logic
-[33m1009734[m Fix Firebase initialization for build environment
-[33m7cb64c7[m Fix all build errors and complete Vercel deployment preparation
-[33m56aa2ff[m Fix TypeScript errors and exclude functions from build
-[33md216196[m updated

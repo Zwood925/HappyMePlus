@@ -14,12 +14,6 @@ export default function BottomNavigation() {
       active: router.pathname === '/'
     },
     {
-      path: '/community',
-      icon: '🌍',
-      label: 'Community',
-      active: router.pathname === '/community'
-    },
-    {
       path: '/journal',
       icon: '📝',
       label: 'Journal',

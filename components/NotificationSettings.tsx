@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
+import { doc, getDoc, updateDoc,} from 'firebase/firestore';
+import { db } from '../lib/firebase'
 
 interface NotificationSettingsProps {
   isOpen: boolean;
@@ -13,7 +15,6 @@ interface NotificationPreferences {
   postReactions: boolean;
   postComments: boolean;
   dailyReminders: boolean;
-  achievements: boolean;
   groupInvites: boolean;
   supportRequests: boolean;
   encouragements: boolean;
@@ -27,7 +28,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
     postReactions: true,
     postComments: true,
     dailyReminders: true,
-    achievements: true,
     groupInvites: true,
     supportRequests: true,
     encouragements: true,
@@ -36,36 +36,43 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
   const [saved, setSaved] = useState(false);
 
   const loadPreferences = useCallback(async () => {
-    // In a real app, you'd load from Firebase
-    // For now, we'll use localStorage
-    const saved = localStorage.getItem(`notification_preferences_${user?.uid}`);
-    if (saved) {
-      setPreferences(JSON.parse(saved));
-    }
-  }, [user?.uid]);
+   if (!user?.uid) return;
 
-  useEffect(() => {
-    if (isOpen && user?.uid) {
-      loadPreferences();
-    }
-  }, [isOpen, user?.uid, loadPreferences]);
+   try {
+      const docRef = doc(db, 'user_profiles', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        if (userData.notification_preferences) {
+          setPreferences(userData.notification_preferences);
+        }
+      }
+   } catch (error) {
+      console.error('Error loading preferences from Firebase:', error);
+   }
+   }, [user?.uid]);
 
   const savePreferences = async () => {
     if (!user?.uid) return;
     
     setLoading(true);
     try {
-      // In a real app, you'd save to Firebase
-      // For now, we'll use localStorage
-      localStorage.setItem(`notification_preferences_${user?.uid}`, JSON.stringify(preferences));
+      const docRef = doc(db, 'user_profiles', user.uid);
+
+      // We use updateDoc to safely merge these settings without overwriting their other profile data
+      await updateDoc(docRef, {
+        notification_preferences: preferences
+      });
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      console.error('Error saving preferences to Firebase:', error);
     } finally {
       setLoading(false);
     }
-  };
+    };
 
   const handleToggle = (key: keyof NotificationPreferences) => {
     setPreferences(prev => ({
@@ -81,7 +88,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'postReactions': return '💖';
       case 'postComments': return '💬';
       case 'dailyReminders': return '✨';
-      case 'achievements': return '🏆';
       case 'groupInvites': return '🎉';
       case 'supportRequests': return '💙';
       case 'encouragements': return '💝';
@@ -96,7 +102,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'postReactions': return 'Post Reactions';
       case 'postComments': return 'Post Comments';
       case 'dailyReminders': return 'Daily Reminders';
-      case 'achievements': return 'Achievements';
       case 'groupInvites': return 'Group Invites';
       case 'supportRequests': return 'Support Requests';
       case 'encouragements': return 'Encouragements';
@@ -111,7 +116,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'postReactions': return 'When someone reacts to your posts';
       case 'postComments': return 'When someone comments on your posts';
       case 'dailyReminders': return 'Gentle reminders to share your joy';
-      case 'achievements': return 'When you unlock new achievements';
       case 'groupInvites': return 'When someone invites you to a group';
       case 'supportRequests': return 'When someone in your group needs support';
       case 'encouragements': return 'When someone sends you encouragement';

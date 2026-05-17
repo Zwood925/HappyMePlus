@@ -460,51 +460,6 @@ export const createPost = async (
   }
 };
 
-export const getPublicPosts = async (): Promise<Post[]> => {
-  try {
-    const q = query(
-      collection(db, 'posts'),
-      where('isPublic', '==', true),
-      orderBy('createdAt', 'desc')
-    );
-
-    const querySnapshot = await getDocs(q);
-    const posts: Post[] = [];
-
-    querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as Post);
-    });
-
-    return posts;
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-    throw new Error('Failed to fetch posts');
-  }
-};
-
-// Real-time listener for posts
-export const subscribeToPosts = (callback: (posts: Post[]) => void) => {
-  const q = query(
-    collection(db, 'posts'),
-    where('isPublic', '==', true),
-    orderBy('createdAt', 'desc')
-  );
-
-  return onSnapshot(q, (querySnapshot) => {
-    const posts: Post[] = [];
-    querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as Post);
-    });
-    callback(posts);
-  });
-};
-
 // Reactions Functions
 export const addReaction = async (
   postId: string,

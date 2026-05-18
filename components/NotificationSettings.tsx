@@ -14,7 +14,6 @@ interface NotificationPreferences {
   usernameInvites: boolean;
   postReactions: boolean;
   postComments: boolean;
-  dailyReminders: boolean;
   groupInvites: boolean;
   supportRequests: boolean;
   encouragements: boolean;
@@ -27,7 +26,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
     usernameInvites: true,
     postReactions: true,
     postComments: true,
-    dailyReminders: true,
     groupInvites: true,
     supportRequests: true,
     encouragements: true,
@@ -87,7 +85,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'usernameInvites': return '📬';
       case 'postReactions': return '💖';
       case 'postComments': return '💬';
-      case 'dailyReminders': return '✨';
       case 'groupInvites': return '🎉';
       case 'supportRequests': return '💙';
       case 'encouragements': return '💝';
@@ -101,7 +98,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'usernameInvites': return 'Username Invites';
       case 'postReactions': return 'Post Reactions';
       case 'postComments': return 'Post Comments';
-      case 'dailyReminders': return 'Daily Reminders';
       case 'groupInvites': return 'Group Invites';
       case 'supportRequests': return 'Support Requests';
       case 'encouragements': return 'Encouragements';
@@ -115,7 +111,6 @@ export default function NotificationSettings({ isOpen, onClose }: NotificationSe
       case 'usernameInvites': return 'When someone invites you by username';
       case 'postReactions': return 'When someone reacts to your posts';
       case 'postComments': return 'When someone comments on your posts';
-      case 'dailyReminders': return 'Gentle reminders to share your joy';
       case 'groupInvites': return 'When someone invites you to a group';
       case 'supportRequests': return 'When someone in your group needs support';
       case 'encouragements': return 'When someone sends you encouragement';

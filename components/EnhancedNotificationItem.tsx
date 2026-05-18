@@ -29,10 +29,6 @@ export default function EnhancedNotificationItem({
         return '💙';
       case 'encouragement':
         return '💝';
-      case 'daily_reminder':
-        return '✨';
-      case 'achievement':
-        return '🏆';
       case 'system':
         return '🔔';
       default:

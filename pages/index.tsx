@@ -10,22 +10,17 @@ import WelcomeScreen from '../components/home/WelcomeScreen';
 import VideoCelebration from '../components/VideoCelebration';
 import SmileyButton from '../components/SmileyButton';
 import SadFaceButton from '../components/SadFaceButton';
-import DailyPrompt from '../components/DailyPrompt';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import BottomNavigation from '../components/BottomNavigation';
 import UsernameSetupModal from '../components/UsernameSetupModal';
 import UserSearch from '../components/UserSearch';
 import FriendRequests from '../components/FriendRequests';
 import FriendsList from '../components/FriendsList';
-import ImageViewer from '../components/ImageViewer';
 import UsernameInviteModal from '../components/UsernameInviteModal';
 import InvitesModal from '../components/InvitesModal';
 import SocialShareModal from '../components/SocialShareModal';
-import JournalHistory from '../components/JournalHistory';
 import FriendActivityFeed from '../components/FriendActivityFeed';
 import NotificationSettings from '../components/NotificationSettings';
-import AchievementsDisplay from '../components/AchievementsDisplay';
-import CameraCapture from '../components/CameraCapture';
 
 export default function HomePage() {
   const {
@@ -44,26 +39,16 @@ export default function HomePage() {
     inboxOpen,
     showVideoCelebration,
     showCreatePost,
-    selectedImage,
-    imagePreview,
-    showCamera,
     showUsernameSetup,
     showUserSearch,
     showFriendRequests,
     showFriendsList,
-    showImageViewer,
-    viewerImageUrl,
     showUsernameInvite,
     showInvites,
     showSocialShare,
     selectedPost,
-    showJournalHistory,
     showFriendActivity,
     showNotificationSettings,
-    showAchievements,
-    
-    // Refs
-    galleryInputRef,
     
     // Handlers
     handleNotificationClick,
@@ -71,12 +56,6 @@ export default function HomePage() {
     handleFeelingDown,
     handleSubmit,
     handleHappyParty,
-    handleImageSelect,
-    handleCameraClick,
-    handleGalleryClick,
-    handlePhotoTaken,
-    removeImage,
-    handleImageViewerOpen,
     
     // Actions
     markAsRead,
@@ -85,19 +64,15 @@ export default function HomePage() {
     setSelectedGroups,
     setShowGroupSelector,
     setShowCreatePost,
-    setShowCamera,
     setShowUsernameSetup,
     setShowUserSearch,
     setShowFriendRequests,
     setShowFriendsList,
-    setShowImageViewer,
     setShowUsernameInvite,
     setShowInvites,
     setShowSocialShare,
-    setShowJournalHistory,
     setShowFriendActivity,
     setShowNotificationSettings,
-    setShowAchievements,
     setShowVideoCelebration,
   } = useHomePage();
 
@@ -112,23 +87,33 @@ export default function HomePage() {
         unreadCount={unreadCount}
         onInvitesClick={() => setShowInvites(true)}
         onFriendRequestsClick={() => setShowFriendRequests(true)}
-        onJournalHistoryClick={() => setShowJournalHistory(true)}
         onNotificationsClick={toggleInbox}
         onCreatePostClick={() => setShowCreatePost(true)}
       />
 
       {/* Main Content */}
       <div className="pt-16 pb-20 min-h-screen bg-gray-50">
-        {/* Daily Prompt Section */}
-        <div className="bg-white border-b border-gray-200 p-4">
-          <DailyPrompt onResponseSubmitted={() => {}} />
-        </div>
 
         {/* Quick Actions */}
         <div className="bg-white p-4 border-b border-gray-200">
           <div className="flex justify-center space-x-8">
             <SmileyButton onClick={handleHappyParty} />
             <SadFaceButton onClick={handleFeelingDown} />
+          </div>
+        </div>
+
+        {/* Create Post Trigger */}
+        <div className="bg-white p-4 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 shadow-inner">
+              {user.email?.charAt(0).toUpperCase() || '✨'}
+            </div>
+            <button
+              onClick={() => setShowCreatePost(true)}
+              className="flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all text-left text-gray-500 px-4 py-3 rounded-full text-sm shadow-sm"
+            >
+              What made you smile today? ✨
+            </button>
           </div>
         </div>
 
@@ -139,7 +124,6 @@ export default function HomePage() {
           onFriendsListClick={() => setShowFriendsList(true)}
           onFriendActivityClick={() => setShowFriendActivity(true)}
           onUsernameSetupClick={() => setShowUsernameSetup(true)}
-          onAchievementsClick={() => setShowAchievements(true)}
         />
 
         {/* Encouragement Message */}
@@ -159,7 +143,6 @@ export default function HomePage() {
             moments={recentMoments}
             loading={momentsLoading}
             onCreatePostClick={() => setShowCreatePost(true)}
-            onImageViewerOpen={handleImageViewerOpen}
             userEmail={user.email || undefined}
           />
         </div>
@@ -182,11 +165,6 @@ export default function HomePage() {
         onGroupsChange={setSelectedGroups}
         showGroupSelector={showGroupSelector}
         onToggleGroupSelector={() => setShowGroupSelector(!showGroupSelector)}
-        selectedImage={selectedImage}
-        imagePreview={imagePreview}
-        onCameraClick={handleCameraClick}
-        onGalleryClick={handleGalleryClick}
-        onRemoveImage={removeImage}
         submitting={submitting}
       />
 
@@ -236,14 +214,6 @@ export default function HomePage() {
         onClose={() => setShowFriendsList(false)}
       />
 
-      {/* Image Viewer */}
-      <ImageViewer
-        isOpen={showImageViewer}
-        onClose={() => setShowImageViewer(false)}
-        imageUrl={viewerImageUrl}
-        alt="Happy moment"
-      />
-
       {/* Username Invite Modal */}
       <UsernameInviteModal
         isOpen={showUsernameInvite}
@@ -269,12 +239,6 @@ export default function HomePage() {
         post={selectedPost || { id: '', content: '', userName: '' }}
       />
 
-      {/* Journal History Modal */}
-      <JournalHistory
-        isOpen={showJournalHistory}
-        onClose={() => setShowJournalHistory(false)}
-      />
-
       {/* Friend Activity Feed Modal */}
       <FriendActivityFeed
         isOpen={showFriendActivity}
@@ -285,31 +249,6 @@ export default function HomePage() {
       <NotificationSettings
         isOpen={showNotificationSettings}
         onClose={() => setShowNotificationSettings(false)}
-      />
-
-      {/* Achievements Display Modal */}
-      <AchievementsDisplay
-        isOpen={showAchievements}
-        onClose={() => setShowAchievements(false)}
-      />
-
-              {/* Camera Capture Modal */}
-        <CameraCapture
-          isOpen={showCamera}
-          onClose={() => setShowCamera(false)}
-          onPhotoTaken={handlePhotoTaken}
-          onError={(error: string) => {
-            console.error('Camera error:', error);
-          }}
-        />
-
-      {/* Hidden file input for gallery */}
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleImageSelect}
-        className="hidden"
       />
     </>
   );

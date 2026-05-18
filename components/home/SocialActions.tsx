@@ -6,7 +6,6 @@ interface SocialActionsProps {
   onFriendsListClick: () => void;
   onFriendActivityClick: () => void;
   onUsernameSetupClick: () => void;
-  onAchievementsClick: () => void;
 }
 
 export default function SocialActions({
@@ -15,7 +14,6 @@ export default function SocialActions({
   onFriendsListClick,
   onFriendActivityClick,
   onUsernameSetupClick,
-  onAchievementsClick
 }: SocialActionsProps) {
   return (
     <div className="bg-white p-4 border-b border-gray-200">
@@ -54,13 +52,6 @@ export default function SocialActions({
         >
           <span>✨</span>
           <span className="text-sm font-medium">Setup Profile</span>
-        </button>
-        <button
-          onClick={onAchievementsClick}
-          className="flex items-center space-x-2 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
-        >
-          <span>🏆</span>
-          <span className="text-sm font-medium">Achievements</span>
         </button>
       </div>
     </div>

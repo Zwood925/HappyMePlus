@@ -1,13 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { HappyMomentWithId } from '../../lib/firestore';
 
 interface MomentsFeedProps {
   moments: HappyMomentWithId[];
   loading: boolean;
   onCreatePostClick: () => void;
-  onImageViewerOpen: (imageUrl: string) => void;
   userEmail?: string;
 }
 
@@ -15,7 +13,6 @@ export default function MomentsFeed({
   moments,
   loading,
   onCreatePostClick,
-  onImageViewerOpen,
   userEmail
 }: MomentsFeedProps) {
   if (loading) {
@@ -57,21 +54,7 @@ export default function MomentsFeed({
             </div>
             <div className="flex-1">
               <p className="text-gray-800 leading-relaxed">{moment.content}</p>
-              
-              {/* Image Display */}
-              {moment.imageUrl && (
-                <div className="mt-3">
-                  <Image
-                    src={moment.imageUrl}
-                    alt="Happy moment"
-                    width={200}
-                    height={120}
-                    className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => onImageViewerOpen(moment.imageUrl!)}
-                  />
-                </div>
-              )}
-              
+                          
               <p className="text-sm text-gray-500 mt-2">
                 {moment.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}
               </p>

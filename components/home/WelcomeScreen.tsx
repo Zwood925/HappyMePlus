@@ -15,7 +15,7 @@ export default function WelcomeScreen() {
         <div className="space-y-4">
           <Link href="/login">
             <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all">
-              Get Started
+              Login
             </button>
           </Link>
           <Link href="/signup">

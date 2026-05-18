@@ -18,7 +18,7 @@ import {
 export interface Notification {
   id?: string;
   user_id: string;
-  type: 'group_invite' | 'support_request' | 'encouragement' | 'group_activity' | 'system' | 'friend_request' | 'username_invite' | 'post_reaction' | 'post_comment' | 'daily_reminder' | 'achievement';
+  type: 'group_invite' | 'support_request' | 'encouragement' | 'group_activity' | 'system' | 'friend_request' | 'username_invite' | 'post_reaction' | 'post_comment';
   title: string;
   message: string;
   data?: {
@@ -31,8 +31,6 @@ export interface Notification {
     post_id?: string;
     reaction_emoji?: string;
     comment_text?: string;
-    achievement_type?: string;
-    streak_count?: number;
   };
   read: boolean;
   created_at: any;
@@ -59,43 +57,10 @@ export async function createNotification(notification: Omit<Notification, 'id' |
       ...notification,
       created_at: serverTimestamp(),
     });
-        return docRef.id;
+    return docRef.id;
   } catch (error) {
     console.error('Error creating notification:', error);
     throw error;
-  }
-}
-
-export async function sendDailyReminderNotification(
-  userId: string,
-  streakDays: number = 0
-): Promise<void> {
-  try {
-    const title = streakDays > 0 
-      ? `Keep your ${streakDays}-day streak going! 🔥`
-      : "Time to share some joy! ✨";
-    
-    const message = streakDays > 0
-      ? `You're on a ${streakDays}-day streak of sharing joy! Don't break the chain - share what made you smile today.`
-      : "Take a moment to reflect on what brought you joy today and share it with the world!";
-    
-    const notification: Notification = {
-      id: undefined,
-      user_id: userId,
-      type: 'daily_reminder',
-      title,
-      message,
-      read: false,
-      created_at: serverTimestamp(),
-      priority: 'medium',
-      data: {
-        streak_count: streakDays
-      }
-    };
-
-    await addDoc(collection(db, 'notifications'), notification);
-  } catch (error) {
-    console.error('Error sending daily reminder notification:', error);
   }
 }
 
@@ -404,64 +369,6 @@ export async function sendPostCommentNotification(
     });
   } catch (error) {
     console.error('Error sending post comment notification:', error);
-    throw error;
-  }
-}
-
-
-
-// Send achievement notification
-export async function sendAchievementNotification(
-  userId: string,
-  userName: string,
-  achievementType: string,
-  streakCount?: number
-): Promise<string> {
-  try {
-    let title = '';
-    let message = '';
-    
-    switch (achievementType) {
-      case 'first_post':
-        title = '🎉 Your first happy moment!';
-        message = 'Congratulations on sharing your first moment of joy! Keep spreading happiness!';
-        break;
-      case 'streak_7':
-        title = '🔥 7-day streak!';
-        message = `Amazing! You've shared joy for ${streakCount} days in a row. You're building a beautiful habit!`;
-        break;
-      case 'streak_30':
-        title = '🌟 30-day streak!';
-        message = `Incredible! You've been sharing joy for ${streakCount} days. You're a joy-spreading champion!`;
-        break;
-      case 'first_friend':
-        title = '👥 Your first friend!';
-        message = 'You made your first friend on HappyMe+! Start sharing joy together!';
-        break;
-      case 'first_reaction':
-        title = '💖 First reaction received!';
-        message = 'Someone reacted to your post! Your joy is spreading and making others happy!';
-        break;
-      default:
-        title = '🎉 Achievement unlocked!';
-        message = 'You\'ve reached a new milestone on your joy journey!';
-    }
-    
-    return await createNotification({
-      user_id: userId,
-      type: 'achievement',
-      title,
-      message,
-      data: {
-        achievement_type: achievementType,
-        streak_count: streakCount,
-        action_url: '/achievements'
-      },
-      read: false,
-      priority: 'high'
-    });
-  } catch (error) {
-    console.error('Error sending achievement notification:', error);
     throw error;
   }
 }

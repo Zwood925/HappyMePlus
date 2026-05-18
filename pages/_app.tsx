@@ -2,6 +2,7 @@ import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import "../styles/globals.css";
+import "react-calendar/dist/Calendar.css";
 import Layout from "../components/layout";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import type { Router } from "next/router";

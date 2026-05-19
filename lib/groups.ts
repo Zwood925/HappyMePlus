@@ -12,6 +12,8 @@ import {
   deleteDoc,
   writeBatch
 } from 'firebase/firestore';
+import { ensureUserProfile } from './userProfiles';
+import { getCurrentUser } from './firebaseAuth';
 
 export interface Group {
   id: string;
@@ -52,10 +54,6 @@ export async function createGroup(
   console.log('createGroup called with:', { name, description, createdBy });
   
   try {
-    // Import here to avoid circular dependencies
-    const { ensureUserProfile } = await import('./userProfiles');
-    const { getCurrentUser } = await import('./firebaseAuth');
-    
     // Ensure user profile exists
     const currentUser = getCurrentUser();
     if (currentUser) {

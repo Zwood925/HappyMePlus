@@ -12,6 +12,8 @@ import {
   QueryDocumentSnapshot,
   startAfter
 } from 'firebase/firestore';
+import { ensureUserProfile } from './userProfiles';
+import { getCurrentUser } from './firebaseAuth';
 
 export interface HappyMoment {
   id?: string;
@@ -29,9 +31,6 @@ export interface HappyMomentWithId extends HappyMoment {
 // Add a new happy moment
 export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
   try {
-    const { ensureUserProfile } = await import('./userProfiles');
-    const { getCurrentUser } = await import('./firebaseAuth');
-    
     // Ensure user profile exists
     const currentUser = getCurrentUser();
     if (currentUser) {

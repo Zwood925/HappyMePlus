@@ -1,70 +1,55 @@
-const CACHE_NAME = 'happyme-v1';
+const CACHE_NAME = 'happyme-v2';
 const urlsToCache = [
   '/',
-  '/static/css/main.css',
-  '/static/js/main.js',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
 
-// Install event - cache resources
+// Install event - force activation instantly
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Fetch event - serve from cache when offline
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      })
-      .catch(() => {
-        // Return offline page if both cache and network fail
-        if (event.request.destination === 'document') {
-          return caches.match('/offline.html');
-        }
-      })
-  );
-});
-
-// Activate event - clean up old caches
+// Activate event - clean up old caches to prevent ghost bugs
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    clients.claim().then(() => {
+      return caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      });
     })
   );
 });
 
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
+// Fetch event - NETWORK FIRST strategy (fixes Next.js chunk hanging)
+self.addEventListener('fetch', (event) => {
+  // Completely bypass Firebase and API requests
+  if (event.request.url.includes('firestore.googleapis.com') || 
+      event.request.url.includes('firebaseio.com') ||
+      event.request.url.includes('/api/')) {
+    return; 
   }
-});
 
-async function doBackgroundSync() {
-  try {
-    // Sync any pending actions when back online
-    console.log('Background sync triggered');
-    // You can add logic here to sync offline actions
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
-}
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then((response) => {
+        if (response) return response;
+        if (event.request.destination === 'document') {
+          return caches.match('/offline.html');
+        }
+      });
+    })
+  );
+});

@@ -87,7 +87,7 @@ export function useHappyMoments() {
     setSubmitting(true);
     setError(null);
     try {
-      const momentId = await addHappyMoment(content, user.uid, groupIds, imageFile);
+      const momentId = await addHappyMoment(content, user.uid, groupIds);
       
       // Refresh the data
       await loadRecentMoments();

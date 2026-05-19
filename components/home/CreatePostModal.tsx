@@ -34,17 +34,19 @@ export default function CreatePostModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden"
+            // 🚨 FIX: Added flex flex-col and increased max-height to 90vh
+            className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-gray-200">
+            {/* 🚨 FIX: Added flex-shrink-0 so the header never shrinks */}
+            <div className="p-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Share Your Joy</h3>
                 <button
@@ -56,7 +58,8 @@ export default function CreatePostModal({
               </div>
             </div>
             
-            <form onSubmit={onSubmit} className="p-4">
+            {/* 🚨 FIX: Added flex-1 and overflow-y-auto so the form scrolls! */}
+            <form onSubmit={onSubmit} className="p-4 flex-1 overflow-y-auto">
               <textarea
                 value={input}
                 onChange={(e) => onInputChange(e.target.value)}
@@ -65,7 +68,7 @@ export default function CreatePostModal({
                 placeholder="What made you smile today? Share your joy with the world! ✨"
               />
               
-<div className="mt-4">
+              <div className="mt-4">
                 <button
                   type="button"
                   onClick={onToggleGroupSelector}
@@ -88,7 +91,7 @@ export default function CreatePostModal({
                 )}
               </div>
                             
-              <div className="mt-6">
+              <div className="mt-6 mb-2">
                 <button
                   type="submit"
                   disabled={!input.trim() || submitting}

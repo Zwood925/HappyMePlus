@@ -420,7 +420,7 @@ function GroupsPage() {
                 </div>
               ) : friends.length === 0 ? (
                 <div className="text-center py-6 text-gray-500 text-sm">
-                  You don't have any friends to invite yet!
+                  You don&apos;t have any friends to invite yet!
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -478,7 +478,7 @@ function GroupsPage() {
                   onChange={(e) => setGroupDescription(e.target.value)}
                   className="textarea textarea-bordered w-full"
                   rows={3}
-                  placeholder="What's this pod about?"
+                  placeholder="What&apos;s this pod about?"
                 />
               </div>
               <div>

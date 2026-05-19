@@ -5,7 +5,6 @@ interface HomeHeaderProps {
   unreadCount: number;
   onInvitesClick: () => void;
   onFriendRequestsClick: () => void;
-  onJournalHistoryClick: () => void;
   onNotificationsClick: () => void;
   onCreatePostClick: () => void;
 }
@@ -14,7 +13,6 @@ export default function HomeHeader({
   unreadCount,
   onInvitesClick,
   onFriendRequestsClick,
-  onJournalHistoryClick,
   onNotificationsClick,
   onCreatePostClick
 }: HomeHeaderProps) {
@@ -41,14 +39,6 @@ export default function HomeHeader({
             className="relative p-2 text-gray-600 hover:text-purple-600 transition-colors"
           >
             <span className="text-xl">👥</span>
-          </button>
-          
-          {/* Journal History */}
-          <button
-            onClick={onJournalHistoryClick}
-            className="relative p-2 text-gray-600 hover:text-purple-600 transition-colors"
-          >
-            <span className="text-xl">📝</span>
           </button>
           
           {/* Notifications */}

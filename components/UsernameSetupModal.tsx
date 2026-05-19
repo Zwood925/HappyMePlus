@@ -99,7 +99,7 @@ export default function UsernameSetupModal({
         username: username.toLowerCase(),
         displayName: displayName.trim(),
         email: user.email || '',
-        avatarUrl: user.photoURL || undefined
+        avatarUrl: user.photoURL || ''
       });
 
       onComplete(username.toLowerCase());
@@ -130,7 +130,7 @@ export default function UsernameSetupModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={onClose}
+          onClick={isOnboarding ? undefined : onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}

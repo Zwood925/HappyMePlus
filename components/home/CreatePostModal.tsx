@@ -65,13 +65,13 @@ export default function CreatePostModal({
                 placeholder="What made you smile today? Share your joy with the world! ✨"
               />
               
-              <div className="mt-4">
+<div className="mt-4">
                 <button
                   type="button"
                   onClick={onToggleGroupSelector}
                   className="text-sm text-purple-600 hover:text-purple-700"
                 >
-                  {showGroupSelector ? 'Hide' : 'Share with Groups'} 
+                  {showGroupSelector ? 'Hide' : 'Share with Pods'} 
                   {selectedGroups.length > 0 && ` (${selectedGroups.length} selected)`}
                 </button>
                 
@@ -80,14 +80,14 @@ export default function CreatePostModal({
                     <GroupSelector
                       selectedGroups={selectedGroups}
                       onGroupsChange={onGroupsChange}
-                      title="Share with Groups"
-                      description="Choose which groups to share this moment with:"
+                      title="Share with Pods"
+                      description="Choose which pods to share this moment with:"
                       maxSelection={3}
                     />
                   </div>
                 )}
               </div>
-              
+                            
               <div className="mt-6">
                 <button
                   type="submit"

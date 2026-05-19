@@ -1,9 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useFirebaseAuth } from './useFirebaseAuth';
 import { useHappyMoments } from './useHappyMoments';
 import { useNotifications } from './useNotifications';
+import { getUserProfile } from '../lib/community';
 
 export function useHomePage() {
+  const router = useRouter();
   const { user } = useFirebaseAuth();
   const { 
     recentMoments, 
@@ -24,11 +27,14 @@ export function useHomePage() {
   const [input, setInput] = useState("");
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
-  const [encouragement, setEncouragement] = useState<string | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [showVideoCelebration, setShowVideoCelebration] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  
+  // Onboarding & Profile States
   const [showUsernameSetup, setShowUsernameSetup] = useState(false);
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [showFriendsList, setShowFriendsList] = useState(false);
@@ -36,11 +42,32 @@ export function useHomePage() {
   const [showInvites, setShowInvites] = useState(false);
   const [showSocialShare, setShowSocialShare] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
-  const [showFriendActivity, setShowFriendActivity] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+
+  // 🚨 The Velvet Rope: Check for profile on load
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (user?.uid) {
+        try {
+          const profile = await getUserProfile(user.uid);
+          if (!profile) {
+            setIsOnboarding(true);
+            setShowUsernameSetup(true);
+          }
+        } catch (error) {
+          console.error("Error checking profile:", error);
+        }
+      }
+    };
+    checkProfile();
+  }, [user?.uid]);
 
   // Handlers
   const handleNotificationClick = useCallback((notification: any) => {
+    if (notification.data?.action_url) {
+      router.push(notification.data.action_url);
+    }
+
     switch (notification.type) {
       case 'friend_request':
         setShowFriendRequests(true);
@@ -48,14 +75,10 @@ export function useHomePage() {
       case 'username_invite':
         setShowInvites(true);
         break;
-      case 'post_reaction':
-      case 'post_comment':
-        console.log('Navigate to post:', notification.data?.post_id);
-        break;
       default:
         break;
     }
-  }, []);
+  }, [router]);
 
   const toggleInbox = useCallback(() => {
     setInboxOpen((prev) => {
@@ -66,10 +89,6 @@ export function useHomePage() {
       return newOpenState;
     });
   }, [unreadCount, markAllAsRead]);
-
-  const handleFeelingDown = useCallback(async () => {
-    setEncouragement("You're doing great! Remember, every day is a new opportunity to find joy. 🌟");
-  }, []);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,11 +119,11 @@ export function useHomePage() {
     input,
     selectedGroups,
     showGroupSelector,
-    encouragement,
     inboxOpen,
     showVideoCelebration,
     showCreatePost,
     showUsernameSetup,
+    isOnboarding,
     showUserSearch,
     showFriendRequests,
     showFriendsList,
@@ -112,13 +131,11 @@ export function useHomePage() {
     showInvites,
     showSocialShare,
     selectedPost,
-    showFriendActivity,
     showNotificationSettings,
     
     // Handlers
     handleNotificationClick,
     toggleInbox,
-    handleFeelingDown,
     handleSubmit,
     handleHappyParty,
     
@@ -130,13 +147,13 @@ export function useHomePage() {
     setShowGroupSelector,
     setShowCreatePost,
     setShowUsernameSetup,
+    setIsOnboarding,
     setShowUserSearch,
     setShowFriendRequests,
     setShowFriendsList,
     setShowUsernameInvite,
     setShowInvites,
     setShowSocialShare,
-    setShowFriendActivity,
     setShowNotificationSettings,
     setShowVideoCelebration,
   };

@@ -4,22 +4,19 @@ import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { signOutUser } from "../lib/firebaseAuth";
 import { motion } from "framer-motion";
 import GroupSelector from "../components/GroupSelector";
-import { getUserSupportGroups, getUserDefaultHappyMomentGroups, updateGroupNotificationPreferences } from "../lib/userProfiles";
+import { getUserDefaultHappyMomentGroups, updateGroupNotificationPreferences } from "../lib/userProfiles";
 import BottomNavigation from "../components/BottomNavigation";
 
 export default function SettingsPage() {
   const { user } = useFirebaseAuth();
   const router = useRouter();
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [privacySetting, setPrivacySetting] = useState("public");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   
   // Group settings
-  const [supportGroups, setSupportGroups] = useState<string[]>([]);
   const [defaultHappyMomentGroups, setDefaultHappyMomentGroups] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [savingGroups, setSavingGroups] = useState(false);
@@ -52,12 +49,7 @@ export default function SettingsPage() {
       if (!user?.uid) return;
       
       try {
-        const [support, defaultGroups] = await Promise.all([
-          getUserSupportGroups(user.uid),
-          getUserDefaultHappyMomentGroups(user.uid)
-        ]);
-        
-        setSupportGroups(support);
+        const defaultGroups = await getUserDefaultHappyMomentGroups(user.uid);
         setDefaultHappyMomentGroups(defaultGroups);
       } catch (error) {
         console.error('Error loading group preferences:', error);
@@ -79,15 +71,18 @@ export default function SettingsPage() {
     setSuccessMsg('');
     
     try {
+      // Pass an empty array for the removed support groups to satisfy the function requirements
       await updateGroupNotificationPreferences(
         user.uid,
-        supportGroups,
+        [], 
         defaultHappyMomentGroups
       );
       setSuccessMsg('Group preferences saved successfully!');
+      setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
       console.error('Error saving group preferences:', error);
       setErrorMsg('Failed to save group preferences');
+      setTimeout(() => setErrorMsg(''), 3000);
     } finally {
       setSavingGroups(false);
     }
@@ -177,52 +172,20 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Privacy */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold mb-4">Privacy</h2>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Default Privacy</label>
-                  <select
-                    value={privacySetting}
-                    onChange={(e) => setPrivacySetting(e.target.value)}
-                    className="select select-bordered w-full"
-                  >
-                    <option value="public">Public - Share with everyone</option>
-                    <option value="friends">Friends - Share with friends only</option>
-                    <option value="private">Private - Share with no one</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
             {/* Group Preferences */}
             {!loadingGroups && (
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-semibold mb-4">Group Preferences</h2>
+                <h2 className="text-lg font-semibold mb-4">Sharing Preferences</h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Support Groups</label>
-                    <p className="text-sm text-gray-500 mb-3">Groups to notify when you're feeling down</p>
-                    <GroupSelector
-                      selectedGroups={supportGroups}
-                      onGroupsChange={setSupportGroups}
-                      title="Select Support Groups"
-                      description="Choose groups to notify when you need support:"
-                      maxSelection={5}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Default Share Groups</label>
-                    <p className="text-sm text-gray-500 mb-3">Groups to automatically share happy moments with</p>
+                    <label className="block text-sm font-medium mb-2">Default Share Pods</label>
+                    <p className="text-sm text-gray-500 mb-3">Pods to automatically share happy moments with</p>
                     <GroupSelector
                       selectedGroups={defaultHappyMomentGroups}
                       onGroupsChange={setDefaultHappyMomentGroups}
-                      title="Select Default Groups"
-                      description="Choose groups to automatically share with:"
+                      title="Select Default Pods"
+                      description="Choose pods to automatically share with:"
                       maxSelection={3}
                     />
                   </div>
@@ -232,7 +195,7 @@ export default function SettingsPage() {
                     disabled={savingGroups}
                     className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
                   >
-                    {savingGroups ? 'Saving...' : 'Save Group Preferences'}
+                    {savingGroups ? 'Saving...' : 'Save Preferences'}
                   </button>
                 </div>
               </div>

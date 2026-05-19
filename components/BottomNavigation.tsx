@@ -13,16 +13,15 @@ export default function BottomNavigation() {
       label: 'Home',
       active: router.pathname === '/'
     },
-    {
-      path: '/journal',
-      icon: '📝',
-      label: 'Journal',
-      active: router.pathname.startsWith('/journal')
-    },
-    {
+{
+      path: '/journal/calendar',
+      icon: '🗓️',
+      label: 'Calendar',
+      active: router.pathname.startsWith('/journal/calendar')
+    },    {
       path: '/groups',
       icon: '👥',
-      label: 'Groups',
+      label: 'Pods',
       active: router.pathname.startsWith('/groups')
     },
     {

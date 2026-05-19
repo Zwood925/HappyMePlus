@@ -21,12 +21,13 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == resource.data[userIdField];
     }
 
-    // Happy moments - users can only access their own
+    // Happy moments - anyone logged in can read them (to see Pod feeds), but only the author can edit/delete them
     match /happy_moments/{document} {
-      allow read, write: if isAuthenticated() && 
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
         (resource == null || request.auth.uid == resource.data.userId);
     }
-    
+
     // Journal entries - users can only access their own
     match /journal_entries/{document} {
       allow read, write: if isAuthenticated() && 
@@ -49,32 +50,28 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
-    // User profiles - users can read public profiles, write their own
+// User profiles - anyone logged in can search profiles
     match /user_profiles/{document} {
-      allow read: if isAuthenticated() && 
-        (document == request.auth.uid || resource.data.isPublic == true);
+      allow read: if isAuthenticated();
       allow write: if isAuthenticated() && 
         (document == request.auth.uid || resource == null);
     }
     
-    // Users collection (for username search) - read public profiles, write own
+    // Users collection (for username search) - anyone logged in can search
     match /users/{document} {
-      allow read: if isAuthenticated() && 
-        (document == request.auth.uid || resource.data.isPublic == true);
+      allow read: if isAuthenticated();
       allow write: if isAuthenticated() && 
         (document == request.auth.uid || resource == null);
     }
-    
+        
     // Friend requests - users can read their own requests, write new ones
     match /friend_requests/{document} {
-      allow read: if isAuthenticated() && 
-        (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && 
-        request.auth.uid == resource.data.fromUserId;
-      allow update: if isAuthenticated() && 
-        request.auth.uid == resource.data.toUserId;
+        request.auth.uid == request.resource.data.fromUserId;
+      allow update: if isAuthenticated();
     }
-    
+
     // Notifications - users can only access their own
     match /notifications/{document} {
       allow read, write: if isAuthenticated() && 
@@ -113,16 +110,12 @@ service cloud.firestore {
     
     // Invites - users can read invites sent to them, write their own
     match /invites/{document} {
-      allow read: if isAuthenticated() && 
-        (request.auth.uid == resource.data.fromUserId || 
-         resource.data.toUsername == request.auth.token.display_name);
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && 
-        request.auth.uid == resource.data.fromUserId;
-      allow update: if isAuthenticated() && 
-        (request.auth.uid == resource.data.fromUserId || 
-         resource.data.toUsername == request.auth.token.display_name);
+        request.auth.uid == request.resource.data.fromUserId;
+      allow update: if isAuthenticated();
     }
-    
+
     // Social shares - users can read their own shares, write their own
     match /social_shares/{document} {
       allow read, write: if isAuthenticated() && 

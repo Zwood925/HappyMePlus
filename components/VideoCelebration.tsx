@@ -61,6 +61,7 @@ export default function VideoCelebration({ isOpen, onClose }: VideoCelebrationPr
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+    setIsPlaying(false);
     onClose();
   };
 

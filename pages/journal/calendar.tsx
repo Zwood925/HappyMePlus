@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 import { useJournalData } from '../../hooks/useJournalData';
 import dynamic from 'next/dynamic';
-import 'react-calendar/dist/Calendar.css';
 import { format } from 'date-fns';
 import JournalEntryCard from '../../components/JournalEntryCard';
 import BottomNavigation from '../../components/BottomNavigation';

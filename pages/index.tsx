@@ -9,7 +9,6 @@ import NotificationsModal from '../components/home/NotificationsModal';
 import WelcomeScreen from '../components/home/WelcomeScreen';
 import VideoCelebration from '../components/VideoCelebration';
 import SmileyButton from '../components/SmileyButton';
-import SadFaceButton from '../components/SadFaceButton';
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import BottomNavigation from '../components/BottomNavigation';
 import UsernameSetupModal from '../components/UsernameSetupModal';
@@ -19,7 +18,6 @@ import FriendsList from '../components/FriendsList';
 import UsernameInviteModal from '../components/UsernameInviteModal';
 import InvitesModal from '../components/InvitesModal';
 import SocialShareModal from '../components/SocialShareModal';
-import FriendActivityFeed from '../components/FriendActivityFeed';
 import NotificationSettings from '../components/NotificationSettings';
 
 export default function HomePage() {
@@ -35,11 +33,11 @@ export default function HomePage() {
     input,
     selectedGroups,
     showGroupSelector,
-    encouragement,
     inboxOpen,
     showVideoCelebration,
     showCreatePost,
     showUsernameSetup,
+    isOnboarding,
     showUserSearch,
     showFriendRequests,
     showFriendsList,
@@ -47,13 +45,11 @@ export default function HomePage() {
     showInvites,
     showSocialShare,
     selectedPost,
-    showFriendActivity,
     showNotificationSettings,
     
     // Handlers
     handleNotificationClick,
     toggleInbox,
-    handleFeelingDown,
     handleSubmit,
     handleHappyParty,
     
@@ -65,13 +61,13 @@ export default function HomePage() {
     setShowGroupSelector,
     setShowCreatePost,
     setShowUsernameSetup,
+    setIsOnboarding,
     setShowUserSearch,
     setShowFriendRequests,
     setShowFriendsList,
     setShowUsernameInvite,
     setShowInvites,
     setShowSocialShare,
-    setShowFriendActivity,
     setShowNotificationSettings,
     setShowVideoCelebration,
   } = useHomePage();
@@ -98,7 +94,6 @@ export default function HomePage() {
         <div className="bg-white p-4 border-b border-gray-200">
           <div className="flex justify-center space-x-8">
             <SmileyButton onClick={handleHappyParty} />
-            <SadFaceButton onClick={handleFeelingDown} />
           </div>
         </div>
 
@@ -122,20 +117,8 @@ export default function HomePage() {
           onUserSearchClick={() => setShowUserSearch(true)}
           onUsernameInviteClick={() => setShowUsernameInvite(true)}
           onFriendsListClick={() => setShowFriendsList(true)}
-          onFriendActivityClick={() => setShowFriendActivity(true)}
           onUsernameSetupClick={() => setShowUsernameSetup(true)}
         />
-
-        {/* Encouragement Message */}
-        {encouragement && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-blue-50 border-l-4 border-blue-400 p-4 mx-4 mt-4 rounded-r-lg"
-          >
-            <p className="text-blue-800 font-medium">✨ {encouragement}</p>
-          </motion.div>
-        )}
 
         {/* Feed */}
         <div className="p-4">
@@ -190,9 +173,11 @@ export default function HomePage() {
       {/* Username Setup Modal */}
       <UsernameSetupModal
         isOpen={showUsernameSetup}
+        isOnboarding={isOnboarding}
         onClose={() => setShowUsernameSetup(false)}
         onComplete={(username) => {
           setShowUsernameSetup(false);
+          setIsOnboarding(false);
         }}
       />
 
@@ -237,12 +222,6 @@ export default function HomePage() {
         isOpen={showSocialShare}
         onClose={() => setShowSocialShare(false)}
         post={selectedPost || { id: '', content: '', userName: '' }}
-      />
-
-      {/* Friend Activity Feed Modal */}
-      <FriendActivityFeed
-        isOpen={showFriendActivity}
-        onClose={() => setShowFriendActivity(false)}
       />
 
       {/* Notification Settings Modal */}

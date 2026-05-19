@@ -33,7 +33,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg pb-[env(safe-area-insert-bottom)]">
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map((item) => (
           <Link key={item.path} href={item.path}>

@@ -1,4 +1,5 @@
 import type { AppProps } from "next/app";
+import Head from 'next/head';
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import "../styles/globals.css";
@@ -24,12 +25,21 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
     );
   }
 
-  return showLayout ? (
+return showLayout ? (
     <Layout>
+      <Head>
+        {/* This completely prevents the annoying iOS auto-zoom and makes it feel native */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+      </Head>
       <Component {...pageProps} />
     </Layout>
   ) : (
-    <Component {...pageProps} />
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+      </Head>
+      <Component {...pageProps} />
+    </>
   );
 }
 

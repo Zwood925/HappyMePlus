@@ -19,5 +19,3 @@ export { auth, db, storage } from './firebase';
 // Firebase auth utilities
 export * from './firebaseAuth';
 
-// Random encouragement
-export { getRandomEncouragement } from './getRandomEncouragement'; 

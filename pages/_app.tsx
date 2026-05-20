@@ -7,6 +7,7 @@ import "react-calendar/dist/Calendar.css";
 import Layout from "../components/layout";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import type { Router } from "next/router";
+import PWAInstallPrompt from "../components/PWAInstallPrompt";
 
 type InnerAppProps = AppProps & { router: Router };
 
@@ -66,5 +67,12 @@ export default function MyApp({ Component, pageProps, router }: AppProps & { rou
     };
   }, [router]);
 
-  return <InnerApp Component={Component} pageProps={pageProps} router={router} />;
+    return (
+    <>
+      <InnerApp Component={Component} pageProps={pageProps} router={router} />
+      
+      {/* 🚨 Drop the smart button right here so it floats over the whole app! */}
+      <PWAInstallPrompt />
+    </>
+  );
 }

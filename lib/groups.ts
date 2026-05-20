@@ -51,25 +51,9 @@ export async function createGroup(
   description: string, 
   createdBy: string
 ): Promise<string> {
-  console.log('createGroup called with:', { name, description, createdBy });
-  
   try {
-    // Ensure user profile exists
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      try {
-        await ensureUserProfile(currentUser);
-        console.log('User profile ensured for group creation');
-      } catch (profileError) {
-        console.error('Failed to ensure user profile:', profileError);
-        // Continue with group creation even if profile creation fails
-      }
-    }
-    
     const inviteCode = generateInviteCode();
-    console.log('Generated invite code:', inviteCode);
     
-    // Simplify the data structure to avoid potential issues
     const groupData = {
       name: name.trim(),
       description: description.trim() || '',
@@ -81,25 +65,15 @@ export async function createGroup(
       member_count: 1
     };
 
-    console.log('Creating group with data:', groupData);
-    
-    // Try creating just the group first
     const groupRef = await addDoc(collection(db, 'groups'), groupData);
-    console.log('Group created with ID:', groupRef.id);
     
-    // Wait a moment before creating the member record
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Add the creator as a member in group_members collection
     const memberData = {
       group_id: groupRef.id,
       user_id: createdBy,
       joined_at: serverTimestamp(),
       role: 'admin'
     };
-    console.log('Creating group member with data:', memberData);
     await addDoc(collection(db, 'group_members'), memberData);
-    console.log('Group member created successfully');
 
     return groupRef.id;
   } catch (error) {

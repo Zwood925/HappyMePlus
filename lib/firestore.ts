@@ -31,17 +31,6 @@ export interface HappyMomentWithId extends HappyMoment {
 // Add a new happy moment
 export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
   try {
-    // Ensure user profile exists
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      try {
-        await ensureUserProfile(currentUser);
-        console.log('User profile ensured for happy moment creation');
-      } catch (profileError) {
-        console.error('Failed to ensure user profile:', profileError);
-      }
-    }
-
     const momentData: Omit<HappyMoment, 'id'> = {
       content,
       userId,

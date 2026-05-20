@@ -34,7 +34,7 @@ function GroupFeedPage() {
       }
       setGroup({ id: groupDoc.id, ...groupDoc.data() } as Group);
 
-      // 2. Fetch Happy Moments explicitly shared with this Pod
+// 2. Fetch Happy Moments explicitly shared with this Pod
       const momentsQuery = query(
         collection(db, 'happy_moments'),
         where('groupIds', 'array-contains', id),
@@ -42,29 +42,40 @@ function GroupFeedPage() {
       
       const snapshot = await getDocs(momentsQuery);
       
-      // 3. Get User Profiles so we can show who posted it
-      const momentsData = await Promise.all(snapshot.docs.map(async (momentDoc) => {
-        const data = momentDoc.data();
-        let userName = "A friend";
+      // 3. Get User Profiles EFFICIENTLY (only fetch unique users once!)
+      const uniqueUserIds = Array.from(new Set(snapshot.docs.map(doc => doc.data().userId)));
+      const profileCache: Record<string, string> = {};
+      
+      await Promise.all(uniqueUserIds.map(async (uid) => {
         try {
-          const profile = await getUserProfile(data.userId);
-          if (profile) userName = profile.displayName;
+          const profile = await getUserProfile(uid as string);
+          if (profile) profileCache[uid as string] = profile.displayName;
         } catch (e) {
           console.error(e);
         }
-        
+      }));
+
+      const momentsData = snapshot.docs.map((momentDoc) => {
+        const data = momentDoc.data();
         return {
           id: momentDoc.id,
           content: data.content,
           userId: data.userId,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
-          userName
+          userName: profileCache[data.userId] || "A friend"
         } as (HappyMomentWithId & { userName: string });
-      }));
+      });
+
+      // 4. Sort the moments locally in Javascript! (Newest first)
+      momentsData.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis?.() || 0;
+        const timeB = b.createdAt?.toMillis?.() || 0;
+        return timeB - timeA;
+      });
 
       setMoments(momentsData);
-} catch (err: any) {
+    } catch (err: any) {
       console.error('Error fetching pod data:', err);
       // 🚨 THIS PRINTS THE RAW FIREBASE ERROR TO THE SCREEN:
       setError(err.message || "Failed to load pod feed");

@@ -1,13 +1,15 @@
 // lib/firebase.ts
-// Firebase client configuration
-
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { 
+  getFirestore, 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
+} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { config } from './config';
 
-// Initialize Firebase
 const firebaseConfig = {
   apiKey: config.firebase.apiKey,
   authDomain: config.firebase.authDomain,
@@ -17,12 +19,16 @@ const firebaseConfig = {
   appId: config.firebase.appId,
 };
 
-// Simple initialization - let it fail if config is missing
+// Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase services
+// 🚨 THE SILVER BULLET: Initialize Firestore with Offline Caching Enabled!
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
 export const auth = getAuth(app);
-export const db = getFirestore(app, 'happyme');
+export { db };
 export const storage = getStorage(app);
 
-export default app; 
+export default app;

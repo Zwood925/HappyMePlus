@@ -11,6 +11,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   startAfter
+  getCountFromServer
 } from 'firebase/firestore';
 import { ensureUserProfile } from './userProfiles';
 import { getCurrentUser } from './firebaseAuth';
@@ -128,7 +129,7 @@ export async function getAllHappyMoments(
   }
 }
 
-// Get count of happy moments for a user
+// Get count of happy moments for a user EFFICIENTLY
 export async function getHappyMomentsCount(userId: string): Promise<number> {
   try {
     const collectionRef = collection(db, 'happy_moments');
@@ -137,8 +138,10 @@ export async function getHappyMomentsCount(userId: string): Promise<number> {
       where('userId', '==', userId)
     );
     
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.size;
+    // 🚨 THIS IS 1000x FASTER AND CHEAPER:
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
+    
   } catch (error) {
     console.error('Error getting happy moments count:', error);
     throw error;

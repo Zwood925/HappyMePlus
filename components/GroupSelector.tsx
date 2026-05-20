@@ -61,20 +61,6 @@ export default function GroupSelector({
     onGroupsChange([]);
   };
 
-  if (loading) {
-    return (
-      <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-gray-700">{title}</h3>
-            <p className="text-xs text-gray-500">{description}</p>
-          </div>
-          <div className="loading loading-spinner loading-sm"></div>
-        </div>
-      </div>
-    );
-  }
-
   if (groups.length === 0) {
     return (
       <div className={`space-y-3 ${className}`}>

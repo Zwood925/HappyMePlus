@@ -20,13 +20,22 @@ function GroupFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchData = useCallback(async () => {
+const fetchData = useCallback(async () => {
     if (!id || typeof id !== 'string') return;
     
     setLoading(true);
     try {
-      // 1. Fetch Pod Info
-      const groupDoc = await getDoc(doc(db, 'groups', id));
+      // 🔥 THE PARALLEL FIX: Ask for the Pod and the Moments at the exact same time!
+      const groupPromise = getDoc(doc(db, 'groups', id));
+      const momentsQuery = query(
+        collection(db, 'happy_moments'),
+        where('groupIds', 'array-contains', id),
+      );
+      const momentsPromise = getDocs(momentsQuery);
+
+      // Catch them both simultaneously! This cuts load time in half.
+      const [groupDoc, snapshot] = await Promise.all([groupPromise, momentsPromise]);
+
       if (!groupDoc.exists()) {
         setError("Pod not found");
         setLoading(false);
@@ -34,14 +43,6 @@ function GroupFeedPage() {
       }
       setGroup({ id: groupDoc.id, ...groupDoc.data() } as Group);
 
-// 2. Fetch Happy Moments explicitly shared with this Pod
-      const momentsQuery = query(
-        collection(db, 'happy_moments'),
-        where('groupIds', 'array-contains', id),
-      );
-      
-      const snapshot = await getDocs(momentsQuery);
-      
       // 3. Get User Profiles EFFICIENTLY (only fetch unique users once!)
       const uniqueUserIds = Array.from(new Set(snapshot.docs.map(doc => doc.data().userId)));
       const profileCache: Record<string, string> = {};

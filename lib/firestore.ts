@@ -10,7 +10,7 @@ import {
   Timestamp,
   DocumentData,
   QueryDocumentSnapshot,
-  startAfter
+  startAfter,
   getCountFromServer
 } from 'firebase/firestore';
 import { ensureUserProfile } from './userProfiles';

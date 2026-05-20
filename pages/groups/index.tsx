@@ -215,17 +215,6 @@ function GroupsPage() {
     return GROUP_THEMES.default;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="loading loading-spinner loading-lg text-purple-500"></div>
-          <p className="mt-4 text-gray-600">Loading your pods...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
@@ -263,10 +252,13 @@ function GroupsPage() {
         )}
 
         <div className="p-4">
-          {groups.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="loading loading-spinner loading-lg text-purple-500"></div>
+            </div>
+          ) : groups.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No pods yet</h3>
+              <div className="text-6xl mb-4">👥</div>              <h3 className="text-xl font-semibold text-gray-700 mb-2">No pods yet</h3>
               <p className="text-gray-500 mb-6">Create or join a pod to start sharing joy together!</p>
               <div className="space-y-3">
                 <button

@@ -44,20 +44,27 @@ return showLayout ? (
 }
 
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
-  // Register service worker for PWA
   useEffect(() => {
+    // 1. Register service worker for PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((registration) => {
-          console.log('SW registered: ', registration);
-        })
-        .catch((registrationError) => {
-          console.log('SW registration failed: ', registrationError);
-        });
+        .then((registration) => console.log('SW registered'))
+        .catch((err) => console.log('SW failed: ', err));
     }
-  }, []);
+
+    // 2. 🚨 The "Ghost Chunk" self-healing fix
+    const handleRouteChangeError = (err: any, url: string) => {
+      console.warn('Next.js failed to load chunk, forcing hard reload:', err);
+      window.location.href = url; // Forces the phone to download the newest HTML!
+    };
+
+    router.events.on('routeChangeError', handleRouteChangeError);
+
+    return () => {
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router]);
 
   return <InnerApp Component={Component} pageProps={pageProps} router={router} />;
 }
-// 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'happyme-v2';
+const CACHE_NAME = 'happyme-v3';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -6,16 +6,13 @@ const urlsToCache = [
   '/icons/icon-512x512.png'
 ];
 
-// Install event - force activation instantly
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Activate event - clean up old caches to prevent ghost bugs
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     clients.claim().then(() => {
@@ -33,13 +30,15 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - NETWORK FIRST strategy (fixes Next.js chunk hanging)
 self.addEventListener('fetch', (event) => {
-  // Completely bypass Firebase and API requests
-  if (event.request.url.includes('firestore.googleapis.com') || 
-      event.request.url.includes('firebaseio.com') ||
-      event.request.url.includes('/api/')) {
-    return; 
+  // 1. Bypass all cross-origin requests (Firebase, Google APIs, etc)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
+  // 2. 🚨 Bypass Next.js dynamic chunks to prevent hanging!
+  if (event.request.url.includes('/_next/')) {
+    return;
   }
 
   event.respondWith(

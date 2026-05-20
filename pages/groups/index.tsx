@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
-import { getUserGroups, createGroup, joinGroup, deleteGroup, leaveGroup, getGroupMembers, Group } from '../../lib/groups';
+import { subscribeToUserGroups, createGroup, joinGroup, deleteGroup, leaveGroup, getGroupMembers, Group } from '../../lib/groups';
 import { getFriends, getUserProfile, UserProfile } from '../../lib/community';
 import { sendGroupInvitation } from '../../lib/notifications';
 import { withAuth } from '../../lib/withAuth';
@@ -50,26 +50,24 @@ function GroupsPage() {
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
 
-  const fetchGroups = useCallback(async () => {
-    if (!user?.uid) return;
-
-    setLoading(true);
-    try {
-      const userGroups = await getUserGroups(user.uid);
-      setGroups(userGroups);
-    } catch (error) {
-      console.error('Error fetching groups:', error);
-      setMessage('Failed to load pods');
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.uid]);
-
+// The Real-Time Engine ✨
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    if (!user?.uid) {
+      setGroups([]);
+      setLoading(false);
+      return;
+    }
 
-  const handleCreate = async () => {
+    // Instantly loads from cache, updates silently in background!
+    setLoading(true);
+    const unsubscribe = subscribeToUserGroups(user.uid, (realtimeGroups) => {
+      setGroups(realtimeGroups);
+      setLoading(false);
+    });
+
+    // Cleanup the listener when we leave the page
+    return () => unsubscribe();
+  }, [user?.uid]);  const handleCreate = async () => {
     if (!groupName.trim() || !user?.uid) {
       setMessage('Please enter a pod name and make sure you are logged in.');
       return;
@@ -85,7 +83,6 @@ function GroupsPage() {
       setGroupDescription("");
       setGroupTheme('default');
       setShowCreateForm(false);
-      fetchGroups();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error creating group:', error);
@@ -110,7 +107,6 @@ function GroupsPage() {
       if (result.success) {
         setInviteCode("");
         setShowJoinForm(false);
-        fetchGroups();
       }
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -127,7 +123,7 @@ function GroupsPage() {
       try {
         const result = await deleteGroup(groupId, user.uid);
         setMessage(result.message);
-        if (result.success) fetchGroups();
+        if (result.success)
         setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         setMessage('Failed to delete pod. Please try again.');
@@ -141,7 +137,7 @@ function GroupsPage() {
       try {
         const result = await leaveGroup(groupId, user.uid);
         setMessage(result.message);
-        if (result.success) fetchGroups();
+        if (result.success)
         setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         setMessage('Failed to leave pod. Please try again.');

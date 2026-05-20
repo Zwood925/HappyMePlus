@@ -10,7 +10,8 @@ import {
   where, 
   serverTimestamp,
   deleteDoc,
-  writeBatch
+  writeBatch,
+  onSnapshot
 } from 'firebase/firestore';
 import { ensureUserProfile } from './userProfiles';
 import { getCurrentUser } from './firebaseAuth';
@@ -293,3 +294,22 @@ export async function getGroupMembers(groupId: string): Promise<GroupMember[]> {
     throw error;
   }
 } 
+
+// Real-time listener for user's groups (NO HANGING!)
+export function subscribeToUserGroups(userId: string, callback: (groups: Group[]) => void) {
+  const groupsRef = collection(db, 'groups');
+  const q = query(groupsRef, where(`members.${userId}`, '==', true));
+
+  return onSnapshot(q, (querySnapshot) => {
+    const groups: Group[] = [];
+    querySnapshot.forEach((doc) => {
+      groups.push({
+        id: doc.id,
+        ...doc.data()
+      } as Group);
+    });
+    callback(groups);
+  }, (error) => {
+    console.error('Error in groups listener:', error);
+  });
+}

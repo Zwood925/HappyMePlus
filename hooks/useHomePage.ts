@@ -62,24 +62,26 @@ export function useHomePage() {
     checkProfile();
   }, [user?.uid]);
 
-  // Handlers
+// 🚨 REPLACE THIS ENTIRE FUNCTION 🚨
   const handleNotificationClick = useCallback((notification: any) => {
-    if (notification.data?.action_url) {
-      router.push(notification.data.action_url);
-    }
-
+    // 1. Intercept modal-based notifications first!
     switch (notification.type) {
       case 'friend_request':
         setShowFriendRequests(true);
-        break;
+        return; // Stop here so it doesn't navigate to a 404!
       case 'username_invite':
         setShowInvites(true);
-        break;
+        return; // Stop here so it doesn't navigate to a 404!
       default:
         break;
     }
-  }, [router]);
 
+    // 2. If it's a normal notification (like a Pod or Post), navigate!
+    if (notification.data?.action_url) {
+      router.push(notification.data.action_url);
+    }
+  }, [router]);
+  
   const toggleInbox = useCallback(() => {
     setInboxOpen((prev) => {
       const newOpenState = !prev;

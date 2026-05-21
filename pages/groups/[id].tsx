@@ -3,7 +3,7 @@ import { useFirebaseAuth } from "../../hooks/useFirebaseAuth";
 import { useEffect, useState, useCallback } from "react";
 import { withAuth } from "../../lib/withAuth";
 import { db } from "../../lib/firebase";
-import { collection, query, where, orderBy, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, doc, getDoc, onSnapshot} from "firebase/firestore";
 import { Group } from "../../lib/groups";
 import { HappyMomentWithId } from "../../lib/firestore";
 import { getUserProfile } from "../../lib/community";
@@ -20,77 +20,83 @@ function GroupFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-const fetchData = useCallback(async () => {
-    if (!id || typeof id !== 'string') return;
-    
-    setLoading(true);
-    try {
-      // 🔥 THE PARALLEL FIX: Ask for the Pod and the Moments at the exact same time!
-      const groupPromise = getDoc(doc(db, 'groups', id));
-      const momentsQuery = query(
-        collection(db, 'happy_moments'),
-        where('groupIds', 'array-contains', id),
-      );
-      const momentsPromise = getDocs(momentsQuery);
-
-      // Catch them both simultaneously! This cuts load time in half.
-      const [groupDoc, snapshot] = await Promise.all([groupPromise, momentsPromise]);
-
-      if (!groupDoc.exists()) {
-        setError("Pod not found");
-        setLoading(false);
-        return;
-      }
-      setGroup({ id: groupDoc.id, ...groupDoc.data() } as Group);
-
-      // 3. Get User Profiles EFFICIENTLY (only fetch unique users once!)
-      const uniqueUserIds = Array.from(new Set(snapshot.docs.map(doc => doc.data().userId)));
-      const profileCache: Record<string, string> = {};
-      
-      await Promise.all(uniqueUserIds.map(async (uid) => {
-        try {
-          const profile = await getUserProfile(uid as string);
-          if (profile) profileCache[uid as string] = profile.displayName;
-        } catch (e) {
-          console.error(e);
-        }
-      }));
-
-      const momentsData = snapshot.docs.map((momentDoc) => {
-        const data = momentDoc.data();
-        return {
-          id: momentDoc.id,
-          content: data.content,
-          userId: data.userId,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-          userName: profileCache[data.userId] || "A friend"
-        } as (HappyMomentWithId & { userName: string });
-      });
-
-      // 4. Sort the moments locally in Javascript! (Newest first)
-      momentsData.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis?.() || 0;
-        const timeB = b.createdAt?.toMillis?.() || 0;
-        return timeB - timeA;
-      });
-
-      setMoments(momentsData);
-    } catch (err: any) {
-      console.error('Error fetching pod data:', err);
-      // 🚨 THIS PRINTS THE RAW FIREBASE ERROR TO THE SCREEN:
-      setError(err.message || "Failed to load pod feed");
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
+// The Real-Time Feed Engine ✨
   useEffect(() => {
-    if (id && user) {
-      fetchData();
-    }
-  }, [id, user, fetchData]);
+    if (!id || typeof id !== 'string' || !user) return;
 
+    setLoading(true);
+
+    // 1. Real-time listener for the Pod Info
+    const groupRef = doc(db, 'groups', id);
+    const unsubscribeGroup = onSnapshot(groupRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setGroup({ id: docSnap.id, ...docSnap.data() } as Group);
+      } else {
+        setError("Pod not found");
+      }
+    });
+
+    // 2. Real-time listener for Happy Moments
+    const momentsQuery = query(
+      collection(db, 'happy_moments'),
+      where('groupIds', 'array-contains', id)
+    );
+
+    const unsubscribeMoments = onSnapshot(momentsQuery, async (snapshot) => {
+      try {
+        // Get User Profiles EFFICIENTLY
+        const uniqueUserIds = Array.from(new Set(snapshot.docs.map(doc => doc.data().userId)));
+        const profileCache: Record<string, string> = {};
+
+        await Promise.all(uniqueUserIds.map(async (uid) => {
+          try {
+            const profile = await getUserProfile(uid as string);
+            if (profile) profileCache[uid as string] = profile.displayName;
+          } catch (e) {
+            console.error(e);
+          }
+        }));
+
+        const momentsData = snapshot.docs.map((momentDoc) => {
+          const data = momentDoc.data();
+          return {
+            id: momentDoc.id,
+            content: data.content,
+            userId: data.userId,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+            userName: profileCache[data.userId] || "A friend"
+          } as (HappyMomentWithId & { userName: string });
+        });
+
+        // Sort the moments locally (Newest first)
+        momentsData.sort((a, b) => {
+          const timeA = a.createdAt?.toMillis?.() || 0;
+          const timeB = b.createdAt?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+
+        setMoments(momentsData);
+        setError("");
+      } catch (err: any) {
+        console.error('Error processing moments:', err);
+        setError(err.message || "Failed to load moments");
+      } finally {
+        setLoading(false); // Instantly drops the loading wall!
+      }
+    }, (err) => {
+      console.error('Error fetching pod data:', err);
+      setError(err.message || "Failed to load pod feed");
+      setLoading(false);
+    });
+
+    // Cleanup both listeners when we leave the feed
+    return () => {
+      unsubscribeGroup();
+      unsubscribeMoments();
+    };
+  }, [id, user]);
+  
   return (
     <>
       {/* Header */}

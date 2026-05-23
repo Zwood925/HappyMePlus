@@ -47,7 +47,7 @@ function GroupCreate() {
     setGroupCode(code);
     setLoading(false);
 
-    setTimeout(() => router.push("/journal"), 2000);
+    setTimeout(() => router.push("/groups"), 2000);
   }, [user, router]);
 
   useEffect(() => {

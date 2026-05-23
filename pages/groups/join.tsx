@@ -71,7 +71,7 @@ function GroupJoin() {
     //   setErrorMsg("Error joining group. Please try again.");
     // } else {
     //   console.log("✅ User successfully added to group_members.");
-    //   router.push("/journal");
+    //   router.push("/groups");
     // }
 
     setErrorMsg("Feature coming soon! 🚧");

@@ -62,26 +62,36 @@ export function useHomePage() {
     checkProfile();
   }, [user?.uid]);
 
-// 🚨 REPLACE THIS ENTIRE FUNCTION 🚨
-  const handleNotificationClick = useCallback((notification: any) => {
-    // 1. Intercept modal-based notifications first!
+const handleNotificationClick = useCallback((notification: any) => {
+    // 1. Intercept ALL problematic or modal-based notifications first!
     switch (notification.type) {
       case 'friend_request':
         setShowFriendRequests(true);
-        return; // Stop here so it doesn't navigate to a 404!
+        return; 
       case 'username_invite':
         setShowInvites(true);
-        return; // Stop here so it doesn't navigate to a 404!
+        return; 
+      case 'post_reaction':
+      case 'post_comment':
+        // We don't have a standalone post page, so just stay on the home feed
+        router.push('/');
+        return;
+      case 'support_request':
+        // Send them to the specific Pod feed instead of a dead support URL
+        if (notification.data?.group_id) {
+          router.push(`/groups/${notification.data.group_id}`);
+        }
+        return;
       default:
         break;
     }
 
-    // 2. If it's a normal notification (like a Pod or Post), navigate!
+    // 2. If it safely passed the intercepts, navigate!
     if (notification.data?.action_url) {
       router.push(notification.data.action_url);
     }
   }, [router]);
-  
+    
   const toggleInbox = useCallback(() => {
     setInboxOpen((prev) => {
       const newOpenState = !prev;

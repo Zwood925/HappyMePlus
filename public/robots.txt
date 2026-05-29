@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Disallow: /groups/
+Disallow: /api/
+Disallow: /_next/

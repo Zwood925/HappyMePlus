@@ -1,29 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // PWA Configuration
-  async headers() {
-    return [
-      {
-        source: '/sw.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-        ],
-      },
-      {
-        source: '/manifest.json',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-        ],
-      },
-    ];
+  
+  // REQUIRED FOR CAPACITOR: Forces Next.js to build a static HTML/JS/CSS bundle
+  output: 'export', 
+  
+  // REQUIRED FOR CAPACITOR: Disables server-side image optimization
+  images: {
+    unoptimized: true, 
   },
+
+  // SILENCES NEXT.JS 16 ERROR: Tells Turbopack to ignore the Webpack config below during local dev
+  turbopack: {},
+
+  // KEEP: Fixes Firebase/Firestore Webpack resolution errors in the browser
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

@@ -7,6 +7,10 @@ import GroupSelector from "../components/GroupSelector";
 import { getUserDefaultHappyMomentGroups, updateGroupNotificationPreferences } from "../lib/userProfiles";
 import BottomNavigation from "../components/BottomNavigation";
 
+import { getAuth, deleteUser } from "firebase/auth";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "../lib/firebase"; // Ensure this matches your actual db export path
+
 export default function SettingsPage() {
   const { user } = useFirebaseAuth();
   const router = useRouter();
@@ -43,6 +47,35 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to completely delete your account? This action cannot be undone and will erase all your data."
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      
+      if (currentUser) {
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        
+        await deleteUser(currentUser);
+        
+        router.push("/signup");
+      }
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        setErrorMsg("For security reasons, please sign out and sign back in before deleting your account.");
+      } else {
+        setErrorMsg("Failed to delete account. Please try again.");
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Load user's group preferences
   useEffect(() => {
     const loadGroupPreferences = async () => {
@@ -71,7 +104,6 @@ export default function SettingsPage() {
     setSuccessMsg('');
     
     try {
-      // Pass an empty array for the removed support groups to satisfy the function requirements
       await updateGroupNotificationPreferences(
         user.uid,
         [], 
@@ -91,7 +123,7 @@ export default function SettingsPage() {
   return (
     <>
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <div className="text-2xl">⚙️</div>
@@ -104,7 +136,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="pt-16 pb-20 min-h-screen bg-gray-50">
+      <div className="pt-20 pb-28 min-h-screen bg-gray-50">
         <div className="p-4">
           <motion.div
             initial="hidden"
@@ -205,11 +237,26 @@ export default function SettingsPage() {
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <button
                 onClick={handleLogout}
-                className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition-colors font-medium"
+                className="w-full bg-gray-100 text-gray-800 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium border border-gray-300"
               >
                 Sign Out
               </button>
             </div>
+
+            {/* ADDED: Danger Zone for Account Deletion */}
+            <div className="bg-red-50 rounded-xl p-4 shadow-sm border border-red-100 mt-6">
+              <h2 className="text-lg font-semibold mb-2 text-red-800">Danger Zone</h2>
+              <p className="text-sm text-red-600 mb-4">
+                Once you delete your account, there is no going back. This will erase all your data.
+              </p>
+              <button
+                onClick={handleDeleteAccount}
+                className="w-full bg-transparent border-2 border-red-500 text-red-600 py-3 rounded-lg hover:bg-red-500 hover:text-white transition-colors font-medium"
+              >
+                Delete Account
+              </button>
+            </div>
+
           </motion.div>
         </div>
       </div>

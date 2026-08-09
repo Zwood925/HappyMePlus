@@ -9,7 +9,6 @@ import NotificationsModal from '../components/home/NotificationsModal';
 import WelcomeScreen from '../components/home/WelcomeScreen';
 import VideoCelebration from '../components/VideoCelebration';
 import SmileyButton from '../components/SmileyButton';
-import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import BottomNavigation from '../components/BottomNavigation';
 import UsernameSetupModal from '../components/UsernameSetupModal';
 import UserSearch from '../components/UserSearch';
@@ -129,10 +128,9 @@ export default function HomePage() {
             userEmail={user.email || undefined}
           />
         </div>
+        
+      </div> {/* <-- This was the missing closing tag! */}
 
-        {/* PWA Install Prompt */}
-        <PWAInstallPrompt />
-      </div>
 
       {/* Bottom Navigation */}
       <BottomNavigation />

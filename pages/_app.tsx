@@ -7,7 +7,6 @@ import "react-calendar/dist/Calendar.css";
 import Layout from "../components/layout";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import type { Router } from "next/router";
-import PWAInstallPrompt from "../components/PWAInstallPrompt";
 
 type InnerAppProps = AppProps & { router: Router };
 
@@ -46,13 +45,6 @@ return showLayout ? (
 
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
   useEffect(() => {
-    // 1. Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => console.log('SW registered'))
-        .catch((err) => console.log('SW failed: ', err));
-    }
 
     // 2. 🚨 The "Ghost Chunk" self-healing fix
     const handleRouteChangeError = (err: any, url: string) => {
@@ -71,8 +63,6 @@ export default function MyApp({ Component, pageProps, router }: AppProps & { rou
     <>
       <InnerApp Component={Component} pageProps={pageProps} router={router} />
       
-      {/* 🚨 Drop the smart button right here so it floats over the whole app! */}
-      <PWAInstallPrompt />
     </>
   );
 }

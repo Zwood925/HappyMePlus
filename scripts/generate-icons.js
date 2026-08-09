@@ -24,7 +24,6 @@ const svgIcon = `
 // Write the SVG file
 fs.writeFileSync(path.join(iconsDir, 'icon.svg'), svgIcon);
 
-console.log('✅ PWA icons created!');
 console.log('📁 Icons directory: public/icons/');
 console.log('📋 Next steps:');
 console.log('   1. Replace the placeholder SVG with your actual app icon');

@@ -9,14 +9,11 @@ export default function Document() {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         
-        {/* PWA Manifest */}
-        <link rel="manifest" href="/manifest.json" />
         
         {/* Meta tags for better branding */}
         <meta name="theme-color" content="#8b5cf6" />
         <meta name="description" content="HappyMe+ - A social media of joy, not comparison. Share what makes you smile and spread happiness with the world." />
         
-        {/* PWA Meta Tags */}
         <meta name="application-name" content="HappyMe+" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

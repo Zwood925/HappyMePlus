@@ -8,7 +8,6 @@ workflows:
         - firebase_credentials
       node: 22
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Install dependencies
         script: npm install
@@ -23,7 +22,7 @@ workflows:
       - name: Build ipa for App Store
         script: |
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "App" \
             --config Release
     artifacts:

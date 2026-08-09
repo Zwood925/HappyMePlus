@@ -5,7 +5,7 @@ workflows:
     environment:
       groups:
         - app_store_credentials # This pulls in the secure keys you just saved
-      node: 20.x
+      node: 20
       xcode: latest
       cocoapods: default
     scripts:

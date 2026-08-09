@@ -70,13 +70,5 @@
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
 
-    <key>NSCameraUsageDescription</key>
-    <string>HappyMe needs camera access so you can take and share photos for your journal entries.</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>HappyMe needs access to save images to your photo library.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>HappyMe needs access to your photo library so you can upload images to your journal moments.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>HappyMe needs microphone access to record audio when capturing video moments.</string>
 </dict>
 </plist>

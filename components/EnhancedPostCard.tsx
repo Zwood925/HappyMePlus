@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 import PostReactions from './PostReactions';
 import PostComments from './PostComments';
-import ImageViewer from './ImageViewer';
 import Image from 'next/image';
+import { reportPost, blockUser } from '../lib/firestore'; // Added imports
 
 interface Post {
   id: string;
@@ -38,7 +38,10 @@ export default function EnhancedPostCard({
 }: EnhancedPostCardProps) {
   const { user } = useFirebaseAuth();
   const [showActions, setShowActions] = useState(false);
-  const [showImageViewer, setShowImageViewer] = useState(false);
+  
+  // Added state for UGC moderation
+  const [isReported, setIsReported] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const formatTimeAgo = (date: any) => {
     const now = new Date();
@@ -61,8 +64,8 @@ export default function EnhancedPostCard({
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(post.content);
-      // You could add a toast notification here
     }
+    setShowActions(false);
     onShare?.();
   };
 
@@ -70,11 +73,40 @@ export default function EnhancedPostCard({
     onSocialShare?.(post);
   };
 
+  // Added handler for reporting
+  const handleReport = async () => {
+    if (!user?.uid || !post.id) return;
+    const confirmReport = window.confirm("Report this post for inappropriate or offensive content?");
+    if (confirmReport) {
+      await reportPost(post.id, post.userId, user.uid, "Inappropriate Content");
+      setIsReported(true);
+      alert("Thank you. This post has been reported and will be reviewed within 24 hours.");
+    }
+    setShowActions(false);
+  };
+
+  // Added handler for blocking
+  const handleBlock = async () => {
+    if (!user?.uid || !post.userId) return;
+    const confirmBlock = window.confirm(`Block ${post.userName}? You will no longer see their posts.`);
+    if (confirmBlock) {
+      await blockUser(user.uid, post.userId);
+      setIsBlocked(true);
+      alert("User blocked successfully.");
+    }
+    setShowActions(false);
+  };
+
+  // If the user blocks this person, instantly hide the card from the UI
+  if (isBlocked) {
+    return null;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}
+      className={`relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}
     >
       {/* Post Header */}
       <div className="p-4 border-b border-gray-100">
@@ -111,20 +143,6 @@ export default function EnhancedPostCard({
       {/* Post Content */}
       <div className="p-4">
         <p className="text-gray-800 leading-relaxed mb-3">{post.content}</p>
-        
-        {post.imageUrl && (
-          <div className="mb-3">
-            <Image
-              src={post.imageUrl}
-              alt="Post image"
-              width={400}
-              height={256}
-              className="w-full rounded-lg object-cover max-h-64 cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setShowImageViewer(true)}
-              unoptimized
-            />
-          </div>
-        )}
       </div>
 
       {/* Social Actions */}
@@ -173,7 +191,7 @@ export default function EnhancedPostCard({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-12 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-10"
+          className="absolute top-14 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[150px]"
         >
           <button
             onClick={handleShare}
@@ -183,22 +201,39 @@ export default function EnhancedPostCard({
             <span>Share</span>
           </button>
           <button
-            onClick={() => navigator.clipboard.writeText(post.content)}
+            onClick={() => {
+              navigator.clipboard.writeText(post.content);
+              setShowActions(false);
+            }}
             className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <span>📋</span>
             <span>Copy</span>
           </button>
+
+          {/* UGC Moderation Options - Only visible if it's someone else's post */}
+          {user?.uid !== post.userId && (
+            <>
+              <div className="h-px bg-gray-200 my-1 mx-2"></div>
+              <button
+                onClick={handleReport}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <span>🚩</span>
+                <span>{isReported ? 'Reported' : 'Report Post'}</span>
+              </button>
+              <button
+                onClick={handleBlock}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <span>🚫</span>
+                <span>Block User</span>
+              </button>
+            </>
+          )}
         </motion.div>
       )}
 
-      {/* Image Viewer */}
-      <ImageViewer
-        isOpen={showImageViewer}
-        onClose={() => setShowImageViewer(false)}
-        imageUrl={post.imageUrl || ''}
-        alt="Post image"
-      />
     </motion.div>
   );
 }

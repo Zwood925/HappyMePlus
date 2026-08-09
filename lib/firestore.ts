@@ -11,10 +11,45 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   startAfter,
-  getCountFromServer
+  getCountFromServer,
+  doc,
+  updateDoc,
+  arrayUnion,
+  serverTimestamp
+
 } from 'firebase/firestore';
 import { ensureUserProfile } from './userProfiles';
 import { getCurrentUser } from './firebaseAuth';
+
+export const reportPost = async (postId: string, reportedUserId: string, reporterUserId: string, reason: string) => {
+  try {
+    await addDoc(collection(db, 'reports'), {
+      postId,
+      reportedUserId,
+      reporterUserId,
+      reason,
+      createdAt: serverTimestamp(),
+      status: 'pending'
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error reporting post:', error);
+    return { success: false, error };
+  }
+};
+
+export const blockUser = async (currentUserId: string, blockedUserId: string) => {
+  try {
+    const userRef = doc(db, 'users', currentUserId);
+    await updateDoc(userRef, {
+      blockedUsers: arrayUnion(blockedUserId)
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    return { success: false, error };
+  }
+};
 
 export interface HappyMoment {
   id?: string;
@@ -29,7 +64,6 @@ export interface HappyMomentWithId extends HappyMoment {
   id: string;
 }
 
-// Add a new happy moment
 export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
   try {
     const momentData: Omit<HappyMoment, 'id'> = {
@@ -50,7 +84,6 @@ export async function addHappyMoment(content: string, userId: string, groupIds?:
   }
 }
 
-// Get recent happy moments for a user
 export async function getRecentHappyMoments(userId: string, limitCount: number = 5): Promise<HappyMomentWithId[]> {
   try {
     const collectionRef = collection(db, 'happy_moments');
@@ -80,7 +113,6 @@ export async function getRecentHappyMoments(userId: string, limitCount: number =
   }
 }
 
-// Get all happy moments for a user with pagination
 export async function getAllHappyMoments(
   userId: string, 
   pageSize: number = 20,
@@ -129,7 +161,6 @@ export async function getAllHappyMoments(
   }
 }
 
-// Get count of happy moments for a user EFFICIENTLY
 export async function getHappyMomentsCount(userId: string): Promise<number> {
   try {
     const collectionRef = collection(db, 'happy_moments');

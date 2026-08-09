@@ -21,6 +21,12 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == resource.data[userIdField];
     }
 
+    // Reports - anyone logged in can create a report, but nobody can read/edit them from the app
+    match /reports/{document} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if false;
+    }
+
     // Happy moments - anyone logged in can read them (to see Pod feeds), but only the author can edit/delete them
     match /happy_moments/{document} {
       allow read: if isAuthenticated();
@@ -50,7 +56,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
-// User profiles - anyone logged in can search profiles
+    // User profiles - anyone logged in can search profiles
     match /user_profiles/{document} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && 

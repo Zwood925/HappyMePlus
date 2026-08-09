@@ -9,7 +9,7 @@ import BottomNavigation from "../components/BottomNavigation";
 
 import { getAuth, deleteUser } from "firebase/auth";
 import { doc, deleteDoc } from "firebase/firestore";
-import { db } from "../lib/firebase"; // Ensure this matches your actual db export path
+import { db } from "../lib/firebase"; 
 
 export default function SettingsPage() {
   const { user } = useFirebaseAuth();

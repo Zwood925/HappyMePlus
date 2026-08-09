@@ -6,7 +6,7 @@ workflows:
       groups:
         - app_store_credentials
         - firebase_credentials
-      node: 20
+      node: 22
       xcode: latest
       cocoapods: default
     scripts:

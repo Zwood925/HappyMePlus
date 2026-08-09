@@ -10,8 +10,11 @@ export default function WelcomeScreen() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-x-hidden">
-      {/* Navigation */}
-      <nav className="w-full px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md fixed top-0 z-50 border-b border-gray-100">
+      {/* Navigation - UPDATED WITH SAFE AREA */}
+      <nav 
+        className="w-full px-6 pb-4 flex justify-between items-center bg-white/80 backdrop-blur-md fixed top-0 z-50 border-b border-gray-100"
+        style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center space-x-2">
           <span className="text-2xl">✨</span>
           <span className="text-xl font-bold text-gray-800 tracking-tight">HappyMe+</span>
@@ -23,8 +26,8 @@ export default function WelcomeScreen() {
         </Link>
       </nav>
 
-      {/* Hero Section */}
-      <main className="flex-1 pt-28 pb-16 px-6 flex flex-col items-center justify-center text-center">
+      {/* Hero Section - Bumped pt-28 to pt-32 to account for taller header */}
+      <main className="flex-1 pt-32 pb-16 px-6 flex flex-col items-center justify-center text-center">
         <motion.div 
           initial="hidden"
           animate="visible"

@@ -20,6 +20,7 @@ export default function SignupPage() {
       const result = await createUserWithEmail(email, password);
       
       if (result.error) {
+        alert(`SIGNUP ERROR:\n${result.error.message || JSON.stringify(result.error)}`);
         setErrorMsg(result.error.message || "Failed to create account");
       } else {
         setSuccessMsg("Account created successfully!");
@@ -31,6 +32,7 @@ export default function SignupPage() {
       }
       
     } catch (error: any) {
+      alert(`CRASH ERROR:\n${error.message || JSON.stringify(error)}`);
       console.error("Sign up failed:", error);
       setErrorMsg(error.message || "Failed to create account");
     }

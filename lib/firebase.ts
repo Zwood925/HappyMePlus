@@ -1,11 +1,15 @@
 // lib/firebase.ts
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { 
+  getAuth, 
+  initializeAuth, 
+  indexedDBLocalPersistence, 
+  browserLocalPersistence 
+} from 'firebase/auth';
 import { 
   getFirestore, 
   initializeFirestore, 
-  persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentLocalCache 
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { config } from './config';
@@ -22,14 +26,27 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// 🚨 THE SILVER BULLET: Initialize Firestore with Offline Caching Enabled!
-// 🚨 ADD 'happyme' AS THE THIRD ARGUMENT SO IT FINDS YOUR DATA!
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({})
-});
+// Initialize Firestore with clean local caching
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({})
+  });
+} catch (e) {
+  db = getFirestore(app);
+}
 
-export const auth = getAuth(app);
-export { db };
+// 🚨 THE FIX FOR CAPACITOR/IOS: Use initializeAuth with native persistence handlers
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence]
+  });
+} catch (e) {
+  auth = getAuth(app);
+}
+
+export { auth, db };
 export const storage = getStorage(app);
 
 export default app;

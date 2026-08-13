@@ -18,22 +18,27 @@ export default function LoginPage() {
     }
   }, [loading, user, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
     try {
       const result = await signInWithEmail(email, password);
       if (result.error) {
+        // Tells us if the password failed or user wasn't found
+        alert(`LOGIN ERROR:\n${result.error.message || JSON.stringify(result.error)}`);
         setErrorMsg(result.error.message || "Failed to sign in");
       } else {
+        // Tells us if auth succeeded and it's strictly a page navigation issue
+        alert(`LOGIN SUCCESS!\nWelcome ${result.user?.email || "user"}! Navigating home...`);
         router.push("/");
       }
     } catch (error: any) {
+      alert(`LOGIN CRASH:\n${error.message || JSON.stringify(error)}`);
       setErrorMsg(error.message || "Failed to sign in");
     }
   };
-
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">

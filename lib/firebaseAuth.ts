@@ -13,9 +13,14 @@ import {
 // Sign in with email and password
 export async function signInWithEmail(email: string, password: string) {
   try {
+    alert("LOGIN CHECKPOINT 1: Auth Request Started");
+    
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    alert(`LOGIN CHECKPOINT 2: Auth Succeeded!\nUID: ${userCredential.user.uid}`);
     return { user: userCredential.user, error: null };
-  } catch (error) {
+  } catch (error: any) {
+    alert(`LOGIN ERROR:\n${error?.message || JSON.stringify(error)}`);
     return { user: null, error: error as Error };
   }
 }
@@ -23,22 +28,30 @@ export async function signInWithEmail(email: string, password: string) {
 // Create user with email and password
 export async function createUserWithEmail(email: string, password: string) {
   try {
+    alert("SIGNUP CHECKPOINT 1: Auth User Creation Started");
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
+    alert(`SIGNUP CHECKPOINT 2: Auth Created User!\nUID: ${userCredential.user.uid}`);
+    
     // Import here to avoid circular dependencies
+    alert("SIGNUP CHECKPOINT 3: Importing userProfiles module...");
     const { createUserProfile } = await import('./userProfiles');
     
     // Create user profile in Firestore
     try {
+      alert("SIGNUP CHECKPOINT 4: Calling createUserProfile in Firestore...");
       await createUserProfile(userCredential.user);
-      console.log('User profile created successfully for new user:', userCredential.user.uid);
-    } catch (profileError) {
+      alert("SIGNUP CHECKPOINT 5: User profile created successfully in Firestore!");
+    } catch (profileError: any) {
+      alert(`SIGNUP PROFILE ERROR:\n${profileError?.message || JSON.stringify(profileError)}`);
       console.error('Failed to create user profile:', profileError);
       // Don't fail the signup if profile creation fails
     }
     
     return { user: userCredential.user, error: null };
-  } catch (error) {
+  } catch (error: any) {
+    alert(`SIGNUP ERROR:\n${error?.message || JSON.stringify(error)}`);
     return { user: null, error: error as Error };
   }
 }
@@ -66,4 +79,4 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
 // Check if user is authenticated
 export const isAuthenticated = (): boolean => {
   return auth.currentUser !== null;
-}; 
+};

@@ -1,17 +1,8 @@
 // lib/firebase.ts
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-  getAuth, 
-  initializeAuth, 
-  indexedDBLocalPersistence, 
-  browserLocalPersistence 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  initializeFirestore, 
-  persistentLocalCache 
-} from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { config } from './config';
 
 const firebaseConfig = {
@@ -23,30 +14,10 @@ const firebaseConfig = {
   appId: config.firebase.appId,
 };
 
-// Initialize Firebase App
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firestore with clean local caching
-let db;
-try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({})
-  });
-} catch (e) {
-  db = getFirestore(app);
-}
-
-// 🚨 THE FIX FOR CAPACITOR/IOS: Use initializeAuth with native persistence handlers
-let auth;
-try {
-  auth = initializeAuth(app, {
-    persistence: [indexedDBLocalPersistence, browserLocalPersistence]
-  });
-} catch (e) {
-  auth = getAuth(app);
-}
-
-export { auth, db };
-export const storage = getStorage(app);
+export const auth: Auth = getAuth(app);
+export const db: Firestore = getFirestore(app);
+export const storage: FirebaseStorage = getStorage(app);
 
 export default app;

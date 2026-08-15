@@ -1,6 +1,12 @@
 // lib/firebase.ts
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { 
+  initializeAuth, 
+  getAuth, 
+  browserLocalPersistence, 
+  inMemoryPersistence, 
+  Auth 
+} from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { config } from './config';
@@ -16,8 +22,19 @@ const firebaseConfig = {
 
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const auth: Auth = getAuth(app);
+// 🚨 CAPACITOR IOS DEADLOCK FIX:
+// Uses localStorage (browserLocalPersistence) instead of IndexedDB Web Locks
+let auth: Auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: [browserLocalPersistence, inMemoryPersistence]
+  });
+} catch (e) {
+  auth = getAuth(app);
+}
+
 export const db: Firestore = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
+export { auth };
 
 export default app;

@@ -7,7 +7,11 @@ import {
   inMemoryPersistence, 
   Auth 
 } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { 
+  initializeFirestore, 
+  memoryLocalCache, 
+  Firestore 
+} from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { config } from './config';
 
@@ -22,8 +26,7 @@ const firebaseConfig = {
 
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// 🚨 CAPACITOR IOS DEADLOCK FIX:
-// Uses localStorage (browserLocalPersistence) instead of IndexedDB Web Locks
+// Auth setup (iOS Web Lock fix)
 let auth: Auth;
 try {
   auth = initializeAuth(app, {
@@ -33,7 +36,11 @@ try {
   auth = getAuth(app);
 }
 
-export const db: Firestore = getFirestore(app);
+// Initialize Firestore with memoryLocalCache to bypass IndexedDB Web Locks on iOS
+export const db: Firestore = initializeFirestore(app, {
+  localCache: memoryLocalCache()
+});
+
 export const storage: FirebaseStorage = getStorage(app);
 export { auth };
 

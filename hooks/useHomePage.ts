@@ -44,7 +44,6 @@ export function useHomePage() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
 
-  // 🚨 The Velvet Rope: Check for profile on load
   useEffect(() => {
     const checkProfile = async () => {
       if (user?.uid) {

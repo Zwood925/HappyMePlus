@@ -55,6 +55,7 @@ export interface HappyMoment {
   id?: string;
   content: string;
   userId: string;
+  authorEmail?: string;
   groupIds?: string[]; 
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -64,11 +65,12 @@ export interface HappyMomentWithId extends HappyMoment {
   id: string;
 }
 
-export async function addHappyMoment(content: string, userId: string, groupIds?: string[]): Promise<string> {
+export async function addHappyMoment(content: string, userId: string, groupIds?: string[], authorEmail?: string): Promise<string> {
   try {
     const momentData: Omit<HappyMoment, 'id'> = {
       content,
       userId,
+      authorEmail: authorEmail || 'Unknown',
       groupIds: groupIds || [],
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),

@@ -87,7 +87,7 @@ export default function HomePage() {
       />
 
       {/* Main Content */}
-      <div className="pt-16 pb-20 min-h-screen bg-gray-50">
+      <div className="pt-[calc(4rem+env(safe-area-inset-top))] pb-20 min-h-screen bg-gray-50">
 
         {/* Quick Actions */}
         <div className="bg-white p-4 border-b border-gray-200">
@@ -129,7 +129,7 @@ export default function HomePage() {
           />
         </div>
         
-      </div> {/* <-- This was the missing closing tag! */}
+      </div> 
 
 
       {/* Bottom Navigation */}

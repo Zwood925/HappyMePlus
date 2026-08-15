@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFirebaseAuth } from './useFirebaseAuth';
 import {
   addHappyMoment,
@@ -15,9 +15,11 @@ export function useHappyMoments() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const [lastDoc, setLastDoc] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 🚨 FIX: Use a ref for the pagination cursor to prevent infinite re-render loops
+  const lastDocRef = useRef<any>(null);
 
   // Load recent moments
   const loadRecentMoments = useCallback(async () => {
@@ -44,7 +46,9 @@ export function useHappyMoments() {
     setLoading(true);
     setError(null);
     try {
-      const result = await getAllHappyMoments(user.uid, 20, reset ? undefined : lastDoc);
+      // Use the ref value instead of state
+      const currentLastDoc = reset ? undefined : lastDocRef.current;
+      const result = await getAllHappyMoments(user.uid, 20, currentLastDoc);
 
       if (reset) {
         setAllMoments(result.moments);
@@ -52,7 +56,8 @@ export function useHappyMoments() {
         setAllMoments(prev => [...prev, ...result.moments]);
       }
 
-      setLastDoc(result.lastDoc);
+      // Update the ref without triggering a re-render
+      lastDocRef.current = result.lastDoc;
       setHasMore(result.moments.length === 20);
     } catch (error) {
       console.error('Error loading all moments:', error);
@@ -63,7 +68,7 @@ export function useHappyMoments() {
     } finally {
       setLoading(false);
     }
-  }, [user?.uid, lastDoc]);
+  }, [user?.uid]); // 🚨 FIX: lastDoc removed from dependencies. Function is now 100% stable.
 
   // Load total count
   const loadTotalCount = useCallback(async () => {
@@ -87,7 +92,8 @@ export function useHappyMoments() {
     setSubmitting(true);
     setError(null);
     try {
-      const momentId = await addHappyMoment(content, user.uid, groupIds);
+      // Note: imageFile is accepted but not currently passed to addHappyMoment
+      const momentId = await addHappyMoment(content, user.uid, groupIds, user.email || undefined);
       
       // Refresh the data
       await loadRecentMoments();
@@ -113,7 +119,7 @@ export function useHappyMoments() {
       setRecentMoments([]);
       setAllMoments([]);
       setTotalCount(0);
-      setLastDoc(null);
+      lastDocRef.current = null; // Reset ref on logout
       setHasMore(true);
       setError(null);
     }
@@ -132,4 +138,4 @@ export function useHappyMoments() {
     loadAllMoments,
     loadTotalCount,
   };
-} 
+}

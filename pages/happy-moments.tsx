@@ -15,7 +15,8 @@ function HappyMomentsPage() {
 
   useEffect(() => {
     loadAllMoments(true); // true to reset
-  }, [loadAllMoments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty array prevents the infinite fetch loop
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
@@ -32,8 +33,8 @@ function HappyMomentsPage() {
 
   return (
     <>
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+      {/* Header - Added Safe Area Padding for iOS */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <div className="text-2xl">🌟</div>
@@ -46,31 +47,31 @@ function HappyMomentsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="pt-16 pb-20 min-h-screen bg-gray-50">
+      <div className="pt-24 pb-20 min-h-screen bg-gray-50"> {/* Increased pt-16 to pt-24 to account for the taller header */}
         <div className="p-4">
           {/* Moments List */}
           <div className="space-y-4">
             {allMoments.map((moment, index) => (
               <motion.div
                 key={moment.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.5) }} // Optimized animation delay
                 className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
               >
                 <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center text-white font-semibold shrink-0">
                     🌟
                   </div>
                   
-                  <div className="flex-1">
-                    <p className="text-gray-800 leading-relaxed mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-800 leading-relaxed mb-2 break-words">
                       {moment.content}
                     </p>
                     
                     <div className="flex items-center space-x-2 text-xs text-gray-500">
-                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      <span>{formatDate(moment.createdAt)}</span>
+                      <span className="w-2 h-2 bg-green-400 rounded-full shrink-0"></span>
+                      <span className="truncate">{formatDate(moment.createdAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -91,7 +92,7 @@ function HappyMomentsPage() {
             <div className="text-center mt-6">
               <button
                 onClick={() => loadAllMoments(false)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95"
               >
                 Load More Moments
               </button>
@@ -115,4 +116,4 @@ function HappyMomentsPage() {
   );
 }
 
-export default withAuth(HappyMomentsPage); 
+export default withAuth(HappyMomentsPage);

@@ -38,7 +38,8 @@ try {
 
 // Initialize Firestore with memoryLocalCache to bypass IndexedDB Web Locks on iOS
 export const db: Firestore = initializeFirestore(app, {
-  localCache: memoryLocalCache()
+  localCache: memoryLocalCache(),
+  experimentalForceLongPolling: true
 });
 
 export const storage: FirebaseStorage = getStorage(app);

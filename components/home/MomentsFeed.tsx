@@ -56,7 +56,7 @@ export default function MomentsFeed({
               <p className="text-gray-800 leading-relaxed">{moment.content}</p>
                           
               <p className="text-sm text-gray-500 mt-2">
-                {moment.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                {moment.createdAt ? new Date(moment.createdAt).toLocaleDateString() : 'Just now'}
               </p>
             </div>
           </div>

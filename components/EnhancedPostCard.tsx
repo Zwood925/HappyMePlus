@@ -43,11 +43,11 @@ export default function EnhancedPostCard({
   const [isReported, setIsReported] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
 
-  const formatTimeAgo = (date: any) => {
+const formatTimeAgo = (date: any) => {
     const now = new Date();
-    const postDate = date?.toDate ? date.toDate() : new Date(date);
+    const postDate = new Date(date);
     const diffInMinutes = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60));
-    
+        
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;

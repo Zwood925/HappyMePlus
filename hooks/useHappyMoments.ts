@@ -57,7 +57,7 @@ export function useHappyMoments() {
       }
 
       // Update the ref without triggering a re-render
-      lastDocRef.current = result.lastDoc;
+      lastDocRef.current = result.lastDocId;
       setHasMore(result.moments.length === 20);
     } catch (error) {
       console.error('Error loading all moments:', error);

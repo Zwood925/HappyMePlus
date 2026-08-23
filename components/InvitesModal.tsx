@@ -187,7 +187,7 @@ export default function InvitesModal({ isOpen, onClose, onInviteResponded }: Inv
 
                       {/* Timestamp */}
                       <p className="text-xs text-gray-500 mt-2">
-                        {invite.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
+                        {invite.createdAt ? new Date(invite.createdAt).toLocaleDateString() : 'Unknown date'}
                       </p>
                     </div>
                   ))}

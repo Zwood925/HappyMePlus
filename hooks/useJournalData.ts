@@ -39,7 +39,7 @@ export function useJournalData() {
           id: doc.id,
           user_id: data.userId,
           content: data.content,
-          created_at: data.createdAt?.toDate() || new Date(),
+          created_at: data.createdAt ? new Date(data.createdAt) : new Date(),
         } as HappyMoment);
       });
 

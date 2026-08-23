@@ -20,7 +20,7 @@ function HappyMomentsPage() {
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = new Date(timestamp);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',

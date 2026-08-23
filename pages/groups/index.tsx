@@ -299,7 +299,7 @@ function GroupsPage() {
                              <button onClick={() => handleViewMembers(group)} className="hover:text-purple-600 font-medium transition-colors">
                                👥 {group.member_count || 1} members
                              </button>
-                             <span>📅 {group.created_at?.toDate?.()?.toLocaleDateString() || 'Recently'}</span>
+                             <span>📅 {group.created_at ? new Date(group.created_at).toLocaleDateString() : 'Recently'}</span>
                            </div>
                         </div>
                       </div>

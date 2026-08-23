@@ -56,11 +56,11 @@ export default function EnhancedNotificationItem({
     return '';
   };
 
-  const formatTime = (date: any) => {
-    const d = date?.toDate ? date.toDate() : new Date(date);
+const formatTime = (date: any) => {
+    const d = new Date(date);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60));
-    
+        
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;

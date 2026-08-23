@@ -71,8 +71,8 @@ function GroupFeedPage() {
 
         // Sort the moments locally (Newest first)
         momentsData.sort((a, b) => {
-          const timeA = a.createdAt?.toMillis?.() || 0;
-          const timeB = b.createdAt?.toMillis?.() || 0;
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return timeB - timeA;
         });
 
@@ -158,7 +158,7 @@ function GroupFeedPage() {
                     <div className="flex items-baseline justify-between mb-1">
                       <span className="font-semibold text-gray-800 truncate pr-2">{moment.userName}</span>
                       <span className="text-xs text-gray-500 flex-shrink-0">
-                        {moment.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
+                        {moment.createdAt ? new Date(moment.createdAt).toLocaleDateString() : 'Unknown date'}
                       </span>
                     </div>
                     <p className="text-gray-700 leading-relaxed break-words">{moment.content}</p>

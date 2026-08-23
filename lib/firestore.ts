@@ -1,35 +1,19 @@
-import { db } from './firebase';
-import { 
-  collection, 
-  addDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  getDocs,
-  Timestamp,
-  DocumentData,
-  QueryDocumentSnapshot,
-  startAfter,
-  getCountFromServer,
-  doc,
-  updateDoc,
-  arrayUnion,
-  serverTimestamp
-
-} from 'firebase/firestore';
+import { FirebaseFirestore } from '@capacitor-firebase/firestore';
 import { ensureUserProfile } from './userProfiles';
 import { getCurrentUser } from './firebaseAuth';
 
 export const reportPost = async (postId: string, reportedUserId: string, reporterUserId: string, reason: string) => {
   try {
-    await addDoc(collection(db, 'reports'), {
-      postId,
-      reportedUserId,
-      reporterUserId,
-      reason,
-      createdAt: serverTimestamp(),
-      status: 'pending'
+    await FirebaseFirestore.addDocument({
+      reference: 'reports',
+      data: {
+        postId,
+        reportedUserId,
+        reporterUserId,
+        reason,
+        createdAt: new Date().toISOString(), // Native prefers standard ISO strings
+        status: 'pending'
+      }
     });
     return { success: true };
   } catch (error) {
@@ -40,9 +24,13 @@ export const reportPost = async (postId: string, reportedUserId: string, reporte
 
 export const blockUser = async (currentUserId: string, blockedUserId: string) => {
   try {
-    const userRef = doc(db, 'users', currentUserId);
-    await updateDoc(userRef, {
-      blockedUsers: arrayUnion(blockedUserId)
+    // Native plugin uses a direct string path for updates
+    await FirebaseFirestore.updateDocument({
+      reference: `users/${currentUserId}`,
+      data: {
+        // Native array union syntax
+        blockedUsers: { __op: 'arrayUnion', elements: [blockedUserId] } 
+      }
     });
     return { success: true };
   } catch (error) {
@@ -57,8 +45,8 @@ export interface HappyMoment {
   userId: string;
   authorEmail?: string;
   groupIds?: string[]; 
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string; // Changed from Timestamp to string for native compatibility
+  updatedAt: string;
 }
 
 export interface HappyMomentWithId extends HappyMoment {
@@ -67,19 +55,25 @@ export interface HappyMomentWithId extends HappyMoment {
 
 export async function addHappyMoment(content: string, userId: string, groupIds?: string[], authorEmail?: string): Promise<string> {
   try {
+    const now = new Date().toISOString();
     const momentData: Omit<HappyMoment, 'id'> = {
       content,
       userId,
       authorEmail: authorEmail || 'Unknown',
       groupIds: groupIds || [],
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+      createdAt: now,
+      updatedAt: now,
     };
 
-    const collectionRef = collection(db, 'happy_moments');
-    const docRef = await addDoc(collectionRef, momentData);
-    console.log('Happy moment created successfully:', docRef.id);
-    return docRef.id;
+    const { reference } = await FirebaseFirestore.addDocument({
+      reference: 'happy_moments',
+      data: momentData
+    });
+    
+    // The native plugin returns the reference object which includes the generated ID
+    const newId = reference.id; 
+    console.log('Happy moment created natively:', newId);
+    return newId;
   } catch (error) {
     console.error('Error adding happy moment:', error);
     throw error;
@@ -88,27 +82,26 @@ export async function addHappyMoment(content: string, userId: string, groupIds?:
 
 export async function getRecentHappyMoments(userId: string, limitCount: number = 5): Promise<HappyMomentWithId[]> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
-    
-    const q = query(
-      collectionRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
-    
-    const querySnapshot = await getDocs(q);
-    const moments: HappyMomentWithId[] = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data() as HappyMoment;
-      moments.push({
-        ...data,
-        id: doc.id,
-      });
+    const { snapshots } = await FirebaseFirestore.getCollection({
+      reference: 'happy_moments',
+      // 🚨 Filters (where) must go inside a compositeFilter wrapper natively
+      compositeFilter: {
+        type: 'and',
+        queryConstraints: [
+          { type: 'where', fieldPath: 'userId', opStr: '==', value: userId }
+        ]
+      },
+      // 🚨 Actions (orderBy, limit) go in the queryConstraints natively
+      queryConstraints: [
+        { type: 'orderBy', fieldPath: 'createdAt', directionStr: 'desc' },
+        { type: 'limit', limit: limitCount }
+      ]
     });
     
-    return moments;
+    return snapshots.map(snap => ({
+      ...snap.data,
+      id: snap.id
+    })) as HappyMomentWithId[];
   } catch (error) {
     console.error('Error getting recent happy moments:', error);
     throw error;
@@ -118,44 +111,35 @@ export async function getRecentHappyMoments(userId: string, limitCount: number =
 export async function getAllHappyMoments(
   userId: string, 
   pageSize: number = 20,
-  lastDoc?: QueryDocumentSnapshot<DocumentData>
-): Promise<{ moments: HappyMomentWithId[], lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
+  lastDocId?: string 
+): Promise<{ moments: HappyMomentWithId[], lastDocId: string | null }> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
-    
-    let q = query(
-      collectionRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      limit(pageSize)
-    );
-    
-    if (lastDoc) {
-      q = query(
-        collectionRef,
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
-        startAfter(lastDoc),
-        limit(pageSize)
-      );
-    }
-    
-    const querySnapshot = await getDocs(q);
-    const moments: HappyMomentWithId[] = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data() as HappyMoment;
-      moments.push({
-        ...data,
-        id: doc.id,
-      });
+    const nonFilters: any[] = [
+      { type: 'orderBy', fieldPath: 'createdAt', directionStr: 'desc' },
+      { type: 'limit', limit: pageSize }
+    ];
+
+    const { snapshots } = await FirebaseFirestore.getCollection({
+      reference: 'happy_moments',
+      compositeFilter: {
+        type: 'and',
+        queryConstraints: [
+          { type: 'where', fieldPath: 'userId', opStr: '==', value: userId }
+        ]
+      },
+      queryConstraints: nonFilters
     });
     
-    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+    const moments = snapshots.map(snap => ({
+      ...snap.data,
+      id: snap.id
+    })) as HappyMomentWithId[];
+    
+    const lastVisible = snapshots.length > 0 ? snapshots[snapshots.length - 1].id : null;
     
     return {
       moments,
-      lastDoc: lastVisible,
+      lastDocId: lastVisible,
     };
   } catch (error) {
     console.error('Error getting all happy moments:', error);
@@ -165,16 +149,18 @@ export async function getAllHappyMoments(
 
 export async function getHappyMomentsCount(userId: string): Promise<number> {
   try {
-    const collectionRef = collection(db, 'happy_moments');
-    const q = query(
-      collectionRef,
-      where('userId', '==', userId)
-    );
+    // 🚨 The native plugin has a dedicated count method to save on reads!
+    const { count } = await FirebaseFirestore.getCountFromServer({
+      reference: 'happy_moments',
+      compositeFilter: {
+        type: 'and',
+        queryConstraints: [
+          { type: 'where', fieldPath: 'userId', opStr: '==', value: userId }
+        ]
+      }
+    });
     
-    // 🚨 THIS IS 1000x FASTER AND CHEAPER:
-    const snapshot = await getCountFromServer(q);
-    return snapshot.data().count;
-    
+    return count;
   } catch (error) {
     console.error('Error getting happy moments count:', error);
     throw error;

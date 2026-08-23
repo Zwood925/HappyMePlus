@@ -8,16 +8,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
         let options = FirebaseOptions(
-            googleAppID: "1:300420832704:web:4136a8a315121f79ecbc25", 
+            googleAppID: "1:300420832704:ios:52f9a6d0d92bdcc5ecbc25",
             gcmSenderID: "300420832704"
         )
-        options.apiKey = "AIzaSyB1AT4R6ErSui1tZ5uksCZjaHZWYd1DZ6Y"
+        options.apiKey = "AIzaSyBbCschPbUbzdoH3n5B4zDWpubKyRSQ_fg"
         options.projectID = "happyme-3846e"
         
         FirebaseApp.configure(options: options)
-
+        
         return true
     }
 

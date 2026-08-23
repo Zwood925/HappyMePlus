@@ -16,7 +16,6 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
   const excludedRoutes = ["/login", "/signup", "/success", "/cancel"];
   const showLayout = user && !excludedRoutes.includes(router.pathname);
 
-  // Show loading spinner while checking auth state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -25,10 +24,9 @@ function InnerApp({ Component, pageProps, router }: InnerAppProps) {
     );
   }
 
-return showLayout ? (
+  return showLayout ? (
     <Layout>
       <Head>
-        {/* This completely prevents the annoying iOS auto-zoom and makes it feel native */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
       </Head>
       <Component {...pageProps} />
@@ -45,11 +43,9 @@ return showLayout ? (
 
 export default function MyApp({ Component, pageProps, router }: AppProps & { router: Router }) {
   useEffect(() => {
-
-    // 2. 🚨 The "Ghost Chunk" self-healing fix
     const handleRouteChangeError = (err: any, url: string) => {
       console.warn('Next.js failed to load chunk, forcing hard reload:', err);
-      window.location.href = url; // Forces the phone to download the newest HTML!
+      window.location.href = url;
     };
 
     router.events.on('routeChangeError', handleRouteChangeError);
@@ -59,10 +55,7 @@ export default function MyApp({ Component, pageProps, router }: AppProps & { rou
     };
   }, [router]);
 
-    return (
-    <>
-      <InnerApp Component={Component} pageProps={pageProps} router={router} />
-      
-    </>
+  return (
+    <InnerApp Component={Component} pageProps={pageProps} router={router} />
   );
 }

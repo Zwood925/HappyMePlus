@@ -10,7 +10,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         let options = FirebaseOptions(
-            googleAppID: "1:300420832704:web:4136a8a315121f79ecbc25, 
+            googleAppID: "1:300420832704:web:4136a8a315121f79ecbc25", 
             gcmSenderID: "300420832704"
         )
         options.apiKey = "AIzaSyB1AT4R6ErSui1tZ5uksCZjaHZWYd1DZ6Y"
